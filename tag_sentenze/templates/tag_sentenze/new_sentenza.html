@@ -1,0 +1,17 @@
+{% extends "tag_sentenze/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Nuova sentenza
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">Nuova Sentenza</h2>
+    <form enctype="multipart/form-data" action="{% url 'tag_sentenze:new-sentenza' %}" method="POST">
+        {% csrf_token %}
+        {{ form|crispy}} 
+        <p>
+            <input type="submit" class="btn btn-primary">
+        </p>
+    </form>
+{% endblock %}
