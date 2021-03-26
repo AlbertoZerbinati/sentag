@@ -1,4 +1,5 @@
 {% extends "tag_sentenze/layout.html" %}
+{% load crispy_forms_tags %}
 
 {% block title %}
     Tagga sentenza
@@ -7,6 +8,6 @@
 {% block content %}
     <h2 class="title">Tagga sentenza {{ title_s }}</h2>
     <div>
-        {{ content_s|linebreaks }}
+        {{ content_s|crispy }}
     </div>
 {% endblock %}

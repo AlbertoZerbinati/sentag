@@ -12,3 +12,6 @@ class Sentenza(models.Model):
     def __str__(self):
         """String for representing the Sentenza object (in Admin site etc.)."""
         return self.sentenza.name
+
+class Visualizer(models.Model):
+    text = models.TextField()

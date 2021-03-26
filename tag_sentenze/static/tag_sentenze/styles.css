@@ -11,8 +11,14 @@
 
 .top-buffer {
     margin-top: 6px;
+    margin-bottom: 6px;
 }
 
 .navbar {
     height: 65px;
+}
+
+html,
+body {
+    height: 95%;
 }

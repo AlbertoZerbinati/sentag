@@ -23,16 +23,16 @@
         </div>
     </nav>
 
-    <div class="container-fluid px-2">
-        <div class="row gx-2 top-buffer">
-            <div class="col col-sm-3">
-                <div class="p-2 border bg-light">{% block sidebar %} {% endblock %}</div>
+    <div class="container-fluid px-2 h-100">
+        <div class="row gx-2 top-buffer h-100">
+            <div class="col col-sm-3 sticky-top h-100">
+                <div class="p-2 border bg-light sticky-top h-100">{% block sidebar %} {% endblock %}</div>
             </div>
-            <div class="col col-sm-6">
-                <div class="p-2 border bg-light">{% block content %} {% endblock %}</div>
+            <div class="col col-sm-6 h-100">
+                <div class="p-2 border bg-light h-100">{% block content %} {% endblock %}</div>
             </div>
-            <div class="col col-sm-3">
-                <div class="p-2 border bg-light">{% block graph %} {% endblock %}</div>
+            <div class="col col-sm-3 h-100">
+                <div class="p-2 border bg-light sticky-top h-100">{% block graph %} {% endblock %}</div>
             </div>
         </div>
     </div>
