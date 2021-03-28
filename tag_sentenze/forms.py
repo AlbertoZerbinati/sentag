@@ -1,6 +1,6 @@
 from django import forms
 from django.forms import ModelForm, Textarea
-from .models import Sentenza, Visualizer
+from .models import Sentenza
 
 
 class AddSentenzaModelForm(ModelForm):
@@ -8,13 +8,5 @@ class AddSentenzaModelForm(ModelForm):
         model = Sentenza
         fields = '__all__'
     
-class VisualizerModelForm(ModelForm):
-    class Meta:
-        model = Visualizer
-        fields = ('text',)
-        labels = {
-            'text' : ('')
-        }
-        widgets = {
-            'text': Textarea(attrs={'cols': 80, 'rows': 25, 'disabled':True}),
-        }
+class VisualizerForm(forms.Form):
+    text = forms.CharField(widget=forms.Textarea(attrs={'rows':24}), label="")

@@ -1,8 +1,8 @@
 from django.shortcuts import render, reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 
-from .models import Sentenza, Visualizer
-from .forms import AddSentenzaModelForm, VisualizerModelForm
+from .models import Sentenza
+from .forms import AddSentenzaModelForm, VisualizerForm
 
 
 # Create your views here.
@@ -44,7 +44,7 @@ def tag_sentenza(request, id):
 
     content = sentenza.sentenza.read().decode('utf-8')
     #print(content)
-    visualizer = VisualizerModelForm(initial={'text': content})
+    visualizer = VisualizerForm(initial={'text': content})
     visualizer.disabled = True
 
     context = {
