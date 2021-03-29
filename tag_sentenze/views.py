@@ -29,6 +29,8 @@ def new_sentenza(request):
 
             # redirect home
             return HttpResponseRedirect(reverse('tag_sentenze:index') )
+        else:
+            return render(request, 'tag_sentenze/new_sentenza.html', context={'form':form})
 
     form = AddSentenzaModelForm()
     context = {
@@ -42,13 +44,31 @@ def tag_sentenza(request, id):
     except Sentenza.DoesNotExist:
         raise Http404("La sentenza non esiste")
 
-    content = sentenza.sentenza.read().decode('utf-8')
+    content = sentenza.output_xml
     #print(content)
     visualizer = VisualizerForm(initial={'text': content})
-    visualizer.disabled = True
+    visualizer.fields['text'].disabled = True
+
+    tags = ["dummy tag"]
 
     context = {
-        'content_s': visualizer,
-        'title_s'  : sentenza.sentenza,
+        'content_s' : content,
+        'title_s'   : sentenza.nome,
+        'tags'      : tags
     }
     return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
+
+
+"""
+update object in DB from ajax-js POST-call 
+
+params: (nome, tag, tagged_text)
+
+sentenza = Sentenza.object.filter(nome=nome)
+old_xml = sentenza.output_xml
+
+non_tagged_text = tagged_text.removeprefix("<"+tag+">").removesuffix("<"+tag+">")
+new_xml = old_xml.replace(non_tagged_text, tagged_text)
+
+sentenza.output_xml = new_xml
+"""

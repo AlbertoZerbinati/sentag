@@ -5,9 +5,50 @@
     Tagga sentenza
 {% endblock %}
 
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('button').forEach(button => {
+                button.onclick = function() {
+                    // FRONTEND
+                    sel = window.getSelection();
+                    if (sel.isCollapsed)
+                        return;
+                    if (sel.rangeCount && sel.getRangeAt) {
+                        range = sel.getRangeAt(0);
+                    }
+                    // Set design mode to on
+                    document.designMode = "on";
+                    if (range) {
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                    }
+                    // Colorize text
+                    document.execCommand("BackColor", false, "lightblue");
+                    // Set design mode to off
+                    document.designMode = "off";
+                    sel.empty()
+                    
+                    // BACKEND
+                    // chiamata python con AJAX
+                };
+            });
+        });
+    </script>
+{% endblock %}
+
+
+{% block sidebar %}
+    {% for tag in tags %}
+    <button type="button" class="btn btn-primary">{{tag}}</button>
+    {% endfor %}
+{% endblock %}
+
+
 {% block content %}
-    <h2 class="title">Tagga sentenza {{ title_s }}</h2>
-    <div>
-        {{ content_s|crispy }}
+    <h2 class="title">Tagga {{ title_s }}</h2>
+    <div id="sentenza">
+        {{ content_s | linebreaks }}
     </div>
 {% endblock %}
