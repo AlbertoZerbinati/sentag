@@ -1,9 +1,10 @@
 from django.shortcuts import render, reverse
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 
 from .models import Sentenza
-from .forms import AddSentenzaModelForm, VisualizerForm
+from .forms import AddSentenzaModelForm
 
+import re
 
 # Create your views here.
 def index(request):
@@ -45,30 +46,42 @@ def tag_sentenza(request, id):
         raise Http404("La sentenza non esiste")
 
     content = sentenza.output_xml
-    #print(content)
-    visualizer = VisualizerForm(initial={'text': content})
-    visualizer.fields['text'].disabled = True
-
     tags = ["dummy tag"]
 
     context = {
         'content_s' : content,
-        'title_s'   : sentenza.nome,
+        'nome_s'    : sentenza.nome,
         'tags'      : tags
     }
     return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
 
+def new_tag(request, nome):
+    if request.method == 'POST':
+        tag = request.POST.get('tag')
+        non_tagged_text = request.POST.get('non_tagged_text')
 
-"""
-update object in DB from ajax-js POST-call 
+        sentenza = Sentenza.objects.get(nome=nome)
+        old_xml = sentenza.output_xml
 
-params: (nome, tag, tagged_text)
+        #PROBLEMA: NON E' UN TAG xml MA html
+        tagged_text = "<span class=\"tag\" id=\"" + tag + "\">" + non_tagged_text + "</span>"
+        # print("non tagged:")
+        # print(repr(non_tagged_text))
+        # print()
+        # print("tagged:")
+        # print(repr(tagged_text))
+        
+        #PROBLEMA: REPLACE DELLA PRIMA OCCORRENZA...
+        new_xml = old_xml.replace(non_tagged_text, tagged_text, 1)
+        # print()
+        # print("old_xml:")
+        # print(repr(old_xml))
 
-sentenza = Sentenza.object.filter(nome=nome)
-old_xml = sentenza.output_xml
+        # print()
+        # print("new_xml:")
+        # print(repr(new_xml))
+        
+        sentenza.output_xml = new_xml
+        sentenza.save()
 
-non_tagged_text = tagged_text.removeprefix("<"+tag+">").removesuffix("<"+tag+">")
-new_xml = old_xml.replace(non_tagged_text, tagged_text)
-
-sentenza.output_xml = new_xml
-"""
+        return JsonResponse({'response': new_xml}, status=200)

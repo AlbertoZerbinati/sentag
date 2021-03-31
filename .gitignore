@@ -1,1 +1,3 @@
 .vscode/*
+tag_sentenze/__pycache__/*
+tag_sentenze/migrations/*

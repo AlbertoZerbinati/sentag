@@ -19,11 +19,6 @@
     height: 65px;
     user-select: none;
 }
-/* 
-html,
-body {
-    height: 95%;
-} */
 
 .sticky-top {
     top: 6px;
@@ -31,4 +26,8 @@ body {
 
 .highlight { 
     background-color: lightblue; 
+}
+
+.tag {
+    background-color: lightblue;
 }

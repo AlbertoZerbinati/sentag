@@ -8,31 +8,50 @@
 
 {% block script %}
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.querySelectorAll('button').forEach(button => {
-                button.onclick = function() {
-                    // FRONTEND
-                    sel = window.getSelection();
-                    if (sel.isCollapsed)
-                        return;
-                    if (sel.rangeCount && sel.getRangeAt) {
-                        range = sel.getRangeAt(0);
+        //seems to work but needs to be rivisited and refactored 
+        $(document).ready(function() {
+            
+            var csrf = $("input[name=csrfmiddlewaretoken]").val()
+            $(".btn").click(function () {
+                //alert("invio")
+                var sel = document.getSelection();
+                if (sel.isCollapsed) {
+                    return;
+                }
+                if (sel.rangeCount && sel.getRangeAt) {
+                    range = sel.getRangeAt(0);
+                }
+                // Set design mode to on
+                document.designMode = "on";
+                if (range) {
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+                // Colorize text
+                document.execCommand("BackColor", false, "lightblue");
+                // Set design mode to off
+                document.designMode = "off";
+
+                console.log(sel.toString())
+                // BACKEND
+                // chiamata python con AJAX
+                $.ajax({
+                    url: "{% url 'tag_sentenze:new-tag' nome_s %}",
+                    type: 'post',
+                    data: {
+                        tag: $(this).text(), 
+                        non_tagged_text: sel.toString(),
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function (response) {
+                        console.log(response)
+                    },
+                    error: function (response) {
+                        // alert the error if any error occured
+                        alert(response["responseJSON"]["error"]);
                     }
-                    // Set design mode to on
-                    document.designMode = "on";
-                    if (range) {
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                    }
-                    // Colorize text
-                    document.execCommand("BackColor", false, "lightblue");
-                    // Set design mode to off
-                    document.designMode = "off";
-                    sel.empty()
-                    
-                    // BACKEND
-                    // chiamata python con AJAX
-                };
+                })
+                .then(() => sel.empty());
             });
         });
     </script>
@@ -47,8 +66,8 @@
 
 
 {% block content %}
-    <h2 class="title">Tagga {{ title_s }}</h2>
+    <h2 class="title">Tagga {{ nome_s }}</h2>
     <div id="sentenza">
-        {{ content_s | linebreaks }}
+        {{ content_s|safe|linebreaksbr }}
     </div>
 {% endblock %}
