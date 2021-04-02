@@ -5,6 +5,45 @@
     Tagga sentenza
 {% endblock %}
 
+{% block script %}
+    <!--
+    <script>
+        function tag() {
+            var text = "prova";
+            if(window.getSelection) {
+                text = window.getSelection().toString();
+            } else if(document.selection && document.selection.type != "Control") {
+                text = document.selection.createRange().text;
+            }
+            alert(text);
+        }
+    </script>-->
+
+    <script>
+        function tag(tag_name) {
+            var sel_text = "";
+            var txtarea = document.getElementById("visualizer_area");
+            var start = txtarea.selectionStart;
+            var end = txtarea.selectionEnd;
+            sel_text = txtarea.value.substring(start, end);
+
+            //add tag
+            if(sel_text != "")
+                sel_text = "<" + tag_name + ">\n" + sel_text + "\n</" + tag_name + ">";
+
+            alert(start+" "+ end+" "+sel_text)
+
+            sel_text = "";
+        }
+    </script>
+{% endblock %}
+
+{% block sidebar %}
+    {% for tag_button in tag_schema %}
+        <button type="button" class="tag_button" onclick="tag('{{ tag_button }}')">{{ tag_button }}</button>
+    {% endfor %}
+{% endblock%}
+
 {% block content %}
     <h2 class="title">Tagga sentenza {{ title_s }}</h2>
     <div>

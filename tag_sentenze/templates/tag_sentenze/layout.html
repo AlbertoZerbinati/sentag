@@ -22,11 +22,11 @@
             </a>
         </div>
     </nav>
-
+    {% block script %} {% endblock %}
     <div class="container-fluid px-2 h-100">
         <div class="row gx-2 top-buffer h-100">
             <div class="col col-sm-3 sticky-top h-100">
-                <div class="p-2 border bg-light sticky-top h-100">{% block sidebar %} {% endblock %}</div>
+                <div class="p-2 border bg-light sticky-top h-100" style="overflow: auto;">{% block sidebar %} {% endblock %}</div>
             </div>
             <div class="col col-sm-6 h-100">
                 <div class="p-2 border bg-light h-100">{% block content %} {% endblock %}</div>

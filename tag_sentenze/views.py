@@ -1,8 +1,10 @@
 from django.shortcuts import render, reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 
-from .models import Sentenza, Visualizer
+from .models import Sentenza
 from .forms import AddSentenzaModelForm, VisualizerModelForm
+
+import xml.etree.ElementTree as et
 
 
 # Create your views here.
@@ -44,11 +46,21 @@ def tag_sentenza(request, id):
 
     content = sentenza.sentenza.read().decode('utf-8')
     #print(content)
+
+    #create tag list
+    xml_tree = et.parse(sentenza.xml_schema)
+    tag_list = {}
+    for elem in xml_tree.iter():
+        tag_list[elem.tag] = elem.attrib;
+
+    print(tag_list)
+    
     visualizer = VisualizerModelForm(initial={'text': content})
     visualizer.disabled = True
 
     context = {
         'content_s': visualizer,
         'title_s'  : sentenza.sentenza,
+        'tag_schema': tag_list.keys(),
     }
     return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
