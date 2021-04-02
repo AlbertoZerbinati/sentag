@@ -28,6 +28,10 @@
     background-color: lightblue; 
 }
 
-.tag {
+dummy_tag {
     background-color: lightblue;
+}
+
+#sentenza {
+    white-space: pre-wrap;
 }

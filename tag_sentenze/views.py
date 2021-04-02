@@ -64,7 +64,7 @@ def new_tag(request, nome):
         old_xml = sentenza.output_xml
 
         #PROBLEMA: NON E' UN TAG xml MA html
-        tagged_text = "<span class=\"tag\" id=\"" + tag + "\">" + non_tagged_text + "</span>"
+        tagged_text = "<" + "_".join(tag.split()) + ">" + non_tagged_text + "</" + "_".join(tag.split()) + ">"
         # print("non tagged:")
         # print(repr(non_tagged_text))
         # print()
