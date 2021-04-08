@@ -48,10 +48,19 @@ def tag_sentenza(request, id):
     #print(content)
 
     #create tag list
-    xml_tree = et.parse(sentenza.xml_schema)
-    tag_list = {}
+    xml_file = sentenza.xml_schema.read().decode('utf-8')
+
+    #add a root tag at the begginning and the end of the xml file
+    xml_file = '<ROOT>' + xml_file
+    xml_file = xml_file + '</ROOT>'
+
+    xml_tree = et.fromstring(xml_file)
+    tag_list = []
     for elem in xml_tree.iter():
-        tag_list[elem.tag] = elem.attrib;
+        if elem.tag not in tag_list:
+            tag_list.append(elem.tag)
+
+    tag_list.remove('ROOT')
 
     print(tag_list)
     
@@ -60,7 +69,7 @@ def tag_sentenza(request, id):
 
     context = {
         'content_s': visualizer,
-        'title_s'  : sentenza.sentenza,
-        'tag_schema': tag_list.keys(),
+        'nome_s'  : sentenza.nome,
+        'tag_schema': tag_list,
     }
     return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
