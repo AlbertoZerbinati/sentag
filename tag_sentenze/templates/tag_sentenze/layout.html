@@ -11,9 +11,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="{% static 'tag_sentenze/styles.css' %}" rel="stylesheet">
     <link href="{% static 'tag_sentenze/favicon.png' %}" rel="icon">
+    
+    <script src="https://unpkg.com/vue@next"></script>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/autosize.js/4.0.2/autosize.min.js" integrity="sha512-Fv9UOVSqZqj4FDYBbHkvdMFOEopbT/GvdTQfuWUwnlOC6KR49PnxOVMhNG8LzqyDf+tYivRqIWVxGdgsBWOmjg==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/autosize.js/4.0.2/autosize.js" integrity="sha512-cXg5FuJ9InKxAPmGBPvclg91s99FkVsgCVObcoQt49OPAfFYp/88vK796jK9S89AoOPfx604lvMCWfnQnT2BAg==" crossorigin="anonymous"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    {% block script %}{% endblock %}
+
+    <script src="{% static 'tag_sentenze/script.js' %}" type="module"></script>
+
 </head>
 
 <body>
@@ -28,7 +34,7 @@
 
     <div class="container-fluid px-2">
         <div class="row gx-2 top-buffer">
-            {% csrf_token %}
+            {% csrf_token %} <!-- needed for the ajax call -->
             <div class="col col-sm-3 sticky-top">
                 <div class="p-2 border bg-light sticky-top">{% block sidebar %} {% endblock %}</div>
             </div>

@@ -2,7 +2,7 @@ from django.shortcuts import render, reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 
 from .models import Sentenza
-from .forms import AddSentenzaModelForm
+from .forms import AddSentenzaModelForm, VisualizerForm
 
 import re
 
@@ -46,10 +46,11 @@ def tag_sentenza(request, id):
         raise Http404("La sentenza non esiste")
 
     content = sentenza.output_xml
+    visualizer = VisualizerForm(initial={'text': content})
     tags = ["dummy tag"]
 
     context = {
-        'content_s' : content,
+        'content_s' : visualizer,
         'nome_s'    : sentenza.nome,
         'tags'      : tags
     }

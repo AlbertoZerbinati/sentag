@@ -9,3 +9,6 @@ class AddSentenzaModelForm(ModelForm):
         widgets = { 'output_xml': forms.HiddenInput(), 
                     'initial_text': forms.HiddenInput()
                   }
+
+class VisualizerForm(forms.Form):
+    text = forms.CharField(widget=Textarea(attrs={'readonly':'readonly', 'id':'visualizer_area'}), label="")

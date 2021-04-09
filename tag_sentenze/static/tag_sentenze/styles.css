@@ -8,6 +8,7 @@
 .title {
     text-align: center;
     user-select: none;
+    margin-bottom: 15px;
 }
 
 .top-buffer {
@@ -28,10 +29,17 @@
     background-color: lightblue; 
 }
 
-dummy_tag {
+#visualizer_area dummy_tag {
     background-color: lightblue;
 }
 
-#sentenza {
+/* #sentenza {
     white-space: pre-wrap;
+} */
+
+#visualizer_area {
+    height: fit-content;
+    border: 0px;
+    overflow: hidden;
+    resize: none; 
 }
