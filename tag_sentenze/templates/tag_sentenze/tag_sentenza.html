@@ -10,13 +10,13 @@
     {% for tag in tags %}
     <button type="button" class="btn btn-primary">{{tag}}</button>
     {% endfor %}
-    <div id="counter">
-        Counter: [[ counter ]]
-    </div>
 {% endblock %}
 
 
 {% block content %}
-    <h2 class="title">Tagga {{ nome_s }}</h2>
-    <form id="sentenza">{{ content_s|crispy }}</form>
+    {% comment %} <h2 class="title">Tagga {{ nome_s }}</h2>
+    <form id="sentenza">{{ content_s|crispy }}</form> {% endcomment %}
+    <div id="app">
+        <HelloWorld msg="ciaoo"/>
+    </div>
 {% endblock %}

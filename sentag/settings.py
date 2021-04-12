@@ -121,6 +121,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = 'var/static_root/'
+STATICFILES_DIRS = ['static']
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') #where uploaded files are saved
 MEDIA_URL = '/media/'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
