@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'tag_sentenze',
     'crispy_forms',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +51,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'sentag.urls'
@@ -127,3 +129,6 @@ STATICFILES_DIRS = ['static']
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media') #where uploaded files are saved
 MEDIA_URL = '/media/'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
+
+
+CSRF_TRUSTED_ORIGINS=["http://lochalhost"]

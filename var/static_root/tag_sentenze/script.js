@@ -53,46 +53,46 @@
 // });
 
 
-const Counter = Vue.createApp({
-    delimiters : ["[[", "]]"],
-    data() {
-        return {
-            x: 0,
-            firstName: 'Alberto',
-            lastName: 'Zerbinati',
-            message: 'questo è un title',
-            sets: [[ 1, 2, 3, 4, 5 ], [6, 7, 8, 9, 10]]
+// const Counter = Vue.createApp({
+//     delimiters : ["[[", "]]"],
+//     data() {
+//         return {
+//             x: 0,
+//             firstName: 'Alberto',
+//             lastName: 'Zerbinati',
+//             message: 'questo è un title',
+//             sets: [[ 1, 2, 3, 4, 5 ], [6, 7, 8, 9, 10]]
 
-        }
-    },
-    mounted() {
-        setInterval(() => {
-        this.x++
-        }, 1000)
-    },
-    methods: {
-        alert() {
-            alert("haloo")
-        },
-        even(numbers) {
-            return numbers.filter(number => number % 2 === 0)
-        }
-    },
-    computed: {
-        fullName: {
-            // getter
-            get() {
-                return this.firstName + ' ' + this.lastName
-            },
-            // setter
-            set(newValue) {
-                const names = newValue.split(' ')
-                this.firstName = names[0]
-                this.lastName = names[names.length - 1]
-            }
-        }
-    }
-})
+//         }
+//     },
+//     mounted() {
+//         setInterval(() => {
+//         this.x++
+//         }, 1000)
+//     },
+//     methods: {
+//         alert() {
+//             alert("haloo")
+//         },
+//         even(numbers) {
+//             return numbers.filter(number => number % 2 === 0)
+//         }
+//     },
+//     computed: {
+//         fullName: {
+//             // getter
+//             get() {
+//                 return this.firstName + ' ' + this.lastName
+//             },
+//             // setter
+//             set(newValue) {
+//                 const names = newValue.split(' ')
+//                 this.firstName = names[0]
+//                 this.lastName = names[names.length - 1]
+//             }
+//         }
+//     }
+// })
 
 //const vm = Counter.mount('#counter');
 

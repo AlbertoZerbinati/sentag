@@ -20,7 +20,7 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('tag_sentenze.urls'))
+    path('', include('tag_sentenze.urls')),
 ]
 
 # for handling uploaded files

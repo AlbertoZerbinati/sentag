@@ -7,7 +7,8 @@ class AddSentenzaModelForm(ModelForm):
         model = Sentenza
         fields = '__all__'
         widgets = { 'output_xml': forms.HiddenInput(), 
-                    'initial_text': forms.HiddenInput()
+                    'initial_text': forms.HiddenInput(),
+                    'completed': forms.HiddenInput()
                   }
 
 class VisualizerForm(forms.Form):

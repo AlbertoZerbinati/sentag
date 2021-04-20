@@ -7,24 +7,28 @@ class Sentenza(models.Model):
     # Fields
     nome = models.CharField(max_length=30, unique=True)
     sentenza = models.FileField(upload_to='uploads/', help_text='Scegli la sentenza da taggare.') #MEDIA_ROOT/uploads
-    output_xml = models.TextField(blank=True)
-    initial_text = models.TextField(blank=True)
-    # xml_schema = models.FileField(upload_to='uploads/') #MEDIA_ROOT/uploads
-    # completed (boolean)
+    schema_xml = models.FileField(upload_to='uploads/', help_text='Scegli il file xml da utilizzare.') #MEDIA_ROOT/uploads
+    completed = models.BooleanField(default=False)
+    testo_iniziale = models.TextField(blank=True)
+    testo_taggato_html = models.TextField(blank=True)
+    testo_taggato_xml = models.TextField(blank=True)
     
-    # initialize the output_xml on first save()
+    # initialize the initial texts on first save()
     def save(self, *args, **kwargs):
         """On first save also initialize output_xml and initial_text"""
-        if not self.output_xml:
-            self.output_xml = self.sentenza.read().decode('utf-8').replace("\r\n", "\n")
-        if not self.initial_text:
-            self.initial_text = self.output_xml
-        
+        if not self.testo_taggato_xml:
+            self.testo_taggato_xml = self.sentenza.read().decode('utf-8').replace("\r\n", "\n")
+        if not self.testo_iniziale:
+            self.testo_iniziale = self.testo_taggato_xml
+        if not self.testo_taggato_html:
+            self.testo_taggato_html = self.testo_taggato_xml       
+
         super(Sentenza, self).save(*args, **kwargs)
 
     # delete sentenza FileField from file system on db-deletion
     def delete(self, *args, **kwargs):
         self.sentenza.delete()
+        self.schema_xml.delete()
         
         super(Sentenza,self).delete(*args,**kwargs)
 

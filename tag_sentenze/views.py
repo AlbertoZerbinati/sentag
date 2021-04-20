@@ -39,50 +39,97 @@ def new_sentenza(request):
     }
     return render(request, 'tag_sentenze/new_sentenza.html', context=context)
 
+
+
+
 def tag_sentenza(request, id):
     try:
         sentenza = Sentenza.objects.get(pk=id)
     except Sentenza.DoesNotExist:
         raise Http404("La sentenza non esiste")
 
-    content = sentenza.output_xml
-    visualizer = VisualizerForm(initial={'text': content})
-    tags = ["dummy tag"]
-
     context = {
-        'content_s' : visualizer,
         'nome_s'    : sentenza.nome,
-        'tags'      : tags
+        'tags'      : ['tag1']
     }
     return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
 
-def new_tag(request, nome):
-    if request.method == 'POST':
-        tag = request.POST.get('tag')
-        non_tagged_text = request.POST.get('non_tagged_text')
 
-        sentenza = Sentenza.objects.get(nome=nome)
-        old_xml = sentenza.output_xml
 
-        #PROBLEMA: NON E' UN TAG xml MA html
-        tagged_text = "<" + "_".join(tag.split()) + ">" + non_tagged_text + "</" + "_".join(tag.split()) + ">"
-        # print("non tagged:")
-        # print(repr(non_tagged_text))
-        # print()
-        # print("tagged:")
-        # print(repr(tagged_text))
+
+
+
+# APIs
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import SentenzaSerializer
+
+@api_view(['GET'])
+def sentenza_detail(request, id):
+    try:
+        sentenza = Sentenza.objects.get(pk=id)
+    except Sentenza.DoesNotExist:
+        raise Http404("La sentenza non esiste")
+    
+    serializer = SentenzaSerializer(sentenza, many=False)
+    return Response(serializer.data)
+
+
+
+# def new_tag(request, nome):
+#     if request.method == 'POST':
+#         tag = request.POST.get('tag')
+#         non_tagged_text = request.POST.get('non_tagged_text')
+
+#         sentenza = Sentenza.objects.get(nome=nome)
+#         old_xml = sentenza.output_xml
+
+#         #PROBLEMA: NON E' UN TAG xml MA html
+#         tagged_text = "<" + "_".join(tag.split()) + ">" + non_tagged_text + "</" + "_".join(tag.split()) + ">"
+#         # print("non tagged:")
+#         # print(repr(non_tagged_text))
+#         # print()
+#         # print("tagged:")
+#         # print(repr(tagged_text))
         
-        #PROBLEMA: REPLACE DELLA PRIMA OCCORRENZA...
-        new_xml = old_xml.replace(non_tagged_text, tagged_text, 1)
-        # print()
-        # print("old_xml:")
-        # print(repr(old_xml))
+#         #PROBLEMA: REPLACE DELLA PRIMA OCCORRENZA...
+#         new_xml = old_xml.replace(non_tagged_text, tagged_text, 1)
+#         # print()
+#         # print("old_xml:")
+#         # print(repr(old_xml))
 
-        # print()
-        # print("new_xml:")
-        # print(repr(new_xml))
+#         # print()
+#         # print("new_xml:")
+#         # print(repr(new_xml))
         
-        sentenza.output_xml = new_xml
-        sentenza.save()
+#         sentenza.output_xml = new_xml
+#         sentenza.save()
 
-        return JsonResponse({'response': new_xml}, status=200)
+#         return JsonResponse({'response': new_xml}, status=200)
+
+
+
+
+
+
+# import nltk, json
+# from nltk.tokenize.treebank import TreebankWordTokenizer, TreebankWordDetokenizer
+# from django.views.decorators.csrf import csrf_exempt
+
+# @csrf_exempt
+# def tokenize(request):
+#     text = json.loads(request.body)['text']
+#     print(text)
+#     try:
+#         spans = list(TreebankWordTokenizer().span_tokenize(text))
+#     except LookupError:
+#         nltk.download('punkt')
+#         spans = list(TreebankWordTokenizer().span_tokenize(text))
+    
+#     print(spans)
+#     return {"tokens": [(s[0], s[1], text[s[0]:s[1]]) for s in spans]}
+
+
+# def detokenize(request):
+#     tokens = request.json["tokens"]
+#     return {"text": TreebankWordDetokenizer().detokenize(tokens)}

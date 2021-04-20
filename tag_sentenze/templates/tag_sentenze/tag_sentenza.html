@@ -14,9 +14,11 @@
 
 
 {% block content %}
-    {% comment %} <h2 class="title">Tagga {{ nome_s }}</h2>
-    <form id="sentenza">{{ content_s|crispy }}</form> {% endcomment %}
-    <div id="app">
-        <HelloWorld msg="ciaoo"/>
-    </div>
+    <h2 class="title">Tagga {{ nome_s }}</h2>
+    {% comment %} <form id="sentenza">{{ content_s|crispy }}</form> {% endcomment %}
+    <div id="app"></div> 
+    {% load static %}
+    <script type="text/javascript" src="{% static 'src/vue/dist/js/chunk-vendors.js' %}"></script>
+    <script type="text/javascript" src="{% static 'src/vue/dist/js/app.js' %}"></script>
+
 {% endblock %}
