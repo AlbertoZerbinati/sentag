@@ -2,9 +2,6 @@
   <div class="columns is-desktop">
     <div class="column">
       <div class="panel m-4">
-        <div class="panel-heading">
-          <classes-block />
-        </div>
         <div class="panel-block">
           <div id="editor">
             <component
@@ -42,7 +39,6 @@ import { mapState } from "vuex";
 import axios from "../axios";
 import Token from "./Token";
 import TokenBlock from "./TokenBlock";
-import ClassesBlock from "./ClassesBlock.vue";
 import TokenManager from "./token-manager";
 import Export from "./Export.vue";
 
@@ -59,7 +55,6 @@ export default {
   components: {
     Token,
     TokenBlock,
-    ClassesBlock,
     Export,
   },
   computed: {
@@ -112,6 +107,7 @@ export default {
       //    this.tm.addNewBlock(annotation.startIdx, annotation.endIdx, annotation.class);
     },
     selectTokens() {
+      console.log(this.classes);
       let selection = document.getSelection();
 
       if (

@@ -7,9 +7,11 @@
 
 
 {% block sidebar %}
-    {% for tag in tags %}
+    {% comment %} {% for tag in tags %}
     <button type="button" class="btn btn-primary">{{tag}}</button>
-    {% endfor %}
+    {% endfor %} {% endcomment %}
+
+    <div id="classes"></div>
 {% endblock %}
 
 

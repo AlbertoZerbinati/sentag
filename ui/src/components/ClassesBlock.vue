@@ -4,13 +4,19 @@
       <div class="tags is-medium has-addons">
         <a
           class="tag is-medium"
-          :class="{ 'is-link': cl.id === currentClass.id }"
+          
+          :class="{ 'is-info': cl.id === currentClass.id}"
           @click="setCurrentClass(cl.id)"
         >
           <span class="color-box" :style="{ backgroundColor: cl.color }"></span>
-          {{ cl.name }}
+          <!--<span :style="{color:cl.color}">-->
+            {{ cl.name }}
+          <!--</span>-->
+          <button 
+          class="delete " 
+          :class="{ 'is-dark': cl.id === currentClass.id }"
+          @click="removeClass(cl.id)"></button>
         </a>
-        <a class="tag is-medium is-delete" @click="removeClass(cl.id)"></a>
       </div>
     </div>
 
@@ -75,8 +81,12 @@ export default {
 
 <style lang="css" scoped>
 .color-box {
-  width: 1rem;
-  height: 1rem;
+  width: 1.2rem;
+  height: 1.2rem;
   margin-right: 1rem;
+}
+
+.input {
+    width: 40%;
 }
 </style>
