@@ -1,0 +1,24 @@
+{% extends "tag_sentenze/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
+
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Log In</legend>
+                {{ form|crispy }}
+            </fieldset>
+
+            <div class="form-group">
+                <button class="btn btn-outline-info" type="submit">Log In</button>
+            </div>
+
+        </form>
+    </div>
+{% endblock %}

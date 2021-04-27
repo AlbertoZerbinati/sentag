@@ -20,7 +20,11 @@
     </script>-->
 
     <script>
-        function tag(tag_name) {
+        $(document).ready(function() {
+
+            var csrf = $("input[name=csrfmiddlewaretoken]").val()
+            $(".tag_button").click(function () {
+
             var sel_text = "";
             var txtarea = document.getElementById("visualizer_area");
             var start = txtarea.selectionStart;
@@ -29,23 +33,40 @@
 
             //add tag
             if(sel_text != "")
-                sel_text = "<" + tag_name + ">\n" + sel_text + "\n</" + tag_name + ">";
+                sel_text = "< " + ">\n" + sel_text + "\n</ " + ">";
 
-            alert(start+" "+ end+" "+sel_text)
+            alert(start+" "+ end+" "+sel_text);
 
-            sel_text = "";
-        }
+            $.ajax({
+                url: "{% url 'tag_sentenze:new-tag' nome_s %}",
+                type: 'post',
+                data: {
+                    tag: $(this).text(),
+                    start_text: start,
+                    end_text: end,
+                    csrfmiddlewaretoken: csrf
+                },
+                success: function(response) {
+                    console.log(response)
+                },
+                error: function(response) {
+                    alert("error");
+                }
+            })
+            .then(() => sel_text.empty());
+            });
+        });
     </script>
 {% endblock %}
 
 {% block sidebar %}
     {% for tag_button in tag_schema %}
-        <button type="button" class="tag_button" onclick="tag('{{ tag_button }}')">{{ tag_button }}</button>
+        <button id="id_{{ tag_button }}" type="button" class="tag_button">{{ tag_button }}</button>
     {% endfor %}
 {% endblock%}
 
 {% block content %}
-    <h2 class="title">Tagga sentenza {{ title_s }}</h2>
+    <h2 class="title">Tagga sentenza {{ nome_s }}</h2>
     <div>
         {{ content_s|crispy }}
     </div>
