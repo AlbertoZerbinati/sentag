@@ -18,7 +18,7 @@ export default {
   .token {
     font-size: large;
     display: inline-block;
-    padding: 0.25rem;
-    line-height: 2;
+    padding: 0.2rem;
+    line-height: 1.5;
   }
 </style>

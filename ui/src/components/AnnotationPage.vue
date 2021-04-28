@@ -1,7 +1,10 @@
 <template>
   <div class="columns is-desktop">
     <div class="column">
-      <div class="panel m-4">
+      <div class="panel">
+        <p class="panel-heading">
+          <strong>Tagga {{title}}</strong>
+        </p>
         <div class="panel-block">
           <div id="editor">
             <component
@@ -23,7 +26,7 @@
               </button>
             </p>
             <p class="control">
-              <button class="button is-link" @click="saveTags">Save</button>
+              <button class="button is-link" @click="saveTags">Salva</button>
             </p>
             <p class="control">
                 <export/>
@@ -48,10 +51,10 @@ export default {
     return {
       tm: new TokenManager([]),
       currentSentence: {},
-      currentIndex: 0,
       redone: "",
     };
   },
+  props: ['title'],
   components: {
     Token,
     TokenBlock,
@@ -62,7 +65,6 @@ export default {
   },
   watch: {
     inputSentences() {
-      this.currentIndex = 0;
       this.tokenizeCurrentSentence();
     }
 
@@ -78,20 +80,15 @@ export default {
   },
   methods: {
     tokenizeCurrentSentence() {
-      if (this.currentIndex >= this.inputSentences.length) {
-        // TODO show completed message
-        alert("You have completed all the sentences")
-        return;
-      }
-      this.currentSentence = this.inputSentences[this.currentIndex];
+      this.currentSentence = this.inputSentences[0];
 
-      var words = this.currentSentence["text"].split(" ");
-      var tokens = [];
-      var last_index = 0;
-      for(var i=0; i<words.length; i+=1){
-          var token = [];
-          var start = this.currentSentence["text"].indexOf(words[i],last_index);
-          var end = start+words[i].length; 
+      let words = this.currentSentence["text"].split(" ");
+      let tokens = [];
+      let last_index = 0;
+      for(let i=0; i<words.length; i+=1){
+          let token = [];
+          let start = this.currentSentence["text"].indexOf(words[i],last_index);
+          let end = start+words[i].length; 
           token.push(start);
           token.push(end);
           token.push(words[i]);
@@ -107,7 +104,7 @@ export default {
       //    this.tm.addNewBlock(annotation.startIdx, annotation.endIdx, annotation.class);
     },
     selectTokens() {
-      console.log(this.classes);
+      //console.log(this.classes);
       let selection = document.getSelection();
 
       if (
@@ -123,6 +120,13 @@ export default {
         endIdx = parseInt(
           selection.focusNode.parentElement.id.replace("t", "")
         );
+        //check if I am tring to select a token-block
+        // if (isNaN(startIdx)) {
+        //   startIdx = parseInt(selection.anchorNode.parentElement.parentElement.id.replace("t",""));
+        // }
+        // if (isNaN(endIdx)) {
+        //   endIdx = parseInt(selection.focusNode.parentElement.parentElement.id.replace("t",""));
+        // }
       } catch (e) {
         console.log("selected text were not tokens");
         return;
@@ -145,10 +149,6 @@ export default {
     resetBlocks() {
       this.tm.resetBlocks();
     },
-    skipCurrentSentence() {
-      this.currentIndex++;
-      this.tokenizeCurrentSentence();
-    },
     saveTags() {
       axios
         .post("/detokenize/", { tokens: this.tm.words })
@@ -157,8 +157,6 @@ export default {
             res.data.text,
             { entities: this.tm.exportAsAnnotation() },
           ]);
-          this.currentIndex++;
-          this.tokenizeCurrentSentence();
         })
         .catch((e) => {
           console.log(e);

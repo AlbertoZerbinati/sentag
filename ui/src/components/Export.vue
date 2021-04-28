@@ -1,6 +1,6 @@
 <template>
     <button class="button is-danger" @click="generateJSONExport()">
-      Export Annotations
+      Esporta Annotazioni
     </button>
 </template>
 

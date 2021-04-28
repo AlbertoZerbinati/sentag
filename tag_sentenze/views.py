@@ -2,7 +2,7 @@ from django.shortcuts import render, reverse
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 
 from .models import Sentenza
-from .forms import AddSentenzaModelForm, VisualizerForm
+from .forms import AddSentenzaModelForm
 
 import re
 
@@ -27,7 +27,6 @@ def new_sentenza(request):
         if form.is_valid():
             # save the form into the DB
             form.save()
-
             # redirect home
             return HttpResponseRedirect(reverse('tag_sentenze:index') )
         else:
@@ -39,9 +38,6 @@ def new_sentenza(request):
     }
     return render(request, 'tag_sentenze/new_sentenza.html', context=context)
 
-
-
-
 def tag_sentenza(request, id):
     try:
         sentenza = Sentenza.objects.get(pk=id)
@@ -50,7 +46,6 @@ def tag_sentenza(request, id):
 
     context = {
         'nome_s'    : sentenza.nome,
-        'tags'      : ['tag1']
     }
     return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
 

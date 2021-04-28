@@ -24,12 +24,16 @@ class TokenManager {
   addNewBlock(_start, _end, _class) {
     let selectedTokens = [];
     let newTokens = [];
-
+    
     let start = _end < _start ? _end : _start;
     let end = _end > _start ? _end : _start;
 
+    console.log("start: "+start);
+    console.log("end: "+end);
+    
     for (let i = 0; i < this.tokens.length; i++) {
       let t = this.tokens[i];
+      
       if (t.start < start) {
         newTokens.push(t);
       } else if (t.type == "token" && t.start >= start && t.start <= end) {
@@ -46,7 +50,8 @@ class TokenManager {
         });
         selectedTokens = [];
         newTokens.push(t);
-      } else {
+      }
+      else {
         newTokens.push(t);
       }
     }

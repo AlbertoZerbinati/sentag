@@ -1,12 +1,16 @@
 <template>
-  <mark v-bind:style="{backgroundColor:backgroundColor}">
-    <Token :token="t" v-for="t in token.tokens" :key="t.start" />
-    <span class="tag is-info is-light is-small">
+  <mark class="is-multiline is-rounded" v-bind:style="{backgroundColor:backgroundColor}">
+    <Token 
+      :token="t" 
+      v-for="t in token.tokens" 
+      :key="t.start" />
+    <span class="tag is-light is-info is-small">
       {{ token.label }}
       <a class="tag delete is-small is-danger" @click="$emit('remove-block', token.start)"></a>
     </span>
   </mark>
 </template>
+
 <script>
 import Token from "./Token";
 
@@ -36,27 +40,17 @@ export default {
 
 <style lang="scss">
 mark {
-  padding: 0.4rem;
+  padding: 0.3rem;
   position: relative;
-  &::after {
-    content: var(--tag);
-    padding: 0.2rem;
-    color: darkslategray;
-    font-size: small;
-  }
-}
-.close-btn {
-  cursor: pointer;
-  font-size: small;
-  position: absolute;
-  width: 1rem;
-  height:1rem;
-  padding-left: 0.2rem;
-  border-radius: 50%;
-  background-color: black;
-  color: white;
+  border-radius:8px;
+  // &::after {
+  //   content: var(--tag);
+  //   padding: 0.2rem;
+  //   color: darkslategray;
+  //   font-size: small;
+  // }
 }
 .delete {
-  margin-left: 10px;
+  margin-left: 4px;
 }
 </style>

@@ -1,27 +1,30 @@
 const niceColors = [
-  "#eeff96",
-  "#bdff96",
-  "#96ffee",
-  "#96bbff",
-  "#be96ff",
-  "#ef96ff",
-  "#ff96d2",
-  "#ff9696",
-  "#ffd596",
+  "#FFF49C", //giallo
+  "#FCD060", //giallo scuro
+  "#D2FFD5", //verde chiaro
+  "#85DE77", //verde
+  "#8DA290", //verde scuro
+  "#B8E1ED", //azzurro
+  "#95B4CC", //turchese
+  "#4F9EC4", //blu
+  "#9375C3", //viola
+  "#E0CAED", //violetto
+  "#FFB8DE", //rosa
+  "#FF756D", //rosso
+  "#f7933b", //arancio
+  "#DFA995", //marrone
+  "#D5D5D5", //grigio (15)
+
 ];
 
 export const mutations = {
   setInputSentences(state, payload) {
     if (!Array.isArray(payload)) {
       state.originalText = payload;
-      payload = payload.split(state.separator);
+      payload = payload.split();
     }
     state.inputSentences = payload.map((s, i) => ({ id: i, text: s }));
   },
-  //this.setInitialAnnotations(state, payload) {
-  // for each annotation in payload.initial_annotations
-  //    addAnnotation(annotation)      
-  //},
   addClass(state, payload) {
     let existing = state.classes.find((c) => c.name == payload);
     if (existing) {
@@ -51,11 +54,6 @@ export const mutations = {
   addAnnotation(state, payload) {
     state.annotations.push(payload);
   },
-  setSeparator(state, payload) {
-    state.separator = payload;
-    const sentences = state.originalText.split(state.separator);
-    state.inputSentences = sentences.map((s, i) => ({ id: i, text: s }));
-  },
 };
 
 export const getters = {};
@@ -63,7 +61,6 @@ export default {
   state() {
     return {
       originalText: "",
-      separator: "\n\n\n\n",
       classes: [],
       inputSentences: [],
       annotations: [],

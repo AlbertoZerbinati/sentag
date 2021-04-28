@@ -1,6 +1,6 @@
 <template>
   <div class="panel">
-    <div class="panel-heading">
+    <div class="panel-block">
       <classes-block />
     </div>
   </div>

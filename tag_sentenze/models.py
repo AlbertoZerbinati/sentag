@@ -12,6 +12,27 @@ class Sentenza(models.Model):
     testo_iniziale = models.TextField(blank=True)
     testo_taggato_html = models.TextField(blank=True)
     testo_taggato_xml = models.TextField(blank=True)
+
+    @property
+    def tags(self):
+        import xml.etree.ElementTree as et
+        #create tag list
+        xml_file = self.schema_xml.read().decode('utf-8')
+
+        #add a root tag at the begginning and the end of the xml file
+        xml_file = '<ROOT>' + xml_file
+        xml_file = xml_file + '</ROOT>'
+
+        xml_tree = et.fromstring(xml_file)
+        tag_list = []
+        for elem in xml_tree.iter():
+            if elem.tag not in tag_list:
+                tag_list.append(elem.tag)
+
+        tag_list.remove('ROOT')
+        print(tag_list)
+
+        return tag_list
     
     # initialize the initial texts on first save()
     def save(self, *args, **kwargs):

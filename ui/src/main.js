@@ -15,9 +15,9 @@ library.add(faFileAlt);
 library.add(faPlusSquare);
 
 const app = createApp(App);
-const classes = createApp(Classes)
+const classes = createApp(Classes);
 
-const oneStore = createStore(store)
+const oneStore = createStore(store);
 app.use(oneStore);
 classes.use(oneStore);
 
