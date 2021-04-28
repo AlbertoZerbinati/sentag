@@ -1,7 +1,8 @@
 # Sentag
 
-Django backend
-Vue.js frontend, heavily inspired by [NER-annotator](https://github.com/tecoholic/ner-annotator)
+- Django backend
+
+- Vue.js frontend, heavily inspired by [NER-annotator](https://github.com/tecoholic/ner-annotator)
 
 ## usage
 
