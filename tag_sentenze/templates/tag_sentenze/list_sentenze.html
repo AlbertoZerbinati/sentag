@@ -9,7 +9,7 @@
     <ul>
         {% for sentenza in sentenze %}
         <li> 
-            <a href="{% url 'tag_sentenze:tag-sentenza' sentenza.id %}"> {{ sentenza.nome }} </a> 
+            <a href="{% url 'tag_sentenze:tag-sentenza' sentenza.id %}"> {{ sentenza }} </a> 
         </li>
         {% endfor %}
     </ul>

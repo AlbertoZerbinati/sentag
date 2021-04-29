@@ -1,20 +1,58 @@
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
 # Create your models here.
 class Sentenza(models.Model):
     # Fields
     nome = models.CharField(max_length=30, unique=True)
     sentenza = models.FileField(upload_to='uploads/', help_text='Scegli la sentenza da taggare.') #MEDIA_ROOT/uploads
-    # FIELD DA AGGIUNGERE PER COMPLETARE IL MODELLO
-    xml_schema = models.FileField(upload_to='uploads/', help_text='Scegli il file xml da utilizzare.', null = True) #MEDIA_ROOT/uploads
-    # title (string)
-    # completed (boolean)
+    schema_xml = models.FileField(upload_to='uploads/', help_text='Scegli il file xml da utilizzare.') #MEDIA_ROOT/uploads
+    completed = models.BooleanField(default=False)
+    testo_iniziale = models.TextField(blank=True)
+    testo_taggato_html = models.TextField(blank=True)
+    testo_taggato_xml = models.TextField(blank=True)
+
+    @property
+    def tags(self):
+        import xml.etree.ElementTree as et
+        #create tag list
+        xml_file = self.schema_xml.read().decode('utf-8')
+
+        #add a root tag at the begginning and the end of the xml file
+        xml_file = '<ROOT>' + xml_file
+        xml_file = xml_file + '</ROOT>'
+
+        xml_tree = et.fromstring(xml_file)
+        tag_list = []
+        for elem in xml_tree.iter():
+            if elem.tag not in tag_list:
+                tag_list.append(elem.tag)
+
+        tag_list.remove('ROOT')
+        print(tag_list)
+
+        return tag_list
+    
+    # initialize the initial texts on first save()
+    def save(self, *args, **kwargs):
+        """On first save also initialize output_xml and initial_text"""
+        if not self.testo_taggato_xml:
+            self.testo_taggato_xml = self.sentenza.read().decode('utf-8').replace("\r\n", "\n")
+        if not self.testo_iniziale:
+            self.testo_iniziale = self.testo_taggato_xml
+        if not self.testo_taggato_html:
+            self.testo_taggato_html = self.testo_taggato_xml       
+
+        super(Sentenza, self).save(*args, **kwargs)
 
     # delete sentenza FileField from file system on db-deletion
     def delete(self, *args, **kwargs):
         self.sentenza.delete()
+        self.schema_xml.delete()
+        
         super(Sentenza,self).delete(*args,**kwargs)
- 
+
     def __str__(self):
         """String for representing the Sentenza object (in Admin site etc.)."""
-        return self.sentenza.name
+        return self.nome

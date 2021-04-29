@@ -2,11 +2,9 @@ from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 
 from .models import Sentenza
-from .forms import AddSentenzaModelForm, VisualizerModelForm
+from .forms import AddSentenzaModelForm
 
 from django.contrib.auth.decorators import login_required
-
-import xml.etree.ElementTree as et
 
 
 # Create your views here.
@@ -62,45 +60,23 @@ def tag_sentenza(request, id):
     except Sentenza.DoesNotExist:
         raise Http404("La sentenza non esiste")
 
-    content = sentenza.sentenza.read().decode('utf-8')
-    #print(content)
-
-    #create tag list
-    xml_file = sentenza.xml_schema.read().decode('utf-8')
-
-    #add a root tag at the begginning and the end of the xml file
-    xml_file = '<ROOT>' + xml_file
-    xml_file = xml_file + '</ROOT>'
-
-    xml_tree = et.fromstring(xml_file)
-    tag_list = []
-    for elem in xml_tree.iter():
-        if elem.tag not in tag_list:
-            tag_list.append(elem.tag)
-
-    tag_list.remove('ROOT')
-
-    print(tag_list)
-    
-    visualizer = VisualizerModelForm(initial={'text': content})
-    visualizer.disabled = True
-
     context = {
-        'content_s': visualizer,
-        'nome_s'  : sentenza.nome,
-        'tag_schema': tag_list,
+        'nome_s':sentenza.nome,
     }
     return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
 
-def new_tag(request, nome):
+# APIs
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .serializers import SentenzaSerializer
 
-    data = {}
-
-    if request.method == 'POST' and request.is_ajax:
-        data['tag'] = request.POST.get('tag')
-        data['start'] = request.POST.get('start_text')
-        data['end'] = request.POST.get('end_text')
-
-    print(data)
-
-    return JsonResponse({'response': data}, status=200)
+@login_required
+@api_view(['GET'])
+def sentenza_detail(request, id):
+    try:
+        sentenza = Sentenza.objects.get(pk=id)
+    except Sentenza.DoesNotExist:
+        raise Http404("La sentenza non esiste")
+    
+    serializer = SentenzaSerializer(sentenza, many=False)
+    return Response(serializer.data)

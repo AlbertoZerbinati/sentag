@@ -7,6 +7,7 @@
 
 .title {
     text-align: center;
+    user-select: none;
 }
 
 .top-buffer {
@@ -16,25 +17,9 @@
 
 .navbar {
     height: 65px;
+    user-select: none;
 }
 
-.left_content {
-    box-sizing: border-box;
-}
-
-.tag_button {
-    background-color: rgb(179, 179, 179);
-    border: 1px solid rgb(255, 255, 255);
-    color: black;
-    padding: 10px 24px;
-    cursor: pointer;
-    width: 100%;
-    display: block;
-    box-sizing: border-box;
-    border-radius: 10px;
-}
-
-html,
-body {
-    height: 95%;
+.sticky-top {
+    top: 6px;
 }
