@@ -1,0 +1,34 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+    Editor Page
+{% endblock %}
+
+{% block sidebar %}
+    <div>
+        <h4 class="title">Utenti</h4>
+    </div>
+    {% for user in lista_users %}
+        <p>
+            {{ user }}
+        </p>
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">Editor Page</h2>
+    <div class="border-yop pt-3">
+        Sei nella pagina di gestione dell'editor
+    </div>
+{% endblock %}
+
+{% block graph %}
+    <div>
+        <h4 class="title">Sentenze</h4>
+    </div>
+    {% for sentenza in sentenze %}
+        <p>
+            {{ sentenza.nome }}
+        </p>
+    {% endfor %}
+{% endblock %}

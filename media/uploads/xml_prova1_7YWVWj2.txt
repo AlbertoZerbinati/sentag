@@ -1,0 +1,19 @@
+<sentenza>
+  <data name="data_attr">Formato data</data>
+  <citta name="citta_attr">Padova</citta>
+  <giudice name="giudice_attr">Nome giudice</giudice>
+  <avvocato>Nome avvocato</avvocato>
+  <info>Informazioni sul processo</info>
+  <tag1 name="nome_tag_1" attr="attributo_tag1"></tag1>
+  <tag2>Testo tag2</tag2>
+  <tag3>Testo tag3</tag3>
+  <tag4>Testo tag4</tag4>
+  <tag5>Testo tag5</tag5>
+  <arg1 name="nome_arg_1" attr="attributo_arg_1">Testo argomento 1</arg1>
+  <arg2>Testo argomento 2</arg2>
+  <arg3>Testo argomento 3</arg3>
+  <arg4>Testo argomento 4</arg4>
+  <arg5>Testo argomento 5</arg5>
+  <conclusioni>Parte conclusioni</conclusioni>
+  <firma>Firma</firma>
+</sentenza>

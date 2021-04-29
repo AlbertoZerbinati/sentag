@@ -5,8 +5,68 @@
     Tagga sentenza
 {% endblock %}
 
+{% block script %}
+    <!--
+    <script>
+        function tag() {
+            var text = "prova";
+            if(window.getSelection) {
+                text = window.getSelection().toString();
+            } else if(document.selection && document.selection.type != "Control") {
+                text = document.selection.createRange().text;
+            }
+            alert(text);
+        }
+    </script>-->
+
+    <script>
+        $(document).ready(function() {
+
+            var csrf = $("input[name=csrfmiddlewaretoken]").val()
+            $(".tag_button").click(function () {
+
+            var sel_text = "";
+            var txtarea = document.getElementById("visualizer_area");
+            var start = txtarea.selectionStart;
+            var end = txtarea.selectionEnd;
+            sel_text = txtarea.value.substring(start, end);
+
+            //add tag
+            if(sel_text != "")
+                sel_text = "< " + ">\n" + sel_text + "\n</ " + ">";
+
+            alert(start+" "+ end+" "+sel_text);
+
+            $.ajax({
+                url: "{% url 'tag_sentenze:new-tag' nome_s %}",
+                type: 'post',
+                data: {
+                    tag: $(this).text(),
+                    start_text: start,
+                    end_text: end,
+                    csrfmiddlewaretoken: csrf
+                },
+                success: function(response) {
+                    console.log(response)
+                },
+                error: function(response) {
+                    alert("error");
+                }
+            })
+            .then(() => sel_text.empty());
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block sidebar %}
+    {% for tag_button in tag_schema %}
+        <button id="id_{{ tag_button }}" type="button" class="tag_button">{{ tag_button }}</button>
+    {% endfor %}
+{% endblock%}
+
 {% block content %}
-    <h2 class="title">Tagga sentenza {{ title_s }}</h2>
+    <h2 class="title">Tagga sentenza {{ nome_s }}</h2>
     <div>
         {{ content_s|crispy }}
     </div>
