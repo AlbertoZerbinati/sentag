@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'tag_sentenze',
     'crispy_forms',
     'rest_framework',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -130,5 +131,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media') #where uploaded files are saved
 MEDIA_URL = '/media/'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
-
-CSRF_TRUSTED_ORIGINS=["http://lochalhost"]
+LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/login'
