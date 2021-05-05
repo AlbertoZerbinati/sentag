@@ -1,12 +1,19 @@
 <template>
-  <mark class="is-multiline is-rounded" v-bind:style="{backgroundColor:backgroundColor}">
-    <Token 
-      :token="t" 
-      v-for="t in token.tokens" 
-      :key="t.start" />
+  <mark class="is-multiline is-rounded" 
+    :style="{backgroundColor:backgroundColor}"
+    :id="'tb' + token.start"
+    >
+      <component 
+        v-for="t in token.tokens" 
+        :is="t.type === 'token' ? 'Token' : 'TokenBlock'"
+        :token="t" 
+        :key="t.start" 
+        :backgroundColor="t.backgroundColor"
+        @remove-block="removeBlock"
+      />
     <span class="tag is-light is-info is-small">
       {{ token.label }}
-      <a class="tag delete is-small is-danger" @click="$emit('remove-block', token.start)"></a>
+      <a class="tag delete is-small is-danger" @click="$emit('remove-block', {start:token.start, end:token.end})"></a>
     </span>
   </mark>
 </template>
@@ -34,6 +41,11 @@ export default {
   },
   components: {
     Token
+  },
+  methods: {
+    removeBlock: function(data) {
+      this.$emit("remove-block",data)
+    }
   }
 }
 </script>
@@ -43,12 +55,12 @@ mark {
   padding: 0.3rem;
   position: relative;
   border-radius:8px;
-  // &::after {
-  //   content: var(--tag);
-  //   padding: 0.2rem;
-  //   color: darkslategray;
-  //   font-size: small;
-  // }
+  &::after {
+    content: var(--tag);
+    padding: 0.2rem;
+    color: darkslategray;
+    font-size: small;
+  }
 }
 .delete {
   margin-left: 4px;

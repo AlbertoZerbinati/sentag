@@ -1,10 +1,10 @@
 const niceColors = [
-  "#FFF49C", //giallo
-  "#FCD060", //giallo scuro
-  "#D2FFD5", //verde chiaro
-  "#85DE77", //verde
-  "#8DA290", //verde scuro
-  "#B8E1ED", //azzurro
+  "#FFF49CCA", //giallo
+  "#FCD060CA", //giallo scuro
+  "#D2FFD5CA", //verde chiaro
+  "#85DE77CA", //verde
+  "#8DA290CA", //verde scuro
+  "#B8E1EDCA", //azzurro
   "#95B4CC", //turchese
   "#4F9EC4", //blu
   "#9375C3", //viola

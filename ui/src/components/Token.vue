@@ -1,5 +1,8 @@
 <template>
-  <span v-if="token.type === 'token'" class="token">
+  <span 
+    v-if="token.type === 'token'" class="token"
+    :id="'t' + token.start"
+  >
     {{ token.text }}
   </span>
 </template>

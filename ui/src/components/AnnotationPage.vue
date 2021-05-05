@@ -51,7 +51,6 @@ export default {
     return {
       tm: new TokenManager([]),
       currentSentence: {},
-      redone: "",
     };
   },
   props: ['title'],
@@ -67,7 +66,6 @@ export default {
     inputSentences() {
       this.tokenizeCurrentSentence();
     }
-
   },
   created() {
     if (this.inputSentences.length) {
@@ -120,13 +118,6 @@ export default {
         endIdx = parseInt(
           selection.focusNode.parentElement.id.replace("t", "")
         );
-        //check if I am tring to select a token-block
-        // if (isNaN(startIdx)) {
-        //   startIdx = parseInt(selection.anchorNode.parentElement.parentElement.id.replace("t",""));
-        // }
-        // if (isNaN(endIdx)) {
-        //   endIdx = parseInt(selection.focusNode.parentElement.parentElement.id.replace("t",""));
-        // }
       } catch (e) {
         console.log("selected text were not tokens");
         return;
@@ -143,8 +134,8 @@ export default {
       this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
       selection.empty();
     },
-    onRemoveBlock(blockStart) {
-      this.tm.removeBlock(blockStart);
+    onRemoveBlock(data) {
+      this.tm.removeBlock(data.start,data.end);
     },
     resetBlocks() {
       this.tm.resetBlocks();
