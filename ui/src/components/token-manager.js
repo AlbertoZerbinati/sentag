@@ -11,6 +11,7 @@ class TokenManager {
       text: t[2],
     }));
     this.words = tokens.map(t => t[2]);
+    this.initialTokens = this.tokens.slice(); //SHALLOW COPY
   }
 
   /**
@@ -113,7 +114,7 @@ class TokenManager {
   }
   /**
    * Removes a token block and puts back all the tokens in their original position
-   * ATTENZIONE PROBLEMA PERFORMANCE!!!
+   * problema performance RISOLTO
    *
    * @param {Number} blockStart 'start' value of the token block to remove
    * @param {Number} blockEnd 'end' value of the token block to remove
@@ -188,18 +189,9 @@ class TokenManager {
 
   /**
    * Removes all the tag blocks and leaves only tokens
-   * VA RISCRITTO PER NESTED E IMPLEMENTATA LA RICHIESTA DI CONFERMA
    */
   resetBlocks() {
-    let newTokens = [];
-    for (let i = 0; i < this.tokens.length; i++) {
-      if (this.tokens[i].type === "token") {
-        newTokens.push(this.tokens[i]);
-      } else {
-        newTokens.push(...this.tokens[i].tokens);
-      }
-    }
-    this.tokens = newTokens;
+    this.tokens = this.initialTokens.slice(); //SHALLOW COPY
   }
 
   /**

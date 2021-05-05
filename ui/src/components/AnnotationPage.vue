@@ -138,6 +138,7 @@ export default {
       this.tm.removeBlock(data.start,data.end);
     },
     resetBlocks() {
+      if(confirm("Are you sure you want to reset ALL the annotations? The unsaved work will be lost"))
       this.tm.resetBlocks();
     },
     saveTags() {
