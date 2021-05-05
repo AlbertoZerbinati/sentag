@@ -1,3 +1,4 @@
 .vscode/*
 env/*
 guidelines/*
+db.sqlite3
