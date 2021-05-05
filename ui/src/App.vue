@@ -34,9 +34,14 @@ export default {
         .then((res) => {
           this.setInputSentences(res.data['testo_iniziale']);
           this.title = res.data['nome'];
-          for(var i = 0; i<res.data['tags'].length; i++) {
-            var cls = res.data['tags'][i];
-            this.addClass(cls);
+          //console.log(Object.keys(JSON.parse(res.data['tags'])))
+          // readJsonObject(JSON.parse(res.data['tags']))
+          for(var i = 0; i<Object.keys(JSON.parse(res.data['tags'])).length; i++) {          
+            for(var j = 0; j<Object.keys(Object.keys(JSON.parse(res.data['tags']))[i]).length; j++) {
+              var cls = Object.keys(Object.keys(JSON.parse(res.data['tags']))[i])[j];
+              console.log(cls);
+              this.addClass(cls);
+            }
           }
           ////console.log(res.data['testo_iniziale']);
         })
@@ -44,4 +49,30 @@ export default {
   }
 
 };
+
+// function readJsonObject(jsonObject) {
+//   if (Array.isArray(jsonObject)) {
+//     for (var el of jsonObject) {
+//       readJsonObject(el)
+//     }
+//     return
+//   } else if (typeof jsonObject === 'object' && jsonObject.constructor === Object) {
+//     for (var key of Object.keys(jsonObject)) {
+//       var value = jsonObject[key];
+//       var toDisplay;
+
+//       if (value && typeof value === 'object' && value.constructor === Object) {
+//         toDisplay = readJsonObject(value);
+//       } else if (Array.isArray(value)) {
+//         toDisplay = JSON.stringify(value);
+//         readJsonObject(value);
+//       } else {
+//         toDisplay = value;
+//       }
+//      console.log(key + ": " + toDisplay);
+//     }
+//   }
+
+//   return jsonObject;
+// }
 </script>
