@@ -10,7 +10,7 @@ class TokenManager {
       end: t[1],
       text: t[2],
     }));
-    this.words = tokens.map(t => t[2]); 
+    this.words = tokens.map(t => t[2]);
   }
 
   /**
@@ -27,7 +27,7 @@ class TokenManager {
     console.log(start);
     console.log(end);
     this.recursiveAddNewBlock(start, end, _class, this.tokens);
-    console.log(this.tokens)
+    //console.log(this.tokens)
   }
   recursiveAddNewBlock(start, end, _class, _tokens) {
     let selectedTokens = null;
@@ -57,28 +57,35 @@ class TokenManager {
           classId: _class && _class.id ? _class.id : 0,
           backgroundColor: _class && _class.color ? _class.color : null,
         }
-        console.log("da array")
-        console.log(selectedTokens);
+        //console.log("da array")
+        //console.log(selectedTokens);
         _tokens.splice(first_index, selectedTokens.length, newTokenBlock);
       }
-    } else if (_tokens.start >= start && _tokens.start <= end) {
+    } else if (_tokens.type === "token-block" && _tokens.start >= start && _tokens.end <= end) {
+      console.log(_tokens.start + " " + _tokens.end + " " + start + " " + end)
+      if (start <= _tokens.start && end >= _tokens.end)
+        console.log("tokenblock")
+      return _tokens;
+    } else if (_tokens.type === "token" && _tokens.start >= start && _tokens.start <= end) {
+      console.log(_tokens.start + " " + _tokens.end + " " + start + " " + end)
+      console.log("token")
       return _tokens;
     } else if (Array.isArray(_tokens.tokens)) {
       selectedTokens = []
       for (let child of _tokens.tokens) {
         let selected = this.recursiveAddNewBlock(start, end, _class, child);
         if (selected !== null)
-        selectedTokens.push(selected);
+          selectedTokens.push(selected);
       }
       if (selectedTokens.length) {
         let first_token_start = selectedTokens[0].start;
         //let last_token_start = selectedTokens[selectedTokens.length - 1].start;
         //console.log(first_token_start);
-        
+
         let first_index = _tokens.tokens.map(t => t.start).indexOf(first_token_start);
         //let last_index = selectedTokens.map(t => t.start).indexOf(last_token_start);
         //console.log(first_index);
-        
+
         let newTokenBlock = {
           type: "token-block",
           start: selectedTokens[0].start,
@@ -104,8 +111,8 @@ class TokenManager {
    * @param {Number} blockStart 'start' value of the token block to remove
    * @param {Number} blockEnd 'end' value of the token block to remove
    */
-  removeBlock(blockStart,blockEnd) {
-    this.recursiveRemoveBlock(blockStart,blockEnd,this.tokens)
+  removeBlock(blockStart, blockEnd) {
+    this.recursiveRemoveBlock(blockStart, blockEnd, this.tokens)
   }
   recursiveRemoveBlock(blockStart, blockEnd, _tokens) {
     let selectedBlock = null;
@@ -140,12 +147,10 @@ class TokenManager {
         console.log("da array")
         //console.log(_tokens);
       }
-    } 
-    else if (_tokens.type === "token-block" && _tokens.start === blockStart && _tokens.end === blockEnd) {
+    } else if (_tokens.type === "token-block" && _tokens.start === blockStart && _tokens.end === blockEnd) {
       console.log("t")
       return _tokens;
-    }
-    else if (Array.isArray(_tokens.tokens)) {
+    } else if (Array.isArray(_tokens.tokens)) {
       console.log("token-block")
       for (let child of _tokens.tokens) {
         let selected = this.recursiveRemoveBlock(blockStart, blockEnd, child);
