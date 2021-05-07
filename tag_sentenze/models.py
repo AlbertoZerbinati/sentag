@@ -74,15 +74,15 @@ class Sentenza(models.Model):
         # #print(tag_list)
         # return tag_list
 
-        import xmltodict
-        import json
+        # import xmltodict
+        # import json
         xml_string = self.schema_xml.read().decode('utf-8')
-        namespaces = {
-            'http://www.w3.org/2001/XMLSchema':None
-        }
-        print(json.dumps(xmltodict.parse(xml_string,namespaces=namespaces)))
-        return json.dumps(xmltodict.parse(xml_string,namespaces=namespaces))
-
+        # namespaces = {
+        #     'http://www.w3.org/2001/XMLSchema':None
+        # }
+        #print(json.dumps(xmltodict.parse(xml_string,namespaces=namespaces)))
+        #return json.dumps(xmltodict.parse(xml_string,namespaces=namespaces))
+        return xml_string
     # initialize the initial texts on first save()
     def save(self, *args, **kwargs):
         """On first save also initialize output_xml and initial_text"""

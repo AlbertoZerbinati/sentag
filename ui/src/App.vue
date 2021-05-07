@@ -26,24 +26,29 @@ export default {
     ...mapMutations(["setInputSentences","addClass"]),
   },
   created() {
+    //ottengo il numero sentenza dall'url
     const url = new URL(location.href)['pathname'];
     const numero_sentenza = url[url.length-2]
-    //console.log(numero_sentenza);
     axios
         .get("/api/"+numero_sentenza)
         .then((res) => {
+          //la risposta contiene:
+          //le parole della sentenza
           this.setInputSentences(res.data['testo_iniziale']);
+          //il titolo della sentenza
           this.title = res.data['nome'];
-          //console.log(Object.keys(JSON.parse(res.data['tags'])))
-          // readJsonObject(JSON.parse(res.data['tags']))
-          for(var i = 0; i<Object.keys(JSON.parse(res.data['tags'])).length; i++) {          
-            for(var j = 0; j<Object.keys(Object.keys(JSON.parse(res.data['tags']))[i]).length; j++) {
-              var cls = Object.keys(Object.keys(JSON.parse(res.data['tags']))[i])[j];
-              console.log(cls);
-              this.addClass(cls);
-            }
+
+          //i tag da parsare, perché passati come xsd string
+          let xml = res.data['tags']
+          console.log(xml)
+          let parser = new DOMParser();
+          let xmlDoc = parser.parseFromString(xml,"text/xml");
+          let elements = xmlDoc.getElementsByTagName("xs:element");
+          for (let element of elements) {
+            this.addClass(element.getAttribute("name"))
+            console.log(element.getAttribute("name"));
           }
-          ////console.log(res.data['testo_iniziale']);
+
         })
     .catch((err) => alert(err));
   }
