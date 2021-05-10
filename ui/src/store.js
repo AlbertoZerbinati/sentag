@@ -26,7 +26,7 @@ export const mutations = {
     state.inputSentences = payload.map((s, i) => ({ id: i, text: s }));
   },
   addClass(state, payload) {
-    let existing = state.classes.find((c) => c.name == payload);
+    let existing = state.classes.find((c) => c.name == payload[0]);
     if (existing) {
       return;
     }
@@ -35,7 +35,8 @@ export const mutations = {
     }, 0);
     state.classes.push({
       id: lastIndex + 1,
-      name: payload,
+      name: payload[0],
+      attributes: payload[1],
       color: niceColors[lastIndex % niceColors.length],
     });
     if (state.classes.length === 1) {

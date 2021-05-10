@@ -40,15 +40,49 @@ export default {
 
           //i tag da parsare, perché passati come xsd string
           let xml = res.data['tags']
-          console.log(xml)
+          //console.log(xml)
           let parser = new DOMParser();
           let xmlDoc = parser.parseFromString(xml,"text/xml");
-          let elements = xmlDoc.getElementsByTagName("xs:element");
-          for (let element of elements) {
-            this.addClass(element.getAttribute("name"))
-            console.log(element.getAttribute("name"));
+          let elements = xmlDoc.evaluate("//xs:element", xmlDoc, 
+            function(prefix) { 
+              if (prefix === 'xs') { 
+                return 'http://www.w3.org/2001/XMLSchema'; 
+              } else { 
+                return null; 
+                }},XPathResult.ANY_TYPE,null);
+          let element = elements.iterateNext(); //ROOT
+
+          while(element) {
+            element = elements.iterateNext();
+            if(element != null) {
+              let name = element.getAttribute('name');
+              //console.log(name);
+              
+              let attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']//xs:attribute', xmlDoc, 
+              function(prefix) { 
+                if (prefix === 'xs') { 
+                  return 'http://www.w3.org/2001/XMLSchema'; 
+                } else { 
+                  return null; 
+                  }},XPathResult.ANY_TYPE,null);
+              let attribute = attributes.iterateNext();
+              let attrs = []
+              while(attribute){
+                if(attribute != null) {
+                  let attr = attribute.getAttribute('name');
+                  //console.log(attr);
+                  attrs.push(attr);
+                }
+                attribute = attributes.iterateNext();
+              }
+              this.addClass([name,attrs])
+            }
+
+            //console.log("\n");
           }
 
+
+          //this.addClass(element.getAttribute("name"))
         })
     .catch((err) => alert(err));
   }

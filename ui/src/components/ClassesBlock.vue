@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-multiline">
+  <div class="columns is-multiline" v-if="!attr">
     <div class="tags is-medium">
       <div class="column is-one-half" v-for="cl in classes" :key="cl.id">
         <a
@@ -14,13 +14,29 @@
       </div>
     </div>
   </div>
+  <br>
+  <div class="columns is-multiline" v-if="attr">
+    <div class="tags is-medium">
+      <div class="column is-one-half" v-for="at in currentClass.attributes" :key="at.id">
+        <a
+          class="tag is-medium"
+        >
+          <span class="panel-icon color-box" :style="{ backgroundColor: currentClass.color }"></span>
+            {{ at }}
+        </a>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
+          // :style="{ border: cl.color}"   
+          // @click="setCurrentClass(cl.id)"
 import { mapState, mapMutations } from "vuex";
 
 export default {
   name: "ClassesBlock",
+  props:['attr'],
   computed: {
     ...mapState(["classes", "currentClass"]),
   },

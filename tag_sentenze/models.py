@@ -76,18 +76,19 @@ class Sentenza(models.Model):
 
         # import xmltodict
         # import json
-        xml_string = self.schema_xml.read().decode('utf-8')
         # namespaces = {
         #     'http://www.w3.org/2001/XMLSchema':None
         # }
         #print(json.dumps(xmltodict.parse(xml_string,namespaces=namespaces)))
         #return json.dumps(xmltodict.parse(xml_string,namespaces=namespaces))
+        xml_string = self.schema_xml.read().decode('utf-8')
         return xml_string
+        
     # initialize the initial texts on first save()
     def save(self, *args, **kwargs):
         """On first save also initialize output_xml and initial_text"""
         if not self.testo_taggato_xml:
-            self.testo_taggato_xml = self.sentenza.read().decode('utf-8').replace("\r\n", "\n")
+            self.testo_taggato_xml = self.sentenza.read().decode('utf-8').replace("\n", " ")
         if not self.testo_iniziale:
             self.testo_iniziale = self.testo_taggato_xml
         if not self.testo_taggato_html:
