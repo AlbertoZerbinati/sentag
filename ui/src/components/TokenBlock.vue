@@ -4,8 +4,8 @@
       :token="t" 
       v-for="t in token.tokens" 
       :key="t.start" />
-    <span class="tag is-light is-info is-small">
-      {{ token.label }}
+    <span class="tag is-light is-info is-small" >
+      <a @click="setCurrentBlock">{{ token.label }}</a>
       <a class="tag delete is-small is-danger" @click="$emit('remove-block', token.start)"></a>
     </span>
   </mark>
@@ -34,6 +34,11 @@ export default {
   },
   components: {
     Token
+  },
+  methods: {
+    setCurrentBlock(){
+      alert("ciao")
+    }
   }
 }
 </script>
