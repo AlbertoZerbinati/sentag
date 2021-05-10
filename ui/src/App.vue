@@ -26,22 +26,92 @@ export default {
     ...mapMutations(["setInputSentences","addClass"]),
   },
   created() {
+    //ottengo il numero sentenza dall'url
     const url = new URL(location.href)['pathname'];
     const numero_sentenza = url[url.length-2]
-    //console.log(numero_sentenza);
     axios
         .get("/api/"+numero_sentenza)
         .then((res) => {
+          //la risposta contiene:
+          //le parole della sentenza
           this.setInputSentences(res.data['testo_iniziale']);
+          //il titolo della sentenza
           this.title = res.data['nome'];
-          for(var i = 0; i<res.data['tags'].length; i++) {
-            var cls = res.data['tags'][i];
-            this.addClass(cls);
+
+          //i tag da parsare, perché passati come xsd string
+          let xml = res.data['tags']
+          //console.log(xml)
+          let parser = new DOMParser();
+          let xmlDoc = parser.parseFromString(xml,"text/xml");
+          let elements = xmlDoc.evaluate("//xs:element", xmlDoc, 
+            function(prefix) { 
+              if (prefix === 'xs') { 
+                return 'http://www.w3.org/2001/XMLSchema'; 
+              } else { 
+                return null; 
+                }},XPathResult.ANY_TYPE,null);
+          let element = elements.iterateNext(); //ROOT
+
+          while(element) {
+            element = elements.iterateNext();
+            if(element != null) {
+              let name = element.getAttribute('name');
+              //console.log(name);
+              
+              let attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']//xs:attribute', xmlDoc, 
+              function(prefix) { 
+                if (prefix === 'xs') { 
+                  return 'http://www.w3.org/2001/XMLSchema'; 
+                } else { 
+                  return null; 
+                  }},XPathResult.ANY_TYPE,null);
+              let attribute = attributes.iterateNext();
+              let attrs = []
+              while(attribute){
+                if(attribute != null) {
+                  let attr = attribute.getAttribute('name');
+                  //console.log(attr);
+                  attrs.push(attr);
+                }
+                attribute = attributes.iterateNext();
+              }
+              this.addClass([name,attrs])
+            }
+
+            //console.log("\n");
           }
-          ////console.log(res.data['testo_iniziale']);
+
+
+          //this.addClass(element.getAttribute("name"))
         })
     .catch((err) => alert(err));
   }
 
 };
+
+// function readJsonObject(jsonObject) {
+//   if (Array.isArray(jsonObject)) {
+//     for (var el of jsonObject) {
+//       readJsonObject(el)
+//     }
+//     return
+//   } else if (typeof jsonObject === 'object' && jsonObject.constructor === Object) {
+//     for (var key of Object.keys(jsonObject)) {
+//       var value = jsonObject[key];
+//       var toDisplay;
+
+//       if (value && typeof value === 'object' && value.constructor === Object) {
+//         toDisplay = readJsonObject(value);
+//       } else if (Array.isArray(value)) {
+//         toDisplay = JSON.stringify(value);
+//         readJsonObject(value);
+//       } else {
+//         toDisplay = value;
+//       }
+//      console.log(key + ": " + toDisplay);
+//     }
+//   }
+
+//   return jsonObject;
+// }
 </script>

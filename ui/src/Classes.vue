@@ -1,7 +1,10 @@
 <template>
   <div class="panel">
     <div class="panel-block">
-      <classes-block />
+      <classes-block :attr="false"/>
+    </div>
+    <div class="panel-block">
+      <classes-block :attr="true"/>
     </div>
   </div>
 </template>
