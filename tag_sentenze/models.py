@@ -82,6 +82,12 @@ class Sentenza(models.Model):
         #print(json.dumps(xmltodict.parse(xml_string,namespaces=namespaces)))
         #return json.dumps(xmltodict.parse(xml_string,namespaces=namespaces))
         xml_string = self.schema_xml.read().decode('utf-8')
+        # stripped_xml_string = ""
+        # for line in xml_string.split('>'):
+        #     print(line)
+        #     if "<xs:element" in line or "<xs:attribute" in line:
+        #         stripped_xml_string += "\n"+line
+        #         print("YES")
         return xml_string
         
     # initialize the initial texts on first save()

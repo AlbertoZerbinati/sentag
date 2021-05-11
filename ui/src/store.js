@@ -26,10 +26,10 @@ export const mutations = {
     state.inputSentences = payload.map((s, i) => ({ id: i, text: s }));
   },
   addClass(state, payload) {
-    let existing = state.classes.find((c) => c.name == payload[0]);
-    if (existing) {
-      return;
-    }
+    // let existing = state.classes.find((c) => c.name == payload[0]);
+    // if (existing) {
+    //   return;
+    // }
     let lastIndex = state.classes.reduce((p, c) => {
       return c.id > p ? c.id : p;
     }, 0);
@@ -52,6 +52,9 @@ export const mutations = {
   setCurrentClass(state, payload) {
     state.currentClass = state.classes.find((c) => c.id === payload);
   },
+  // setCurrentBlock(state, payload) {
+  //   state.currentBlock = payload;
+  // },
   addAnnotation(state, payload) {
     state.annotations.push(payload);
   },
@@ -66,6 +69,7 @@ export default {
       inputSentences: [],
       annotations: [],
       currentClass: {},
+      //currentBlock: -1,
     };
   },
   getters,

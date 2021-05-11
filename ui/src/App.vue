@@ -49,69 +49,47 @@ export default {
                 return 'http://www.w3.org/2001/XMLSchema'; 
               } else { 
                 return null; 
-                }},XPathResult.ANY_TYPE,null);
-          let element = elements.iterateNext(); //ROOT
+                }},XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
 
-          while(element) {
-            element = elements.iterateNext();
-            if(element != null) {
-              let name = element.getAttribute('name');
-              //console.log(name);
-              
-              let attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']//xs:attribute', xmlDoc, 
+          for(let i = 1; i < elements.snapshotLength; i++) {
+            let element = elements.snapshotItem(i);
+            console.log(element);
+            let name = element.getAttribute('name');
+            //console.log(name);
+            //console.log('//xs:element[@name=\''+name+'\']/xs:complexType/xs:attribute')              
+            let attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']/xs:complexType/xs:attribute', xmlDoc, 
+            function(prefix) { 
+              if (prefix === 'xs') { 
+                return 'http://www.w3.org/2001/XMLSchema';
+              } else { 
+                return null;
+              }
+            },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+            if (attributes.snapshotLength == 0) {
+              attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']/xs:complexType/xs:simpleContent/xs:extension/xs:attribute', xmlDoc, 
               function(prefix) { 
                 if (prefix === 'xs') { 
                   return 'http://www.w3.org/2001/XMLSchema'; 
                 } else { 
                   return null; 
-                  }},XPathResult.ANY_TYPE,null);
-              let attribute = attributes.iterateNext();
-              let attrs = []
-              while(attribute){
-                if(attribute != null) {
-                  let attr = attribute.getAttribute('name');
-                  //console.log(attr);
-                  attrs.push(attr);
                 }
-                attribute = attributes.iterateNext();
-              }
-              this.addClass([name,attrs])
+              },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
             }
-
+            let attrs = []
+            for(let i = 0; i < attributes.snapshotLength; i++) {
+              let attribute = attributes.snapshotItem(i); 
+              let attr = attribute.getAttribute('name');
+              //console.log(attr);
+              attrs.push(attr);
+            }
+            this.addClass([name,attrs])
+            element.setAttribute('name','CONSUMED')
+            
             //console.log("\n");
           }
-
-
-          //this.addClass(element.getAttribute("name"))
         })
     .catch((err) => alert(err));
   }
 
 };
-
-// function readJsonObject(jsonObject) {
-//   if (Array.isArray(jsonObject)) {
-//     for (var el of jsonObject) {
-//       readJsonObject(el)
-//     }
-//     return
-//   } else if (typeof jsonObject === 'object' && jsonObject.constructor === Object) {
-//     for (var key of Object.keys(jsonObject)) {
-//       var value = jsonObject[key];
-//       var toDisplay;
-
-//       if (value && typeof value === 'object' && value.constructor === Object) {
-//         toDisplay = readJsonObject(value);
-//       } else if (Array.isArray(value)) {
-//         toDisplay = JSON.stringify(value);
-//         readJsonObject(value);
-//       } else {
-//         toDisplay = value;
-//       }
-//      console.log(key + ": " + toDisplay);
-//     }
-//   }
-
-//   return jsonObject;
-// }
 </script>

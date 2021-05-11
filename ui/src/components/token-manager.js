@@ -4,6 +4,7 @@ class TokenManager {
    * @param {Array} tokens
    */
   constructor(tokens) {
+    this.currentID = 0; //univocal identifier
     this.tokens = tokens.map((t) => ({
       type: "token",
       start: t[0],
@@ -56,8 +57,10 @@ class TokenManager {
           tokens: selectedTokens,
           label: _class && _class.name ? _class.name : "Unlabelled",
           classId: _class && _class.id ? _class.id : 0,
+          id:this.currentID,
           backgroundColor: _class && _class.color ? _class.color : null,
         }
+        this.currentID += 1;
         //rimpiazzo ogni token selezionato col nuovo TOKEN-BLOCK (che li contiene)
         _tokens.splice(first_index, selectedTokens.length, newTokenBlock);
       }
@@ -95,8 +98,10 @@ class TokenManager {
           tokens: selectedTokens,
           label: _class && _class.name ? _class.name : "Unlabelled",
           classId: _class && _class.id ? _class.id : 0,
+          id:this.currentID,
           backgroundColor: _class && _class.color ? _class.color : null,
         }
+        this.currentID += 1;
         _tokens.tokens.splice(first_index, selectedTokens.length, newTokenBlock);
         //per evitare di far aggiungere TOKEN-BLOCK a livelli ricorsivi precedenti, comunico che i tokens sono stati
         //trasformati in token-blocks settando selectedTokens a null

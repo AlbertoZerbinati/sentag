@@ -12,7 +12,7 @@
         @remove-block="removeBlock"
       />
     <span class="tag is-light is-info is-small">
-      <a @click="setCurrentBlock">{{ token.label }}</a>
+      <a @click="setCurrentBlock(token)">{{ token.label }}</a>
       <a class="tag delete is-small is-danger" @click="$emit('remove-block', {start:token.start, end:token.end})"></a>
     </span>
   </mark>
@@ -46,8 +46,8 @@ export default {
     removeBlock: function(data) {
       this.$emit("remove-block",data)
     },
-    setCurrentBlock(){
-      alert("ciao")
+    setCurrentBlock(t){
+      console.log(t)
     }
   }
 }
