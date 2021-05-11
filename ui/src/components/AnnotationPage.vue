@@ -40,6 +40,7 @@
 
 <script>
 import { mapState } from "vuex";
+import { toast } from "bulma-toast"
 import axios from "../axios";
 import Token from "./Token";
 import TokenBlock from "./TokenBlock";
@@ -50,11 +51,12 @@ export default {
   name: "AnnotationPage",
   data: function() {
     return {
-      tm: new TokenManager([]),
+      tm: {},
       currentSentence: {},
+      
     };
   },
-  props: ['title'],
+  props: ['title','oldtm'],
   components: {
     Token,
     TokenBlock,
@@ -69,9 +71,12 @@ export default {
     }
   },
   created() {
-    if (this.inputSentences.length) {
+    console.log(this.oldtm.length)
+    if(this.oldtm.length)
+      this.tm = new TokenManager([],JSON.parse(this.oldtm))
+    else 
       this.tokenizeCurrentSentence();
-    }
+
     document.addEventListener("mouseup", this.selectTokens);
   },
   beforeUnmount() {
@@ -143,14 +148,54 @@ export default {
       this.tm.resetBlocks();
     },
     saveTags() {
+      //let tmjson = JSON.stringify(this.tm);
+      //console.log(tmjson);
+      
+      // ( PROOF OF WORK
+      // this.tm = new TokenManager({}, JSON.parse(tmjson));
+      // console.log(this.tm); )
+
+      //retrieve sentenza number
+      const url = new URL(location.href)['pathname'];
+      const numero_sentenza = url[url.length-2]
+
+      //retrieve CSRF_TOKEN
+      function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken'); 
       axios
-        .post("/detokenize/", { tokens: this.tm.words })
-        .then((res) => {
-          this.$store.commit("addAnnotation", [
-            res.data.text,
-            { entities: this.tm.exportAsAnnotation() },
-          ]);
-        })
+        .post(
+          "/api/update/"+numero_sentenza, 
+          JSON.stringify(this.tm),
+          {  
+            headers: {
+              "X-CSRFToken": csrftoken,
+              "content-type": "application/json"
+          }}
+        )
+        .then(
+          toast({
+            message:'Annotations saved',
+            type:'is-success',
+            dismissible:'true',
+            pauseOnHover:'true',
+            duration:2000,
+            position:'bottom-right'
+          })
+        )
         .catch((e) => {
           console.log(e);
         });

@@ -53,41 +53,12 @@ class Sentenza(models.Model):
         upload_to='uploads/', help_text='Scegli il file xml da utilizzare.')  # MEDIA_ROOT/uploads
     completed = models.BooleanField(default=False)
     testo_iniziale = models.TextField(blank=True)
-    testo_taggato_html = models.TextField(blank=True)
     testo_taggato_xml = models.TextField(blank=True)
+    token_manager = models.TextField(blank=True)
 
     @property
     def tags(self):
-        # import xml.etree.ElementTree as et
-        # #create tag list
-        # xml_file = self.schema_xml.read().decode('utf-8')
-
-        # #print(xml_file.strip())
-        # xml_tree = et.fromstring(xml_file)
-        # tag_list = []
-        # for elem in xml_tree.iter():
-        #     print(elem.tag)
-        #     print(elem.get('name'))
-        #     if elem.get('name'):
-        #         tag_list.append(elem.get('name'))
-
-        # #print(tag_list)
-        # return tag_list
-
-        # import xmltodict
-        # import json
-        # namespaces = {
-        #     'http://www.w3.org/2001/XMLSchema':None
-        # }
-        #print(json.dumps(xmltodict.parse(xml_string,namespaces=namespaces)))
-        #return json.dumps(xmltodict.parse(xml_string,namespaces=namespaces))
         xml_string = self.schema_xml.read().decode('utf-8')
-        # stripped_xml_string = ""
-        # for line in xml_string.split('>'):
-        #     print(line)
-        #     if "<xs:element" in line or "<xs:attribute" in line:
-        #         stripped_xml_string += "\n"+line
-        #         print("YES")
         return xml_string
         
     # initialize the initial texts on first save()
@@ -97,8 +68,6 @@ class Sentenza(models.Model):
             self.testo_taggato_xml = self.sentenza.read().decode('utf-8').replace("\n", " ")
         if not self.testo_iniziale:
             self.testo_iniziale = self.testo_taggato_xml
-        if not self.testo_taggato_html:
-            self.testo_taggato_html = self.testo_taggato_xml
 
         super(Sentenza, self).save(*args, **kwargs)
 

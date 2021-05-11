@@ -3,16 +3,24 @@ class TokenManager {
    *
    * @param {Array} tokens
    */
-  constructor(tokens) {
-    this.currentID = 0; //univocal identifier
-    this.tokens = tokens.map((t) => ({
-      type: "token",
-      start: t[0],
-      end: t[1],
-      text: t[2],
-    }));
-    this.words = tokens.map(t => t[2]);
-    this.initialTokens = this.tokens.slice(); //SHALLOW COPY
+  constructor(tokens, oldTM) { //manage the recreation from an old TM
+    if (arguments.length == 1) {
+      this.currentID = 0; //univocal identifier
+      this.tokens = tokens.map((t) => ({
+        type: "token",
+        start: t[0],
+        end: t[1],
+        text: t[2],
+      }));
+      this.words = tokens.map(t => t[2]);
+      this.initialTokens = this.tokens.slice(); //SHALLOW COPY
+    }
+    else { //in case an oldTM is available
+      this.currentID = oldTM.currentID; //univocal identifier
+      this.tokens = oldTM.tokens
+      this.words = oldTM.words;
+      this.initialTokens = oldTM.initialTokens; //SHALLOW COPY
+    }
   }
 
   /**

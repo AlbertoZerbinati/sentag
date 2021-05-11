@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AnnotationPage :title="title"/>
+    <AnnotationPage v-if="go" :title="title" :oldtm="oldtm"/>
   </div>
 </template>
 
@@ -17,6 +17,8 @@ export default {
     return {
       currentPage: "annotator",
       title: "",
+      oldtm: "",
+      go:false,
     };
   },
   components: {
@@ -38,6 +40,9 @@ export default {
           //il titolo della sentenza
           this.title = res.data['nome'];
 
+          this.oldtm = res.data['token_manager'];
+          // console.log(this.oldtm)
+
           //i tag da parsare, perché passati come xsd string
           let xml = res.data['tags']
           //console.log(xml)
@@ -53,7 +58,7 @@ export default {
 
           for(let i = 1; i < elements.snapshotLength; i++) {
             let element = elements.snapshotItem(i);
-            console.log(element);
+            //console.log(element);
             let name = element.getAttribute('name');
             //console.log(name);
             //console.log('//xs:element[@name=\''+name+'\']/xs:complexType/xs:attribute')              
@@ -87,6 +92,7 @@ export default {
             
             //console.log("\n");
           }
+          this.go=true;
         })
     .catch((err) => alert(err));
   }
