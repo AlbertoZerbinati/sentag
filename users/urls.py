@@ -5,5 +5,8 @@ from . import views
 app_name = 'users'
 
 urlpatterns = [
-    path("", views.editor_page, name="editor_page")
+    path("", views.editor_page, name="editor_page"),
+    path("user/<int:id>", views.user_permission, name="user-permission"),
+    path("add_permission/<str:utente>", views.add_permission, name="add-permission"),
+    path("remove_permission/<str:utente>", views.remove_permission, name="remove-permission")
 ]

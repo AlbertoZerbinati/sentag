@@ -22,10 +22,22 @@ def index(request):
 
 @login_required
 def list_sentenze(request):
-    context = {
-        'sentenze': Sentenza.objects.all()
-    }
-    return render(request, 'tag_sentenze/list_sentenze.html', context=context)
+    
+    current_user = request.user
+    sentenze = Sentenza.objects.all()
+
+    #admins and editors has access to all the sentenze
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():   
+        context = {
+            'sentenze': sentenze
+        }
+        return render(request, 'tag_sentenze/list_sentenze.html', context=context)
+    #taggatori has access only to their set of sentenze, so they will see a list of this set
+    else:
+        sentenze_user = current_user.profile.permission.all()
+        print('Current user: ', current_user)
+        print('Permission: ', sentenze_user)
+        return render(request, 'tag_sentenze/list_sentenze.html', {'sentenze': sentenze_user})
 
 @login_required
 def new_sentenza(request):
@@ -60,10 +72,30 @@ def tag_sentenza(request, id):
     except Sentenza.DoesNotExist:
         raise Http404("La sentenza non esiste")
 
-    context = {
-        'nome_s':sentenza.nome,
-    }
-    return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
+    current_user = request.user
+    user_permission = current_user.profile.permission.all()
+
+    #admins and editors has access to all the sentenze
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        print("Admin/Editor access")
+
+        context = {
+            'nome_s':sentenza.nome,
+        }
+        return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
+    #taggatori has access only to their set of sentenze
+    elif sentenza in user_permission:
+        print('Taggatore access with permission')
+
+        context = {
+            'nome_s':sentenza.nome,
+        }
+        return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
+    else:
+        print('Taggatori access with no permission')
+        return render(request, 'tag_sentenze/no_permission.html')
+
+
 
 # APIs
 from rest_framework.decorators import api_view

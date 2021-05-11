@@ -1,0 +1,95 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+    User {{ selected_user }}
+{% endblock %}
+
+{% block script %}
+    <script>
+        $(document).ready(function () {
+            var csrf = $("input[name=csrfmiddlewaretoken]").val()
+            $(".add-button").click(function () {
+                $.ajax({
+                    url: "{% url 'users:add-permission' selected_user %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenza: $(this).attr('id'),
+                        selected_user: "{{ selected_user }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+            
+            $(".remove-button").click(function () {
+                $.ajax({
+                    url: "{% url 'users:remove-permission' selected_user %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenza: $(this).attr('id'),
+                        selected_user: "{{ selected_user }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+        })
+    </script>
+{% endblock %}
+
+{% block sidebar %}
+    <div class="navbar navbar-expand-lg">
+        <div class="navbar-brand mx-auto">
+            <h4 class="title" style="text-align: center;">Utenti</h4>
+        </div>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link"  href="/register">Add</a>
+        </div>
+    </div>
+    {% for user in lista_users %}
+        <p>
+            <a class="nav-item nav-link" href="{% url 'users:user-permission' user.id %}">{{ user }}</a>
+        </p>
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">Editor Page</h2>
+    <div class="border-yop pt-3">
+        User {{ selected_user }} permissions:
+    </div>
+    <div>
+        {% for elem in permission %}
+            <p>
+                {{ elem }}
+                <button id="{{ elem }}" type="button" class="remove-button">Remove</button>
+            </p>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block graph %}
+    <div>
+        <h4 class="title">Sentenze</h4>
+    </div>
+    {% for sentenza in sentenze %}
+        <p>
+            {{ sentenza.nome }}
+            <button id="{{ sentenza.nome }}" type="button" class="add-button">Add</button>
+        </p>
+    {% endfor %}
+{% endblock %}

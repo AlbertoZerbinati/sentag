@@ -23,3 +23,27 @@
 .sticky-top {
     top: 6px;
 }
+
+.add-button {
+    background-color: white; /* Green */
+    border: 3px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 12px;
+    padding: 5px 8px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}
+
+.remove-button {
+    background-color: white; /* Green */
+    border: 3px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 12px;
+    padding: 5px 8px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+}

@@ -12,10 +12,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="{% static 'tag_sentenze/styles.css' %}" rel="stylesheet">
     <link href="{% static 'tag_sentenze/favicon.png' %}" rel="icon">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    {% block script %} {% endblock %}
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-toggleable-md navbar-dark bg-dark">
         <div class="navbar-nav">
             {% if user.is_authenticated %}
                 {% if user.is_staff %}
@@ -45,17 +48,11 @@
     
     <div class="container-fluid px-2">
         <div class="row gx-2 top-buffer">
+            {% csrf_token %}
             <div class="col col-sm-3 sticky-top">
                 <div class="p-2 no-border sticky-top">{% block sidebar %} {% endblock %}</div>
             </div>
             <div class="col col-sm-6">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
                 <div class="p-2 no-border">{% block content %} {% endblock %}</div>
             </div>
             <div class="col col-sm-3 ">
