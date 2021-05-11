@@ -19,7 +19,7 @@
   <div v-if="attr">
     <div class="field is-horizontal" v-for="at in currentClass.attributes" :key="at.id">
       <div class="field-label is-normal">
-        <label class="label" :style="{color: currentClass.color }">{{at}}</label>
+        <label class="label tag is-dark" :style="{color: currentClass.color }">{{at}}</label>
       </div>
       <div class="field-body">
         <div class="field">

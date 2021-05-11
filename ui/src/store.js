@@ -1,16 +1,19 @@
 const niceColors = [
-  "#FFF49CCA", //giallo
-  "#FCD060CA", //giallo scuro
-  "#D2FFD5CA", //verde chiaro
-  "#85DE77CA", //verde
-  "#8DA290CA", //verde scuro
-  "#B8E1EDCA", //azzurro
+  "#FFEE00", //giallo
+  "#FCD060", //giallo scuro
+  "#B4FFB3", //verde chiaro
+  "#85DE77", //verde
+  "#8DA290", //verde scuro
+  "#B8E1ED", //azzurro
   "#95B4CC", //turchese
+  "#63CBBF", //cobalto
   "#4F9EC4", //blu
   "#9375C3", //viola
-  "#E0CAED", //violetto
+  "#D95DEA", //fucsia
+  "#C7A4DA", //violetto
   "#FFB8DE", //rosa
-  "#FF756D", //rosso
+  "#FF5147", //rosso
+  "#B22E56", //bordeaux
   "#f7933b", //arancio
   "#DFA995", //marrone
   "#D5D5D5", //grigio (15)
