@@ -14,6 +14,7 @@
               :token="t"
               :key="t.start"
               :backgroundColor="t.backgroundColor"
+              :isCurrent="t.id === currentBlock.id"
               @remove-block="onRemoveBlock"
             />
           </div>
@@ -39,7 +40,7 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
+import { mapState, mapMutations } from "vuex";
 import { toast } from "bulma-toast"
 import axios from "../axios";
 import Token from "./Token";
@@ -47,13 +48,13 @@ import TokenBlock from "./TokenBlock";
 import TokenManager from "./token-manager";
 import Export from "./Export.vue";
 
+
 export default {
   name: "AnnotationPage",
   data: function() {
     return {
       tm: {},
       currentSentence: {},
-      
     };
   },
   props: ['title','oldtm'],
@@ -63,7 +64,7 @@ export default {
     Export,
   },
   computed: {
-    ...mapState(["inputSentences", "classes", "annotations", "currentClass"]),
+    ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock"]),
   },
   watch: {
     inputSentences() {
@@ -71,11 +72,12 @@ export default {
     }
   },
   created() {
-    console.log(this.oldtm.length)
-    if(this.oldtm.length)
+    //console.log(this.oldtm.length)
+    if(this.oldtm.length) {
       this.tm = new TokenManager([],JSON.parse(this.oldtm))
-    else 
+    } else { 
       this.tokenizeCurrentSentence();
+    }
 
     document.addEventListener("mouseup", this.selectTokens);
   },
@@ -83,6 +85,7 @@ export default {
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
+    ...mapMutations(["setCurrentBlock"]),
     tokenizeCurrentSentence() {
       this.currentSentence = this.inputSentences[0];
 
@@ -103,9 +106,6 @@ export default {
       }
 
       this.tm = new TokenManager(tokens);
-
-      //for each annotation in this.$store.annotations
-      //    this.tm.addNewBlock(annotation.startIdx, annotation.endIdx, annotation.class);
     },
     selectTokens() {
       //console.log(this.classes);
@@ -128,28 +128,23 @@ export default {
         console.log("selected text were not tokens");
         return;
       }
-
-      if (!this.classes.length && selection.anchorNode) {
-        alert(
-          "There are no Tags available. Kindly add some Tags before tagging."
-        );
-        selection.empty();
-        return;
+      let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
+      if(cb) {
+        this.$store.commit('setCurrentBlock',cb);
       }
-
-      this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
       selection.empty();
     },
     onRemoveBlock(data) {
       this.tm.removeBlock(data.start,data.end);
+      this.setCurrentBlock(new Object());
     },
     resetBlocks() {
       if(confirm("Are you sure you want to reset ALL the annotations? The unsaved work will be lost"))
       this.tm.resetBlocks();
     },
     saveTags() {
-      //let tmjson = JSON.stringify(this.tm);
-      //console.log(tmjson);
+      // let tmjson = JSON.stringify(this.tm);
+      // console.log(tmjson);
       
       // ( PROOF OF WORK
       // this.tm = new TokenManager({}, JSON.parse(tmjson));
@@ -183,7 +178,8 @@ export default {
           {  
             headers: {
               "X-CSRFToken": csrftoken,
-              "content-type": "application/json"
+              "content-type": "application/json",
+              // "Access-Control-Allow-Origin": "*"
           }}
         )
         .then(

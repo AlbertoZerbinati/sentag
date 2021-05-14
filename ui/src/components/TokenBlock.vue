@@ -1,7 +1,10 @@
 <template>
-  <mark class="is-multiline is-rounded" 
+  <mark 
+    class="is-multiline is-rounded"
     :style="{backgroundColor:backgroundColor}"
     :id="'tb' + token.start"
+    :class="{ 'current': isCurrent}"
+    @click.stop="setCurrentBlock(token)"
     >
       <component 
         v-for="t in token.tokens" 
@@ -9,17 +12,23 @@
         :token="t" 
         :key="t.start" 
         :backgroundColor="t.backgroundColor"
+        :isCurrent="t.id === currentBlock.id"
         @remove-block="removeBlock"
       />
-    <span class="tag is-light is-info is-small">
-      <a @click="setCurrentBlock(token)">{{ token.label }}</a>
-      <a class="tag delete is-small is-danger" @click="$emit('remove-block', {start:token.start, end:token.end})"></a>
+    <span class="tag is-light is-info is-small"
+    >
+      <span><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{ token.label }}</strong></span>
+      
+      <a class="tag delete is-small is-danger" 
+      @click.stop="$emit('remove-block', {start:token.start, end:token.end}); ">
+      </a>
     </span>
   </mark>
 </template>
 
 <script>
 import Token from "./Token";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   name: "TokenBlock",
@@ -37,17 +46,22 @@ export default {
     backgroundColor: {
       type: String,
       required: false
+    },
+    isCurrent:{
+      type: Boolean,
+      required: true
     }
+  },
+  computed: {
+    ...mapState(["currentBlock"]),
   },
   components: {
     Token
   },
   methods: {
+    ...mapMutations(["setCurrentBlock"]),
     removeBlock: function(data) {
       this.$emit("remove-block",data)
-    },
-    setCurrentBlock(t){
-      console.log(t)
     }
   }
 }
@@ -58,6 +72,8 @@ mark {
   padding: 0.3rem;
   position: relative;
   border-radius:8px;
+  cursor: pointer;
+
   &::after {
     content: var(--tag);
     padding: 0.2rem;
@@ -67,5 +83,8 @@ mark {
 }
 .delete {
   margin-left: 4px;
+}
+.current {
+  border: 3px solid yellow;
 }
 </style>

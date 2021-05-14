@@ -9,11 +9,11 @@ const niceColors = [
   "#63CBBF", //cobalto
   "#4F9EC4", //blu
   "#9375C3", //viola
-  "#D95DEA", //fucsia
+  "#E078ED", //fucsia
   "#C7A4DA", //violetto
   "#FFB8DE", //rosa
-  "#FF5147", //rosso
-  "#B22E56", //bordeaux
+  "#F65151", //rosso
+  "#CB3461", //bordeaux
   "#f7933b", //arancio
   "#DFA995", //marrone
   "#D5D5D5", //grigio (15)
@@ -55,9 +55,9 @@ export const mutations = {
   setCurrentClass(state, payload) {
     state.currentClass = state.classes.find((c) => c.id === payload);
   },
-  // setCurrentBlock(state, payload) {
-  //   state.currentBlock = payload;
-  // },
+  setCurrentBlock(state, payload) {
+    state.currentBlock = payload;
+  },
   addAnnotation(state, payload) {
     state.annotations.push(payload);
   },
@@ -72,7 +72,7 @@ export default {
       inputSentences: [],
       annotations: [],
       currentClass: {},
-      //currentBlock: -1,
+      currentBlock: {},
     };
   },
   getters,
