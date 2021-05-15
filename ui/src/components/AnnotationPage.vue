@@ -55,6 +55,7 @@ export default {
     return {
       tm: {},
       currentSentence: {},
+      unsavedWork: false,
     };
   },
   props: ['title','oldtm'],
@@ -80,8 +81,11 @@ export default {
     }
 
     document.addEventListener("mouseup", this.selectTokens);
+    window.onbeforeunload = () => (this.unsavedWork ? true : null);
+
   },
   beforeUnmount() {
+      console.log(this.unsavedWork)
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
@@ -133,14 +137,17 @@ export default {
         this.$store.commit('setCurrentBlock',cb);
       }
       selection.empty();
+      this.unsavedWork = true;
     },
     onRemoveBlock(data) {
       this.tm.removeBlock(data.start,data.end);
       this.setCurrentBlock(new Object());
+      this.unsavedWork = true;
     },
     resetBlocks() {
       if(confirm("Are you sure you want to reset ALL the annotations? The unsaved work will be lost"))
       this.tm.resetBlocks();
+      this.unsavedWork = true;
     },
     saveTags() {
       // let tmjson = JSON.stringify(this.tm);
@@ -190,7 +197,8 @@ export default {
             pauseOnHover:'true',
             duration:2000,
             position:'bottom-right'
-          })
+          }),
+          this.unsavedWork = false
         )
         .catch((e) => {
           console.log(e);

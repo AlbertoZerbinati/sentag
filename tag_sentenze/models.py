@@ -4,46 +4,6 @@ from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 
-# Create your models here.
-# from lxml import etree
-# SCHEMA_SPACE = "{http://www.w3.org/2001/XMLSchema}"
-# class Schema:
-#     def __init__(self, schemafile):
-#         self.root = etree.parse(schemafile)
-#         for el in self.root.iter():
-#             print(el.tag)
-
-#     def findall(self, path):
-#         print("findall:  ", path.replace("xs:",SCHEMA_SPACE))
-#         return self.root.findall(path.replace("xs:", SCHEMA_SPACE))
-
-#     def find(self, path):
-#         return self.root.find(path.replace("xs:", SCHEMA_SPACE))
-
-#     def names_of(self, nodes):
-#         return [node.get("name") for node in nodes]
-
-#     def get_Types(self, t_name):
-#         return self.names_of(self.findall(t_name))
-
-#     def get_simpleTypes(self):
-#         return self.get_Types("xs:element")
-
-#     def get_complexTypes(self):
-#         return self.get_Types("xs:complexType")
-
-#     def get_elements_of_attribute(self, attribute):
-#         return self.names_of(self.findall(".//xs:element/xs:complexType/xs:" + attribute + "/../.."))
-
-#     def get_element_attributes(self, name):
-#         node = self.find(".//xs:element[@name='" + name + "']")
-#         if node is None:
-#             node = self.find(".//xs:complexType[@name='" + name + "']")
-#         if node is None:
-#             return None
-#         else:
-#             return node.attrib
-
 class Sentenza(models.Model):
     # Fields
     nome = models.CharField(max_length=30, unique=True)

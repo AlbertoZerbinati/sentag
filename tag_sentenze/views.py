@@ -81,15 +81,19 @@ def sentenza_detail(request, id):
     serializer = SentenzaSerializer(sentenza, many=False)
     return Response(serializer.data)
 
-@login_required
-@api_view(['POST'])
+@api_view(['POST','GET'])
 def update_sentenza(request, id):
+    #print(request.method)
+    if request.method == 'GET':
+        return redirect('/sentenze/')
+
     try:
         sentenza = Sentenza.objects.get(pk=id)
     except Sentenza.DoesNotExist:
         raise Http404("La sentenza non esiste")
-    serializer = SentenzaSerializer(instance=sentenza, data={'token_manager':str(request.data).replace("\'",'\"')}, partial=True, many=False)
+
+    serializer = SentenzaSerializer(instance=sentenza, data={'token_manager':str(request.data).replace("\'",'\"').replace("None","null")}, partial=True, many=False)
     if serializer.is_valid():
         #print("ISVALID")
         serializer.save();
-    return Response()
+    return HttpResponse("Updated")
