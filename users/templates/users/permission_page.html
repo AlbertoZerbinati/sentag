@@ -6,8 +6,24 @@
 
 {% block script %}
     <script>
+
+        //function to set all the checkboxes to false after refreshing the page
+        function clearAll(name) {
+            var inputs = document.querySelectorAll(name);
+            for(var i=0; i<inputs.length; i++)
+                inputs[i].checked = false;
+        }
+
+        //function to select all the checkboxes
+        function selectAll(name) {
+            var inputs = document.querySelectorAll(name);
+            for(var i=0; i<inputs.length; i++)
+                inputs[i].checked = true;
+        }
+
         $(document).ready(function () {
             var csrf = $("input[name=csrfmiddlewaretoken]").val()
+            //add a single sentenza to the current user's permission list
             $(".add-button").click(function () {
                 $.ajax({
                     url: "{% url 'users:add-permission' selected_user %}",
@@ -28,6 +44,7 @@
                 })
             })
             
+            //remove a single sentenza to the current user's permission list
             $(".remove-button").click(function () {
                 $.ajax({
                     url: "{% url 'users:remove-permission' selected_user %}",
@@ -41,6 +58,69 @@
                         console.log(response)
                         window.location.href = 'REDIRECT_URL'
                         window.location.reload() //refresh the page
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+
+            //add a list of sentenze to the current user's permission list
+            $("#add_selected").click(function () {
+                var inputs = document.querySelectorAll('.check-add');
+                var lista_sentenze = [];
+                for(var i=0; i<inputs.length; i++) {
+                    if(inputs[i].checked) {
+                        var id = inputs[i].id;
+                        var new_sentenza = id.substring(7);
+                        lista_sentenze.push(new_sentenza);
+                    }
+                }
+                console.log(lista_sentenze);
+                $.ajax({
+                    url: "{% url 'users:add-permission-list' selected_user %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenze: JSON.stringify(lista_sentenze),
+                        selected_user: "{{ selected_user }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                        clearAll('.check-add');
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+
+            //remove a list of sentenze to the current user's permission list
+            $("#remove_selected").click(function () {
+                var inputs = document.querySelectorAll('.check-remove');
+                var lista_sentenze = [];
+                for(var i=0; i<inputs.length; i++) {
+                    if(inputs[i].checked) {
+                        var id = inputs[i].id;
+                        var new_sentenza = id.substring(7);
+                        lista_sentenze.push(new_sentenza);
+                    }
+                }
+                $.ajax({
+                    url: "{% url 'users:remove-permission-list' selected_user %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenze: JSON.stringify(lista_sentenze),
+                        selected_user: "{{ selected_user }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                        clearAll('.check-remove');
                     },
                     error: function(response) {
                         alert("error");
@@ -72,24 +152,30 @@
     <div class="border-yop pt-3">
         User {{ selected_user }} permissions:
     </div>
+    <button type="button" id="rselect_all" onclick="selectAll('.check-remove')">Select All</button>
     <div>
         {% for elem in permission %}
-            <p>
+            <div>
+                <input type="checkbox" id="rcheck_{{ elem }}" class="check-remove">
                 {{ elem }}
-                <button id="{{ elem }}" type="button" class="remove-button">Remove</button>
-            </p>
+                <button id="{{ elem }}" type="button" class="remove-button" style="float: right;">Remove</button>
+            </div>
         {% endfor %}
     </div>
+    <button type="button" id="remove_selected">Remove Selected</button>
 {% endblock %}
 
 {% block graph %}
     <div>
         <h4 class="title">Sentenze</h4>
     </div>
+    <button type="button" id="aselect_all" onclick="selectAll('.check-add')">Select All</button>
     {% for sentenza in sentenze %}
-        <p>
+        <div>
+            <input type="checkbox" id="acheck_{{ sentenza.nome }}" class="check-add">
             {{ sentenza.nome }}
-            <button id="{{ sentenza.nome }}" type="button" class="add-button">Add</button>
-        </p>
+            <button id="{{ sentenza.nome }}" type="button" class="add-button" style="float: right;">Add</button>
+        </div>
     {% endfor %}
+    <button type="button" id="add_selected">Add Selected</button>
 {% endblock %}
