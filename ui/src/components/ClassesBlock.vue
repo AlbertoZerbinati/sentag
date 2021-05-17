@@ -32,7 +32,7 @@
           <div class="field">
             <p class="control">
               <input 
-                @change="unsavedWork=true"
+                @keyup="setUnsavedWork(true)"
                 v-model="currentBlock.attrs[at]" 
                 class="input is-normal" 
                 type="text" >
@@ -56,7 +56,10 @@ export default {
     ...mapState(["classes", "currentClass", "currentBlock", "unsavedWork"]),
   },
   methods: {
-    ...mapMutations(["removeClass", "setCurrentClass"]),
+    ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork"]),
+    print(data) {
+      console.log(data)
+    }
   }
 };
 </script>

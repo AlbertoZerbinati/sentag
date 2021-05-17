@@ -58,6 +58,9 @@ export const mutations = {
   setCurrentBlock(state, payload) {
     state.currentBlock = payload;
   },
+  setUnsavedWork(state, payload) {
+    state.unsavedWork = payload;
+  },
   addAnnotation(state, payload) {
     state.annotations.push(payload);
   },

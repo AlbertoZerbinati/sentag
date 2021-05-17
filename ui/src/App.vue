@@ -30,7 +30,7 @@ export default {
   created() {
     //ottengo il numero sentenza dall'url
     const url = new URL(location.href)['pathname'];
-    const numero_sentenza = url[url.length-2]
+    const numero_sentenza = url.split('/')[2]
     axios
         .get("/api/"+numero_sentenza)
         .then((res) => {

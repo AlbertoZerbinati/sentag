@@ -87,7 +87,7 @@ export default {
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
-    ...mapMutations(["setCurrentBlock"]),
+    ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
     tokenizeCurrentSentence() {
       this.currentSentence = this.inputSentences[0];
 
@@ -135,17 +135,17 @@ export default {
         this.$store.commit('setCurrentBlock',cb);
       }
       selection.empty();
-      this.unsavedWork = true;
+      this.setUnsavedWork(true);
     },
     onRemoveBlock(data) {
       this.tm.removeBlock(data.start,data.end);
       this.setCurrentBlock(new Object());
-      this.unsavedWork = true;
+      this.setUnsavedWork(true);
     },
     resetBlocks() {
       if(confirm("Are you sure you want to reset ALL the annotations? The unsaved work will be lost"))
       this.tm.resetBlocks();
-      this.unsavedWork = true;
+      this.setUnsavedWork(true);
     },
     saveTags() {
       // let tmjson = JSON.stringify(this.tm);
@@ -157,7 +157,8 @@ export default {
 
       //retrieve sentenza number
       const url = new URL(location.href)['pathname'];
-      const numero_sentenza = url[url.length-2]
+      const numero_sentenza = url.split('/')[2]
+
 
       //retrieve CSRF_TOKEN
       function getCookie(name) {
@@ -196,7 +197,7 @@ export default {
             duration:2000,
             position:'bottom-right'
           }),
-          this.unsavedWork = false
+          this.setUnsavedWork(false)
         )
         .catch((e) => {
           console.log(e);
