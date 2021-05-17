@@ -2,9 +2,9 @@
 
 - Django backend
 
-- Vue.js frontend, heavily inspired by [NER-annotator](https://github.com/tecoholic/ner-annotator)
+- Vue.js frontend, inspired by [NER-annotator for Spacy](https://github.com/tecoholic/ner-annotator)
 
-## usage
+## usage (for development)
 
 1. Install the dependencies and start the Python Backend server
 

@@ -16,7 +16,7 @@ const niceColors = [
   "#CB3461", //bordeaux
   "#f7933b", //arancio
   "#DFA995", //marrone
-  "#D5D5D5", //grigio (15)
+  "#D5D5D5", //grigio (18)
 
 ];
 
@@ -73,6 +73,7 @@ export default {
       annotations: [],
       currentClass: {},
       currentBlock: {},
+      unsavedWork: false,
     };
   },
   getters,

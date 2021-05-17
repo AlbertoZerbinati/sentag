@@ -55,7 +55,6 @@ export default {
     return {
       tm: {},
       currentSentence: {},
-      unsavedWork: false,
     };
   },
   props: ['title','oldtm'],
@@ -65,7 +64,7 @@ export default {
     Export,
   },
   computed: {
-    ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock"]),
+    ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock", "unsavedWork"]),
   },
   watch: {
     inputSentences() {
@@ -85,7 +84,6 @@ export default {
 
   },
   beforeUnmount() {
-      console.log(this.unsavedWork)
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {

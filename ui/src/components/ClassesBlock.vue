@@ -31,7 +31,11 @@
         <div class="field-body">
           <div class="field">
             <p class="control">
-              <input v-model="currentBlock.attrs[at]" class="input is-normal" type="text" >
+              <input 
+                @change="unsavedWork=true"
+                v-model="currentBlock.attrs[at]" 
+                class="input is-normal" 
+                type="text" >
             </p>
           </div>
         </div>
@@ -49,7 +53,7 @@ export default {
   name: "ClassesBlock",
   props:['attr'],
   computed: {
-    ...mapState(["classes", "currentClass", "currentBlock"]),
+    ...mapState(["classes", "currentClass", "currentBlock", "unsavedWork"]),
   },
   methods: {
     ...mapMutations(["removeClass", "setCurrentClass"]),
