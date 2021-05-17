@@ -4,6 +4,8 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonRespons
 from .models import Sentenza
 from .forms import AddSentenzaModelForm
 
+import json
+
 from django.contrib.auth.decorators import login_required
 
 
@@ -124,7 +126,7 @@ def update_sentenza(request, id):
     except Sentenza.DoesNotExist:
         raise Http404("La sentenza non esiste")
 
-    serializer = SentenzaSerializer(instance=sentenza, data={'token_manager':str(request.data).replace("\'",'\"').replace("None","null")}, partial=True, many=False)
+    serializer = SentenzaSerializer(instance=sentenza, data={'token_manager':json.dumps(request.data)}, partial=True, many=False)
     if serializer.is_valid():
         #print("ISVALID")
         serializer.save();
