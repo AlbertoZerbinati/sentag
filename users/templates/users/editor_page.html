@@ -5,12 +5,17 @@
 {% endblock %}
 
 {% block sidebar %}
-    <div>
-        <h4 class="title">Utenti</h4>
+    <div class="navbar navbar-expand-lg">
+        <div class="navbar-brand mx-auto">
+            <h4 class="title" style="text-align: center;">Utenti</h4>
+        </div>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link"  href="/register">Add</a>
+        </div>
     </div>
     {% for user in lista_users %}
         <p>
-            {{ user }}
+            <a class="nav-item nav-link" href="{% url 'users:user-permission' user.id %}">{{ user }}</a>
         </p>
     {% endfor %}
 {% endblock %}

@@ -32,3 +32,30 @@
 .link:hover{
     color:white
 }
+.add-button {
+    background-color: white; /* Green */
+    border: 2px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 10px;
+    padding: 1px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+}
+
+.remove-button {
+    background-color: white; /* Green */
+    border: 2px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 10px;
+    padding: 1px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+}
+
+.check-add {
+    border-radius: 50%;
+}
