@@ -6,21 +6,44 @@
 
 ## usage (for development)
 
-1. Install the dependencies and start the Python Backend server
+1. Install the dependencies, create the Database, the Admin User and start the Python Backend server
+    * Install the dependencies in a new python virtual environment
+    ```
+    python -m venv env
+    source env/bin/activate
+    pip install -r requirements.txt
+    ```
 
-```sh
-python -m venv env
-source env/bin/activate
-pip install -r requirements.txt
-python manage.py runserver 
-```
+    * Create the sqlite database
+    ```
+    python manage.py makemigrations
+    python manage.py migrate
+    ```
 
-2. Open another terminal and start the server for the UI
+    - Create your own superuser
+    ```
+    python manage.py createsuperuser
+    ```
 
-```sh
-cd ui
-yarn install
-yarn serve
-```
+    - Once this command completes start the development server:
+    ```
+    python manage.py runserver
+    ```
+    
+
+2. Create Groups from the Admin-Page
+    * Now we can log into the website as admin user.
+We have access to the Admin-Page, where we should add Admins and Editors Groups (through the UI), with appropriate permissions.
+Remember to add your user to both these newly created groups.
+
+    * And finally we have complete access to all functionalities!
+
+3. OPTIONAL - if developing the frontend part open another terminal and start the server for the UI
+
+    ```
+    cd ui
+    yarn install
+    yarn serve
+    ```
 
 Now go to [http://localhost:8000](http://localhost:8000)
