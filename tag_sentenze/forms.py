@@ -1,8 +1,8 @@
 from django import forms
 from django.forms import ModelForm, Textarea
-from .models import Sentenza
+from .models import Judgment
 
-class AddSentenzaModelForm(ModelForm):
+class AddJudgmentModelForm(ModelForm):
     class Meta:
-        model = Sentenza
-        fields = ['nome','sentenza','schema_xml']
+        model = Judgment
+        fields = ['name','judgment_file']

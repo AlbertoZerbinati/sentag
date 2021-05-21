@@ -11,8 +11,8 @@ from django.dispatch import receiver
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     #many to many relationship between a User and his Judgments through Tagging
-    judgments = models.ManyToManyField(Judgment, blank=True, through=Tagging)
-
+    # permission = models.ManyToManyField(Judgment, blank=True, related_name="profiles")
+    permission = models.ManyToManyField(Judgment, blank=True, through="Tagging", related_name="profiles")
 
 class Tagging(models.Model):
     id_profile = models.ForeignKey(Profile, on_delete=models.DO_NOTHING)
@@ -23,6 +23,7 @@ class Tagging(models.Model):
 
     class Meta:
         unique_together = [['id_profile', 'id_judgment']]
+
 
 
 @receiver(post_save, sender=User)

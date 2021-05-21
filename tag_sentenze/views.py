@@ -1,8 +1,8 @@
 from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 
-from .models import Sentenza
-from .forms import AddSentenzaModelForm
+from .models import Judgment
+from .forms import AddJudgmentModelForm
 
 import json
 
@@ -16,7 +16,7 @@ def index(request):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         context = {
-            'num_sentenze': Sentenza.objects.all().count()
+            'num_sentenze': Judgment.objects.all().count()
         }
         return render(request, 'tag_sentenze/index.html', context=context)
     else:
@@ -26,7 +26,7 @@ def index(request):
 def list_sentenze(request):
     
     current_user = request.user
-    sentenze = Sentenza.objects.all()
+    sentenze = Judgment.objects.all()
 
     #admins and editors has access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():   
@@ -49,7 +49,7 @@ def new_sentenza(request):
         print("Admin/Editor access")
         if request.method == 'POST':
             # Create a form instance and populate it with data from the request 
-            form = AddSentenzaModelForm(request.POST, request.FILES)
+            form = AddJudgmentModelForm(request.POST, request.FILES)
             # Check if the form is valid:
             if form.is_valid():
                 # save the form into the DB
@@ -58,7 +58,7 @@ def new_sentenza(request):
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index') )
 
-        form = AddSentenzaModelForm()
+        form = AddJudgmentModelForm()
         context = {
             'form': form,
         }
@@ -70,8 +70,8 @@ def new_sentenza(request):
 @login_required
 def tag_sentenza(request, id):
     try:
-        sentenza = Sentenza.objects.get(pk=id)
-    except Sentenza.DoesNotExist:
+        sentenza = Judgment.objects.get(pk=id)
+    except Judgment.DoesNotExist:
         raise Http404("La sentenza non esiste")
 
     current_user = request.user
@@ -82,7 +82,7 @@ def tag_sentenza(request, id):
         print("Admin/Editor access")
 
         context = {
-            'nome_s':sentenza.nome,
+            'nome_s':sentenza.name,
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     #taggatori has access only to their set of sentenze
@@ -90,7 +90,7 @@ def tag_sentenza(request, id):
         print('Taggatore access with permission')
 
         context = {
-            'nome_s':sentenza.nome,
+            'nome_s':sentenza.name,
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
@@ -102,17 +102,17 @@ def tag_sentenza(request, id):
 # APIs
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import SentenzaSerializer
+from .serializers import JudgmentSerializer
 
 @login_required
 @api_view(['GET'])
 def sentenza_detail(request, id):
     try:
-        sentenza = Sentenza.objects.get(pk=id)
-    except Sentenza.DoesNotExist:
+        sentenza = Judgment.objects.get(pk=id)
+    except Judgment.DoesNotExist:
         raise Http404("La sentenza non esiste")
     
-    serializer = SentenzaSerializer(sentenza, many=False)
+    serializer = JudgmentSerializer(sentenza, many=False)
     return Response(serializer.data)
 
 @api_view(['POST','GET'])
@@ -122,11 +122,11 @@ def update_sentenza(request, id):
         return redirect('/sentenze/')
 
     try:
-        sentenza = Sentenza.objects.get(pk=id)
-    except Sentenza.DoesNotExist:
+        sentenza = Judgment.objects.get(pk=id)
+    except Judgment.DoesNotExist:
         raise Http404("La sentenza non esiste")
 
-    serializer = SentenzaSerializer(instance=sentenza, data={'token_manager':json.dumps(request.data)}, partial=True, many=False)
+    serializer = JudgmentSerializer(instance=sentenza, data={'token_manager':json.dumps(request.data)}, partial=True, many=False)
     if serializer.is_valid():
         #print("ISVALID")
         serializer.save();

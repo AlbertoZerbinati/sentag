@@ -1,7 +1,11 @@
 from rest_framework import serializers
-from .models import Sentenza
+from .models import Judgment
 
-class SentenzaSerializer(serializers.ModelSerializer):
+class JudgmentSerializer(serializers.ModelSerializer):
+    tags = serializers.CharField(source='xsd.tags', read_only=True)
+
     class Meta:
-        model = Sentenza
-        fields = ['nome','testo_iniziale','token_manager','tags','completed']
+        model = Judgment
+        fields = ['name','initial_text','tags']
+        #,'token_manager','tags','completed']
+        #  'profiles.permission.completed'
