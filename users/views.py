@@ -4,7 +4,7 @@ from django.http import Http404, JsonResponse
 from django.contrib import messages
 
 from .forms import UserRegisterForm
-from tag_sentenze.models import Sentenza
+from tag_sentenze.models import Judgment
 
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
@@ -47,7 +47,7 @@ def editor_page(request):
 
         context = {
             'lista_users': taggers,
-            'sentenze': Sentenza.objects.all()
+            'sentenze': Judgment.objects.all()
         }
 
         return render(request, 'users/editor_page.html', context=context)
@@ -62,10 +62,10 @@ def user_permission(request, id):
         raise Http404("The selected user doesn't exist")
 
     #contains a list of all the sentenze the selected user has access to
-    permission_list = user.profile.permission.all()
+    permission_list = user.profile.taggings.all()
 
     #contains the rest of the sentenze (all sentenze - selected user sentenze)
-    all_sentenze = Sentenza.objects.all()
+    all_sentenze = Judgment.objects.all()
     for elem in all_sentenze:
         if elem in permission_list:
             all_sentenze = all_sentenze.exclude(pk=elem.id)
@@ -91,18 +91,18 @@ def add_permission(request, utente):
     #print(data)
 
     #get all the sentenze
-    sentenze = Sentenza.objects.values_list('nome', flat=True)
+    sentenze = Judgment.objects.values_list('id', flat=True)
     #print(sentenze)
 
     #add a new sentenza to the permission of the selected user
     selected_user = User.objects.get(username=data['user'])
-    selected_sentenza = Sentenza.objects.get(nome=data['sentenza'])
+    selected_sentenza = Judgment.objects.get(id=data['sentenza'])
 
-    permission_list = selected_user.profile.permission.all()
+    permission_list = selected_user.profile.taggings.all()
     if selected_sentenza not in permission_list:
-        selected_user.profile.permission.add(selected_sentenza)
+        selected_user.profile.taggings.add(selected_sentenza)
 
-    print(selected_user.profile.permission.all())
+    print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
@@ -122,13 +122,13 @@ def remove_permission(request, utente):
 
     #remove the selected sentenza to the permission of the selected user
     selected_user = User.objects.get(username=data['user'])
-    selected_sentenza = Sentenza.objects.get(nome=data['sentenza'])
+    selected_sentenza = Judgment.objects.get(id=data['sentenza'])
 
-    permission_list = selected_user.profile.permission.all()
+    permission_list = selected_user.profile.taggings.all()
     if selected_sentenza in permission_list:
-        selected_user.profile.permission.remove(selected_sentenza)
+        selected_user.profile.taggings.remove(selected_sentenza)
 
-    print(selected_user.profile.permission.all())
+    print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
@@ -146,7 +146,7 @@ def add_permission_list(request, utente):
     print(data)
 
     #get all the sentenze
-    sentenze = Sentenza.objects.values_list('nome', flat=True)
+    sentenze = Judgment.objects.values_list('id', flat=True)
     #print(sentenze)
 
     #add a new list of sentenze to the permission of the selected user
@@ -154,15 +154,15 @@ def add_permission_list(request, utente):
     selected_sentenze = json.loads(data['sentenze'])
     print(selected_sentenze)
 
-    permission_list = selected_user.profile.permission.all()
+    permission_list = selected_user.profile.taggings.all()
 
     for elem in selected_sentenze:
-        tmp_sentenza = Sentenza.objects.get(nome=elem)
+        tmp_sentenza = Judgment.objects.get(id=elem)
         print(tmp_sentenza.id)
         if tmp_sentenza not in permission_list:
-            selected_user.profile.permission.add(tmp_sentenza)
+            selected_user.profile.taggings.add(tmp_sentenza)
 
-    print(selected_user.profile.permission.all())
+    print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
@@ -180,7 +180,7 @@ def remove_permission_list(request, utente):
     print(data)
 
     #get all the sentenze
-    sentenze = Sentenza.objects.values_list('nome', flat=True)
+    sentenze = Judgment.objects.values_list('id', flat=True)
     #print(sentenze)
 
     #remove a list of sentenze from the permission of the selected user
@@ -188,16 +188,23 @@ def remove_permission_list(request, utente):
     selected_sentenze = json.loads(data['sentenze'])
     print(selected_sentenze)
 
-    permission_list = selected_user.profile.permission.all()
+    permission_list = selected_user.profile.taggings.all()
 
     for elem in selected_sentenze:
-        tmp_sentenza = Sentenza.objects.get(nome=elem)
+        tmp_sentenza = Judgment.objects.get(id=elem)
         print(tmp_sentenza.id)
         if tmp_sentenza in permission_list:
-            selected_user.profile.permission.remove(tmp_sentenza)
+            selected_user.profile.taggings.remove(tmp_sentenza)
 
-    print(selected_user.profile.permission.all())
+    print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
     return JsonResponse({'response': data}, status=200)
+
+@login_required
+def join_schema(request):
+    data = {}
+
+    #prendi la sentenza selezionata e lo schema, associa lo schema alla sentenza
+    #refresh page

@@ -1,15 +1,10 @@
 from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
-
 from .models import Judgment
 from .forms import AddJudgmentModelForm
-
-import json
-
+from users.models import Tagging, Profile
 from django.contrib.auth.decorators import login_required
 
-
-# Create your views here.
 @login_required
 def index(request):
     #check if current user belongs to Editor or Admin Group
@@ -36,7 +31,7 @@ def list_sentenze(request):
         return render(request, 'tag_sentenze/list_sentenze.html', context=context)
     #taggatori has access only to their set of sentenze, so they will see a list of this set
     else:
-        sentenze_user = current_user.profile.permission.all()
+        sentenze_user = current_user.profile.taggings.all()
         print('Current user: ', current_user)
         print('Permission: ', sentenze_user)
         return render(request, 'tag_sentenze/list_sentenze.html', {'sentenze': sentenze_user})
@@ -72,61 +67,62 @@ def tag_sentenza(request, id):
     try:
         sentenza = Judgment.objects.get(pk=id)
     except Judgment.DoesNotExist:
-        raise Http404("La sentenza non esiste")
+        raise Http404()
 
     current_user = request.user
-    user_permission = current_user.profile.permission.all()
+    profile = Profile.objects.get(user=request.user)
+    user_taggings = current_user.profile.taggings.all()
 
-    #admins and editors has access to all the sentenze
+    #admins and editors have access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
-
+        #retrive the taging table starting using profile and judgment as unique identifiers
         context = {
-            'nome_s':sentenza.name,
+            'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     #taggatori has access only to their set of sentenze
-    elif sentenza in user_permission:
+    elif sentenza in user_taggings:
         print('Taggatore access with permission')
-
+        #retrive the taging table starting using profile and judgment as unique identifiers
         context = {
-            'nome_s':sentenza.name,
+            'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
         print('Taggatori access with no permission')
-        return render(request, 'tag_sentenze/no_permission.html')
+        return render(request, 'tag_sentenze/no_taggings.html')
 
 
 
 # APIs
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from .serializers import JudgmentSerializer
+from .serializers import TaggingSerializer
+import json
 
-@login_required
+@permission_classes([IsAuthenticated])
 @api_view(['GET'])
-def sentenza_detail(request, id):
+def tagging_detail(request, id):
     try:
-        sentenza = Judgment.objects.get(pk=id)
+        taggings = Tagging.objects.get(pk=id)
     except Judgment.DoesNotExist:
-        raise Http404("La sentenza non esiste")
+        raise Http404()
     
-    serializer = JudgmentSerializer(sentenza, many=False)
+    serializer = TaggingSerializer(taggings, many=False)
     return Response(serializer.data)
 
-@api_view(['POST','GET'])
-def update_sentenza(request, id):
-    #print(request.method)
-    if request.method == 'GET':
-        return redirect('/sentenze/')
 
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def update_tagging(request, id):
     try:
-        sentenza = Judgment.objects.get(pk=id)
+        taggings = Tagging.objects.get(pk=id)
     except Judgment.DoesNotExist:
-        raise Http404("La sentenza non esiste")
+        raise Http404()
 
-    serializer = JudgmentSerializer(instance=sentenza, data={'token_manager':json.dumps(request.data)}, partial=True, many=False)
+    serializer = TaggingSerializer(instance=taggings, data={'token_manager':json.dumps(request.data)}, partial=True, many=False)
     if serializer.is_valid():
         #print("ISVALID")
         serializer.save();

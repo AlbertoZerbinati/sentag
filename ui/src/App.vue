@@ -34,18 +34,22 @@ export default {
     axios
         .get("/api/"+numero_sentenza)
         .then((res) => {
+          // console.table(res.data)
+
           //la risposta contiene:
           //le parole della sentenza
-          this.setInputSentences(res.data['testo_iniziale']);
+          this.setInputSentences(res.data['initial_text']);
           //il titolo della sentenza
-          this.title = res.data['nome'];
-
+          this.title = res.data['name'];
+          //il vecchio token manager
           this.oldtm = res.data['token_manager'];
-          // console.log(this.oldtm)
+
+          //il fatto che la sentenza sia già stata completata o meno 
+          //this.completed = res.sata['completed']
 
           //i tag da parsare, perché passati come xsd string
           let xml = res.data['tags']
-          //console.log(xml)
+
           let parser = new DOMParser();
           let xmlDoc = parser.parseFromString(xml,"text/xml");
           let elements = xmlDoc.evaluate("//xs:element", xmlDoc, 
@@ -61,7 +65,6 @@ export default {
             //console.log(element);
             let name = element.getAttribute('name');
             //console.log(name);
-            //console.log('//xs:element[@name=\''+name+'\']/xs:complexType/xs:attribute')              
             let attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']/xs:complexType/xs:attribute', xmlDoc, 
             function(prefix) { 
               if (prefix === 'xs') { 
@@ -92,10 +95,9 @@ export default {
             
             //console.log("\n");
           }
-          this.go=true;
+          this.go=true; //now we can load the annotation page
         })
     .catch((err) => alert(err));
   }
-
 };
 </script>

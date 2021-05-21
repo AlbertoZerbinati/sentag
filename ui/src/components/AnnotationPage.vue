@@ -132,7 +132,7 @@ export default {
       }
       let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
       if(cb) {
-        this.$store.commit('setCurrentBlock',cb);
+        this.setCurrentBlock(cb);
       }
       selection.empty();
       this.setUnsavedWork(true);
@@ -148,18 +148,6 @@ export default {
       this.setUnsavedWork(true);
     },
     saveTags() {
-      // let tmjson = JSON.stringify(this.tm);
-      // console.log(tmjson);
-      
-      // ( PROOF OF WORK
-      // this.tm = new TokenManager({}, JSON.parse(tmjson));
-      // console.log(this.tm); )
-
-      //retrieve sentenza number
-      const url = new URL(location.href)['pathname'];
-      const numero_sentenza = url.split('/')[2]
-
-
       //retrieve CSRF_TOKEN
       function getCookie(name) {
       let cookieValue = null;
@@ -177,9 +165,10 @@ export default {
         return cookieValue;
       }
       const csrftoken = getCookie('csrftoken'); 
+      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
       axios
         .post(
-          "/api/update/"+numero_sentenza, 
+          "/api/update/"+tagging_id, 
           JSON.stringify(this.tm),
           {  
             headers: {

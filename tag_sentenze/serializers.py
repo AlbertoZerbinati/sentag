@@ -1,11 +1,11 @@
 from rest_framework import serializers
-from .models import Judgment
+from users.models import Tagging
 
-class JudgmentSerializer(serializers.ModelSerializer):
-    tags = serializers.CharField(source='xsd.tags', read_only=True)
+class TaggingSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source='judgment.name', read_only=True)
+    initial_text = serializers.CharField(source='judgment.initial_text', read_only=True)
+    tags = serializers.CharField(source='judgment.xsd.tags', read_only=True)
 
     class Meta:
-        model = Judgment
-        fields = ['name','initial_text','tags']
-        #,'token_manager','tags','completed']
-        #  'profiles.permission.completed'
+        model = Tagging
+        fields = ['name','initial_text','tags','token_manager','completed']
