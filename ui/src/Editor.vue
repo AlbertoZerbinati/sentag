@@ -12,7 +12,7 @@ import axios from "axios"
 import "./assets/styles.scss";
 
 export default {
-  name: "App",
+  name: "Editor",
   data: function() {
     return {
       currentPage: "annotator",

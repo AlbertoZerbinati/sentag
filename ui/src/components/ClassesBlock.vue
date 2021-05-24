@@ -1,6 +1,6 @@
 <template>
   <div id="column">
-  <div class="is-multiline" v-if="!attr">
+  <div class="is-multiline">
     <div class="tags is-medium">
       <div class="column" v-for="cl in classes" :key="cl.id">
         <a
@@ -21,27 +21,6 @@
       </div>
     </div>
   </div>
-  <br>
-  <div v-if="attr && Object.keys(currentBlock).length && Object.keys(currentBlock.attrs)">
-    <div class="field is-horizontal" v-for="at in Object.keys(currentBlock.attrs)" :key="at.id">
-      <div class="row" v-if="at !== 'ID'">
-        <div class="field-label is-normal">
-          <label class="label tag is-dark"><strong :style="{color: currentBlock.backgroundColor }">{{at}}</strong></label>
-        </div>
-        <div class="field-body">
-          <div class="field">
-            <p class="control">
-              <input 
-                @keyup="setUnsavedWork(true)"
-                v-model="currentBlock.attrs[at]" 
-                class="input is-normal" 
-                type="text" >
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
   </div>
 </template>
 
@@ -51,15 +30,14 @@ import { mapState, mapMutations } from "vuex";
 
 export default {
   name: "ClassesBlock",
-  props:['attr'],
   computed: {
     ...mapState(["classes", "currentClass", "currentBlock", "unsavedWork"]),
   },
   methods: {
     ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork"]),
-    print(data) {
-      console.log(data)
-    }
+    // print(data) {
+    //   // console.log(data)
+    // }
   }
 };
 </script>

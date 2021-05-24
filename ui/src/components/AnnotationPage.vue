@@ -3,7 +3,7 @@
     <div class="column">
       <div class="panel">
         <p class="panel-heading">
-          <strong>Tagga {{title}}</strong>
+          <strong>Tag {{title}}</strong>
         </p>
         <div class="panel-block">
           <div id="editor">
@@ -19,19 +19,29 @@
             />
           </div>
         </div>
-        <div class="panel-block">
-          <div class="field is-grouped">
+        <div class="panel-block is-justify-content-space-between">
+          <div class="field is-grouped is-pulled-left">
             <p class="control">
               <button class="button is-danger is-outlined" @click="resetBlocks">
-                Reset
+                <span class="icon is-small">
+                  <font-awesome-icon icon="undo" />
+                </span>
+                <span>Reset</span>
               </button>
             </p>
             <p class="control">
-              <button class="button is-link" @click="saveTags">Salva</button>
+              <button class="button is-link" @click="saveTags">
+                <span class="icon is-small">
+                  <font-awesome-icon icon="check" />
+                </span>
+                <span>Save</span>
+              </button>
             </p>
-            <p class="control">
-                <export/>
-            </p>
+          </div>
+
+          <div class="is-pulled-right">
+            <input id="switchRoundedSuccess" type="checkbox" name="switchRoundedSuccess" class="switch is-rounded is-success">
+            <label for="switchRoundedSuccess">Completed</label>
           </div>
         </div>
       </div>
@@ -42,6 +52,7 @@
 <script>
 import { mapState, mapMutations } from "vuex";
 import { toast } from "bulma-toast"
+import "bulma-switch"
 import axios from "../axios";
 import Token from "./Token";
 import TokenBlock from "./TokenBlock";
@@ -119,23 +130,25 @@ export default {
       )
         return;
       let startIdx, endIdx;
-      try {
-        startIdx = parseInt(
-          selection.anchorNode.parentElement.id.replace("t", "")
-        );
-        endIdx = parseInt(
-          selection.focusNode.parentElement.id.replace("t", "")
-        );
-      } catch (e) {
-        console.log("selected text were not tokens");
-        return;
-      }
-      let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
-      if(cb) {
-        this.setCurrentBlock(cb);
+      // try {
+      startIdx = parseInt(
+        selection.anchorNode.parentElement.id.replace("t", "")
+      );
+      endIdx = parseInt(
+        selection.focusNode.parentElement.id.replace("t", "")
+      );
+      // } catch (e) {
+      //   console.log("selected text were not tokens");
+      //   return;
+      // }
+      if (!isNaN(startIdx) && !isNaN(endIdx)) {
+        let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
+        if(cb) {
+          this.setCurrentBlock(cb);
+        }
+        this.setUnsavedWork(true);
       }
       selection.empty();
-      this.setUnsavedWork(true);
     },
     onRemoveBlock(data) {
       this.tm.removeBlock(data.start,data.end);
@@ -199,5 +212,9 @@ export default {
 <style lang="scss">
 #editor {
   padding: 0.2rem;
+}
+.right {
+  margin-left:100px;
+  margin-right:0px;
 }
 </style>
