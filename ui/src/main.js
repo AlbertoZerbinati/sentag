@@ -24,5 +24,5 @@ sidebar.use(oneStore);
 editor.component("font-awesome-icon", FontAwesomeIcon);
 sidebar.component("font-awesome-icon", FontAwesomeIcon);
 
-editor.mount("#app");
-sidebar.mount("#classes");
+editor.mount("#editor");
+sidebar.mount("#sidebar");

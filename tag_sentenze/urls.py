@@ -11,4 +11,5 @@ urlpatterns = [
     path("sentenza/<int:id>/", views.tag_sentenza, name="tag-sentenza"),
     path("api/<int:id>", views.tagging_detail, name="api_get"),
     path("api/update/<int:id>", views.update_tagging, name="api_update"),
+    path("download/<int:id>", views.download, name="download"),
 ]

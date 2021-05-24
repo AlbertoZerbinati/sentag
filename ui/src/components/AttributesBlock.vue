@@ -2,20 +2,18 @@
   <div id="column">
   <div v-if="Object.keys(currentBlock).length && Object.keys(currentBlock.attrs)">
     <div class="field is-horizontal" v-for="at in Object.keys(currentBlock.attrs)" :key="at.id">
-      <div class="row" v-if="at !== 'ID'">
-        <div class="field-label is-normal">
-          <label class="label tag is-dark"><strong :style="{color: currentBlock.backgroundColor }">{{at}}</strong></label>
-        </div>
-        <div class="field-body">
-          <div class="field">
-            <p class="control">
-              <input 
-                @keyup="setUnsavedWork(true)"
-                v-model="currentBlock.attrs[at]" 
-                class="input is-normal" 
-                type="text" >
-            </p>
-          </div>
+      <div class="field-label is-normal">
+        <label class="label tag is-dark"><strong :style="{color: currentBlock.backgroundColor }">{{at}}</strong></label>
+      </div>
+      <div class="field-body">
+        <div class="field">
+          <p class="control">
+            <input 
+              @keyup="setUnsavedWork(true)"
+              v-model="currentBlock.attrs[at]" 
+              class="input is-normal" 
+              type="text" >
+          </p>
         </div>
       </div>
     </div>

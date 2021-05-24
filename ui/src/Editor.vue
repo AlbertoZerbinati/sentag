@@ -44,6 +44,8 @@ export default {
           //il vecchio token manager
           this.oldtm = res.data['token_manager'];
 
+          // console.table(this.oldtm)
+
           //il fatto che la sentenza sia già stata completata o meno 
           //this.completed = res.sata['completed']
 

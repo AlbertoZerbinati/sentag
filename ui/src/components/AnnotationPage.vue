@@ -40,7 +40,7 @@
           </div>
 
           <div class="is-pulled-right">
-            <input id="switchRoundedSuccess" type="checkbox" name="switchRoundedSuccess" class="switch is-rounded is-success">
+            <input id="switchRoundedSuccess" @change="completed" v-model="done" type="checkbox" name="switchRoundedSuccess" class="switch is-rounded is-success">
             <label for="switchRoundedSuccess">Completed</label>
           </div>
         </div>
@@ -66,6 +66,7 @@ export default {
     return {
       tm: {},
       currentSentence: {},
+      done: false,
     };
   },
   props: ['title','oldtm'],
@@ -85,7 +86,8 @@ export default {
   created() {
     //console.log(this.oldtm.length)
     if(this.oldtm.length) {
-      this.tm = new TokenManager([],JSON.parse(this.oldtm))
+      this.tm = new TokenManager([],JSON.parse(JSON.parse(this.oldtm)))
+      //note: double json parsing is needed
     } else { 
       this.tokenizeCurrentSentence();
     }
@@ -179,10 +181,14 @@ export default {
       }
       const csrftoken = getCookie('csrftoken'); 
       const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
+      const params = {
+        'tm': JSON.stringify(this.tm),
+        'cp': false,
+      } 
       axios
         .post(
           "/api/update/"+tagging_id, 
-          JSON.stringify(this.tm),
+          params,
           {  
             headers: {
               "X-CSRFToken": csrftoken,
@@ -205,8 +211,77 @@ export default {
           console.log(e);
         });
     },
+    completed() {
+      function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+            }
+            return cookieValue;
+      }
+      console.log("done")
+      const csrftoken = getCookie('csrftoken'); 
+      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
+      const params = {
+        'tm': JSON.stringify(this.tm),
+        'cp': this.done,
+        } 
+
+      axios
+        .post(
+          "/api/update/"+tagging_id,
+          params,
+          {  
+            headers: {
+              "X-CSRFToken": csrftoken,
+              "content-type": "application/json",
+              // "Access-Control-Allow-Origin": "*"
+          }}
+        )
+        .then( () => {
+          toast({
+            message:'Annotations saved',
+            type:'is-success',
+            dismissible:'true',
+            pauseOnHover:'true',
+            duration:2000,
+            position:'bottom-right'
+          });
+          if (this.done) { 
+          toast({
+            message:'Tagging Completed',
+            type:'is-info',
+            dismissible:'true',
+            pauseOnHover:'true',
+            duration:2000,
+            position:'bottom-right',
+          });
+          } else {
+            toast({
+              message:'Set Uncompleted',
+              type:'is-danger',
+              dismissible:'true',
+              pauseOnHover:'true',
+              duration:2000,
+              position:'bottom-right',
+            });
+          }
+          this.setUnsavedWork(false);
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    },
   },
-};
+}
 </script>
 
 <style lang="scss">
