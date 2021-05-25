@@ -80,6 +80,7 @@ def tag_sentenza(request, id):
         context = {
             'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
+        print("---->",context['taggings'].id)
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     #taggatori has access only to their set of sentenze
     elif sentenza in user_taggings:
@@ -100,24 +101,25 @@ def download(request, id):
     except Judgment.DoesNotExist:
         raise Http404()
 
+    current_user = request.user
+    if not current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        return redirect('/')
+
     #load token manager: again I need double loads, in Vue I need double parse instead...
     tm = json.loads(json.loads(tagging.token_manager))
     # print(type(tm))
 
     #now I need to build the xml string
-    from collections import Mapping
 
     #list of tokens (and token-blocks)
     words=[] #stack for words: <tags> + tokens
     s = tm['tokens']
-    print(s)
-    print("\n")
-
-
+    # print(s)
+    # print("\n")
     while s:
         #extract first token
         t = s.pop(0)
-        print(t)
+        # print(t)
         # print(t.items())
         # print()
         #check if it is a token
@@ -125,10 +127,9 @@ def download(request, id):
             words.append(t)
             # print(words)
             # print(s)
-            print()
-            print(words)
-            print()
-
+            # print()
+            # print(words)
+            # print()
         elif 'text' in t:
             # print('sono un TOKEN!',t['text'])
             words.append(t['text'])
@@ -144,20 +145,30 @@ def download(request, id):
             s.insert(0,end_tag)
             for child in reversed(t['tokens']):
                 s.insert(0,child)
-                
 
-
-        # for child in t.items():
-        #     G.add_edge(v, nv)
-        #     if isinstance(nd, Mapping):
-        #         q.append((nv, nd))
-
-
+    #!!! MANCA INCIPIT XML !!!
     xml_string = ' '.join(words)
     xml_string = """<body>\n""" + xml_string + """\n</body>"""
-    print(xml_string)
-    return HttpResponse(xml_string, content_type="text/xml")
+    # print(xml_string)
+    response = {'name':tagging.judgment.name[:tagging.judgment.name.rfind(".")], 'xml':xml_string}
+    return JsonResponse(response)
 
+
+@login_required
+def list_taggings(request):    
+    current_user = request.user
+    taggings = Tagging.objects.all()
+
+    #admins and editors have access to all taggings
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():   
+        context = {
+            'taggings': taggings
+        }
+        return render(request, 'tag_sentenze/list_taggings.html', context=context)
+    #taggatori don't
+    else:
+        print('Taggatore access')
+        return redirect('sentenze')
 
 
 # APIs
@@ -170,6 +181,7 @@ from .serializers import TaggingSerializer
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def tagging_detail(request, id):
+    print(id)
     try:
         tagging = Tagging.objects.get(pk=id)
     except Judgment.DoesNotExist:

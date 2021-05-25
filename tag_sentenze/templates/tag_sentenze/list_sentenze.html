@@ -10,8 +10,7 @@
         <thead>
             <tr>
                 <th>Judgment</th>
-                <th>For Taggers</th>
-                <th>For Editors</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody>
@@ -19,32 +18,8 @@
             <tr>
                 <td>{{sentenza}}</td>
                 <td><a href="{% url 'tag_sentenze:tag-sentenza' sentenza.id %}"> TAG </a> </td>
-                <td><button class="btn btn-secondary" onclick="download()"> DOWNLOAD xml</button> </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-
-    <script>
-        function download() {
-            const filename = "training_data.json";
-            const output = {
-                "classes": "weee",
-                "annotations": "yoooo"
-            }
-            const jsonStr = JSON.stringify(output);
-
-            let element = document.createElement("a");
-            element.setAttribute(
-                "href",
-                "data:text/plain;charset=utf-8," + encodeURIComponent(jsonStr)
-            );
-            element.setAttribute("download", filename);
-
-            element.style.display = "none";
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        }
-    </script>
 {% endblock %}

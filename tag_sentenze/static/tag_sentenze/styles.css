@@ -6,11 +6,6 @@
     color: white;
 }
 
-.title {
-    text-align: center;
-    user-select: none;
-}
-
 .top-buffer {
     margin-top: 6px;
     margin-bottom: 6px;

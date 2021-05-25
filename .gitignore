@@ -4,4 +4,5 @@ guidelines/*
 */__pycache__
 */migrations
 db.sqlite3
-static/*
+var
+static

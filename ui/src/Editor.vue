@@ -29,10 +29,10 @@ export default {
   },
   created() {
     //ottengo il numero sentenza dall'url
-    const url = new URL(location.href)['pathname'];
-    const numero_sentenza = url.split('/')[2]
+    
+    const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
     axios
-        .get("/api/"+numero_sentenza)
+        .get("/api/"+tagging_id)
         .then((res) => {
           // console.table(res.data)
 

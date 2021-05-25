@@ -1,0 +1,57 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+    Taggings
+{% endblock %}
+
+{% block content %}
+<h2 class="title">Download tagged judgments</h2>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Judgment</th>
+            <th>Tagger</th>
+            <th>Download Button</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tagging in taggings %}
+        <tr>
+            <td>{{tagging.judgment}}</td>
+            <td>{{tagging.profile}}</td>
+            {% if tagging.completed %}
+                <td><button class="btn btn-primary btn-small" onclick="downl({{tagging.id}})">DOWNLOAD xml</button> </td>
+            {% else %}
+                <td>Not completed yet</td> 
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block script %}
+<script>
+    function downl(id) {
+        $.get( "/download/"+id, function(data) {
+            console.log( typeof data ); // string
+            console.log( data ); // HTML content of the jQuery.ajax page
+
+            let filename = data['name'] + ".xml"
+            let outputString = data['xml']
+
+            let element = document.createElement("a");
+            element.setAttribute(
+                "href",
+                "data:text/plain;charset=utf-8," + encodeURIComponent(outputString)
+            );
+            element.setAttribute("download", filename);
+
+            element.style.display = "none";
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        });
+    }
+</script>
+{% endblock %}

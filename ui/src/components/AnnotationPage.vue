@@ -183,7 +183,7 @@ export default {
       const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
       const params = {
         'tm': JSON.stringify(this.tm),
-        'cp': false,
+        'cp': this.done,
       } 
       axios
         .post(
