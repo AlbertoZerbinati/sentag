@@ -66,7 +66,6 @@ export default {
     return {
       tm: {},
       currentSentence: {},
-      done: false,
     };
   },
   props: ['title','oldtm'],
@@ -77,15 +76,23 @@ export default {
   },
   computed: {
     ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock", "unsavedWork"]),
+    done: {
+      get() {
+        return this.$store.state.done
+      },
+      set(value) {
+        this.$store.commit('setDone', value)
+      }
+    }
   },
   watch: {
     inputSentences() {
       this.tokenizeCurrentSentence();
-    }
+    },
   },
   created() {
     //console.log(this.oldtm.length)
-    if(this.oldtm.length) {
+    if (this.oldtm.length) {
       this.tm = new TokenManager([],JSON.parse(JSON.parse(this.oldtm)))
       //note: double json parsing is needed
     } else { 
@@ -95,11 +102,17 @@ export default {
     document.addEventListener("mouseup", this.selectTokens);
     window.onbeforeunload = () => (this.unsavedWork ? true : null);
 
+    this.switchState = this.done;
   },
   beforeUnmount() {
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
+    print() {
+      console.log(this.done);
+      console.log(this.switchState);
+      
+    },
     ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
     tokenizeCurrentSentence() {
       this.currentSentence = this.inputSentences[0];
@@ -149,6 +162,7 @@ export default {
           this.setCurrentBlock(cb);
         }
         this.setUnsavedWork(true);
+        this.done = false;
       }
       selection.empty();
     },
@@ -156,11 +170,13 @@ export default {
       this.tm.removeBlock(data.start,data.end);
       this.setCurrentBlock(new Object());
       this.setUnsavedWork(true);
+      this.done = false;
     },
     resetBlocks() {
       if(confirm("Are you sure you want to reset ALL the annotations? The unsaved work will be lost"))
       this.tm.resetBlocks();
       this.setUnsavedWork(true);
+      this.done = false;
     },
     saveTags() {
       //retrieve CSRF_TOKEN
@@ -237,7 +253,7 @@ export default {
 
       axios
         .post(
-          "/api/update/"+tagging_id,
+          "/api/completed/"+tagging_id,
           params,
           {  
             headers: {
@@ -267,7 +283,7 @@ export default {
           } else {
             toast({
               message:'Set Uncompleted',
-              type:'is-danger',
+              type:'is-warning',
               dismissible:'true',
               pauseOnHover:'true',
               duration:2000,
@@ -277,7 +293,10 @@ export default {
           this.setUnsavedWork(false);
         })
         .catch((e) => {
-          console.log(e);
+          // console.log(e);
+          // alert(e)
+          alert(e.response.data[0])
+          this.done = false
         });
     },
   },

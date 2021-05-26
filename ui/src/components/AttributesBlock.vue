@@ -9,7 +9,7 @@
         <div class="field">
           <p class="control">
             <input 
-              @keyup="setUnsavedWork(true)"
+              @keyup="setUnsavedWork(true); setDone(false)"
               v-model="currentBlock.attrs[at]" 
               class="input is-normal" 
               type="text" >
@@ -27,10 +27,10 @@ import { mapState, mapMutations } from "vuex";
 export default {
   name: "AttributesBlock",
   computed: {
-    ...mapState(["classes", "currentClass", "currentBlock", "unsavedWork"]),
+    ...mapState(["classes", "currentClass", "currentBlock", "unsavedWork", "done"]),
   },
   methods: {
-    ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork"]),
+    ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork", "setDone"]),
   }
 };
 </script>

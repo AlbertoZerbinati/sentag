@@ -98,60 +98,64 @@ def tag_sentenza(request, id):
 def download(request, id):
     try:
         tagging = Tagging.objects.get(pk=id)
-    except Judgment.DoesNotExist:
+    except Tagging.DoesNotExist:
         raise Http404()
 
     current_user = request.user
+
+    #taggers don't have access to this functionality
     if not current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         return redirect('/')
 
-    #load token manager: again I need double loads, in Vue I need double parse instead...
-    tm = json.loads(json.loads(tagging.token_manager))
-    # print(type(tm))
-
-    #now I need to build the xml string
-
-    #list of tokens (and token-blocks)
-    words=[] #stack for words: <tags> + tokens
-    s = tm['tokens']
-    # print(s)
-    # print("\n")
-    while s:
-        #extract first token
-        t = s.pop(0)
-        # print(t)
-        # print(t.items())
-        # print()
-        #check if it is a token
-        if isinstance(t, str):
-            words.append(t)
-            # print(words)
-            # print(s)
-            # print()
-            # print(words)
-            # print()
-        elif 'text' in t:
-            # print('sono un TOKEN!',t['text'])
-            words.append(t['text'])
-        else: #else it is a token-block so we push to the stack his 'tokens' and print the label into the xml
-            label = t['label']
-            start_tag = '<' + str(label)
-            for k,v in t['attrs'].items():
-                start_tag = start_tag + f' {k}="{v}"'
-            start_tag = start_tag + '>'
-            end_tag = '</' + str(label) + '>'
-            # print('sono un TOKEN-BLOCK!', start_tag)
-            words.append(start_tag)
-            s.insert(0,end_tag)
-            for child in reversed(t['tokens']):
-                s.insert(0,child)
-
-    #!!! MANCA INCIPIT XML !!!
-    xml_string = ' '.join(words)
-    xml_string = """<body>\n""" + xml_string + """\n</body>"""
-    # print(xml_string)
-    response = {'name':tagging.judgment.name[:tagging.judgment.name.rfind(".")], 'xml':xml_string}
+    #load tagging xml text
+    response = {'name':tagging.judgment.name[:tagging.judgment.name.rfind(".")], 'xml':tagging.xml_text}
     return JsonResponse(response)
+
+    # #load token manager: again I need double loads, in Vue I need double parse instead...
+    # tm = json.loads(json.loads(tagging.token_manager))
+    # # print(type(tm))
+
+    # #now I need to build the xml string
+
+    # #list of tokens (and token-blocks)
+    # words=[] #stack for words: <tags> + tokens
+    # s = tm['tokens']
+    # # print(s)
+    # # print("\n")
+    # while s:
+    #     #extract first token
+    #     t = s.pop(0)
+    #     # print(t)
+    #     # print(t.items())
+    #     # print()
+    #     #check if it is a token
+    #     if isinstance(t, str):
+    #         words.append(t)
+    #         # print(words)
+    #         # print(s)
+    #         # print()
+    #         # print(words)
+    #         # print()
+    #     elif 'text' in t:
+    #         # print('sono un TOKEN!',t['text'])
+    #         words.append(t['text'])
+    #     else: #else it is a token-block so we push to the stack his 'tokens' and print the label into the xml
+    #         label = t['label']
+    #         start_tag = '<' + str(label)
+    #         for k,v in t['attrs'].items():
+    #             start_tag = start_tag + f' {k}="{v}"'
+    #         start_tag = start_tag + '>'
+    #         end_tag = '</' + str(label) + '>'
+    #         # print('sono un TOKEN-BLOCK!', start_tag)
+    #         words.append(start_tag)
+    #         s.insert(0,end_tag)
+    #         for child in reversed(t['tokens']):
+    #             s.insert(0,child)
+
+    # #!!! MANCA INCIPIT XML !!!
+    # xml_string = ' '.join(words)
+    # xml_string = """<body>\n""" + xml_string + """\n</body>"""
+    # # print(xml_string)
 
 
 @login_required
@@ -181,10 +185,9 @@ from .serializers import TaggingSerializer
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
 def tagging_detail(request, id):
-    print(id)
     try:
         tagging = Tagging.objects.get(pk=id)
-    except Judgment.DoesNotExist:
+    except Tagging.DoesNotExist:
         raise Http404()
     
     serializer = TaggingSerializer(tagging, many=False)
@@ -196,14 +199,85 @@ def tagging_detail(request, id):
 def update_tagging(request, id):
     try:
         tagging = Tagging.objects.get(pk=id)
-    except Judgment.DoesNotExist:
+    except Tagging.DoesNotExist:
         raise Http404()
 
+    #read tm and cp from request
     token_manager = json.dumps(request.data['tm'])
     completed = request.data['cp']
 
     serializer = TaggingSerializer(instance=tagging, data={'token_manager':token_manager, 'completed':completed}, partial=True, many=False)
     if serializer.is_valid():
-        #print("ISVALID")
         serializer.save();
     return HttpResponse("Updated")
+
+
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def completed_tagging(request, id):
+    try:
+        tagging = Tagging.objects.get(pk=id)
+    except Tagging.DoesNotExist:
+        raise Http404()
+
+    #read tm and cp from request
+    token_manager = json.loads(request.data['tm'])
+    completed = request.data['cp']
+    
+    #if completed we need to validate the xml text
+    if completed:
+        #build xml_string
+        words=[]
+        s = token_manager['tokens']
+        while s:
+            t = s.pop(0)
+            if isinstance(t, str):
+                words.append(t)
+            elif 'text' in t:
+                words.append(t['text'])
+            else:
+                label = t['label']
+                start_tag = '<' + str(label)
+                for k,v in t['attrs'].items():
+                    start_tag = start_tag + f' {k}="{v}"'
+                start_tag = start_tag + '>'
+                end_tag = '</' + str(label) + '>'
+                words.append(start_tag)
+                s.insert(0,end_tag)
+                for child in reversed(t['tokens']):
+                    s.insert(0,child)
+
+        #!!! MANCA INCIPIT XML !!!
+        xml_string = ' '.join(words)
+        xml_string = """<body>\n""" + xml_string + """\n</body>"""
+
+
+        #validate xml
+        from lxml import etree
+
+        schema_string = tagging.judgment.xsd.tags
+        schema_root = etree.XML(schema_string.encode('ascii'))
+        xmlschema = etree.XMLSchema(schema_root)
+        parser = etree.XMLParser(schema = xmlschema)
+
+        try:
+            etree.fromstring(xml_string, parser)
+        except etree.XMLSyntaxError as error:
+            #if not valid return fail with error message
+            print(str(error))
+            return Response(data={str(error)}, status=500)
+
+        # else if valid then save in db WITH XML TEXT and return success
+        serializer = TaggingSerializer(instance=tagging, data={'token_manager':json.dumps(request.data['tm']), 'completed':completed, 'xml_text':xml_string}, partial=True, many=False)
+        if serializer.is_valid():
+            serializer.save();
+
+        return Response("Updated")
+
+
+    #if set uncompleted then save in db and return success
+    serializer = TaggingSerializer(instance=tagging, data={'token_manager':json.dumps(request.data['tm']), 'completed':completed, }, partial=True, many=False)
+    if serializer.is_valid():
+        serializer.save();
+
+    return Response("Updated")

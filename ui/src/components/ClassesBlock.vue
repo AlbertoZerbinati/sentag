@@ -14,9 +14,7 @@
         </a>
         <br>
       <span v-for="at in cl.attributes" :key="at.id">
-          <span class="" v-if="at !== 'ID'">
-            <span class="tag supertiny"><i><strong :style="{ color: cl.color }">{{at}}</strong></i></span>
-          </span>
+          <span class="tag supertiny"><i><strong :style="{ color: cl.color }">{{at}}</strong></i></span>
       </span>
       </div>
     </div>
@@ -35,9 +33,6 @@ export default {
   },
   methods: {
     ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork"]),
-    // print(data) {
-    //   // console.log(data)
-    // }
   }
 };
 </script>
