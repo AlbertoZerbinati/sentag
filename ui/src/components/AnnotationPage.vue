@@ -40,7 +40,7 @@
           </div>
 
           <div class="is-pulled-right">
-            <input id="switchRoundedSuccess" @change="completed" v-model="done" type="checkbox" name="switchRoundedSuccess" class="switch is-rounded is-success">
+            <input id="switchRoundedSuccess" v-model="done" type="checkbox" name="switchRoundedSuccess" class="switch is-rounded is-success">
             <label for="switchRoundedSuccess">Completed</label>
           </div>
         </div>
@@ -81,7 +81,9 @@ export default {
         return this.$store.state.done
       },
       set(value) {
-        this.$store.commit('setDone', value)
+        if (value != this.$store.state.done) {
+          this.$store.commit('setDone', value)
+        }
       }
     }
   },
@@ -89,6 +91,10 @@ export default {
     inputSentences() {
       this.tokenizeCurrentSentence();
     },
+    done() {       
+      //when done changes because of this component or because of AttributesBlock
+      this.completed()
+    }
   },
   created() {
     //console.log(this.oldtm.length)
@@ -243,7 +249,7 @@ export default {
             }
             return cookieValue;
       }
-      console.log("done")
+      // console.log("done")
       const csrftoken = getCookie('csrftoken'); 
       const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
       const params = {

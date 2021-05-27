@@ -267,6 +267,7 @@ def completed_tagging(request, id):
             print(str(error))
             return Response(data={str(error)}, status=500)
 
+        print("salvo tmmmm")
         # else if valid then save in db WITH XML TEXT and return success
         serializer = TaggingSerializer(instance=tagging, data={'token_manager':json.dumps(request.data['tm']), 'completed':completed, 'xml_text':xml_string}, partial=True, many=False)
         if serializer.is_valid():
@@ -275,6 +276,7 @@ def completed_tagging(request, id):
         return Response("Updated")
 
 
+    print("salvo tmmmm")
     #if set uncompleted then save in db and return success
     serializer = TaggingSerializer(instance=tagging, data={'token_manager':json.dumps(request.data['tm']), 'completed':completed, }, partial=True, many=False)
     if serializer.is_valid():

@@ -25,7 +25,7 @@ export default {
     AnnotationPage,
   },
   methods: {
-    ...mapMutations(["setInputSentences","addClass"]),
+    ...mapMutations(["setInputSentences","addClass", "setDone"]),
   },
   created() {
     //ottengo il numero sentenza dall'url
@@ -43,11 +43,9 @@ export default {
           this.title = res.data['name'];
           //il vecchio token manager
           this.oldtm = res.data['token_manager'];
-
-          // console.table(this.oldtm)
-
-          //il fatto che la sentenza sia già stata completata o meno 
-          //this.completed = res.sata['completed']
+          //il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
+          this.setDone(res.data['completed'])
+          
 
           //i tag da parsare, perché passati come xsd string
           let xml = res.data['tags']
@@ -94,8 +92,7 @@ export default {
             }
             this.addClass([name,attrs])
             element.setAttribute('name','CONSUMED')
-            
-            //console.log("\n");
+            //consoe.log("\n");
           }
           this.go=true; //now we can load the annotation page
         })

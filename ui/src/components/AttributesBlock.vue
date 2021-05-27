@@ -9,7 +9,7 @@
         <div class="field">
           <p class="control">
             <input 
-              @keyup="setUnsavedWork(true); setDone(false)"
+              @keydown="onKeyUp"
               v-model="currentBlock.attrs[at]" 
               class="input is-normal" 
               type="text" >
@@ -31,6 +31,15 @@ export default {
   },
   methods: {
     ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork", "setDone"]),
+    onKeyUp(e) {
+      if (e.key === ">" || e.key === "<") {
+        e.preventDefault()
+        console.log("Sorry yout can't input '<' nor '>' char here.")
+      } else {
+        this.setUnsavedWork(true);
+        this.setDone(false); 
+      }
+    }
   }
 };
 </script>
