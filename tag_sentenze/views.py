@@ -137,7 +137,6 @@ def add_multiple_judgments(request):
                 schema_id = form.cleaned_data['schema']
                 print(Schema.objects.get(id=schema_id))
 
-                #TODO UNIQUE Constraint problem
                 for judgment in judgment_files:
                     print(str(judgment))
                     new_judg = Judgment.objects.create(
