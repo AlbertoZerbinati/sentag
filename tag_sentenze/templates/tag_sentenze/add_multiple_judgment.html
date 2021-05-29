@@ -1,0 +1,22 @@
+{% extends "tag_sentenze/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    New Judgments
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">New Judgments</h2>
+    <form method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group m-3">
+            <label>Upload judgments</label>
+            <input required name="judgments" type="file" multiple class="form-control-file">
+        </div>
+
+        {{ form|crispy }}
+        
+        <button type="submit" class="btn btn-primary">Submit</button>
+        
+    </form>
+{% endblock %}

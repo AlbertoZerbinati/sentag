@@ -1,0 +1,41 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+    Editor Page
+{% endblock %}
+
+{% block sidebar %}
+    <div class="navbar navbar-expand-lg">
+        <div class="navbar-brand mx-auto">
+            <h4 class="title" style="text-align: center;">Users</h4>
+        </div>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link"  href="/register">Add</a>
+        </div>
+    </div>
+    {% for user in lista_users %}
+        <p>
+            <a class="nav-item nav-link" href="{% url 'users:user-permission' user.id %}">{{ user }}</a>
+        </p>
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">User-Judgment Association</h2>
+    <div class="border-yop pt-3">
+        Here you can associate judgments to a selected user
+    </div>
+{% endblock %}
+
+{% block graph %}
+    <div>
+        <h4 class="title">Judgments</h4>
+    </div>
+    <div style="overflow-y: auto;">
+        {% for sentenza in sentenze %}
+            <p>
+                {{ sentenza.name }}
+            </p>
+        {% endfor %}
+    </div>
+{% endblock %}
