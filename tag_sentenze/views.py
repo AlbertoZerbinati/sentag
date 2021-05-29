@@ -110,8 +110,81 @@ def new_schema(request):
 
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index') )
+                
+        form = AddSchemaForm()
+        context = {
+            'form': form,
+        }
+        return render(request, 'tag_sentenze/new_schema.html', context=context)
+    else:
+        print('Taggatore access')
+        return redirect('/sentenze/')
 
-<<<<<<< HEAD
+#upload multiplo
+@login_required
+def add_multiple_judgments(request):
+    #check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        print("Admin/Editor access")
+        if request.method == 'POST':
+            # Get all the file uploaded 
+            judgment_files = request.FILES.getlist('judgments')
+
+            form = AddSchemaJudgmentsForm(request.POST)
+            
+            if form.is_valid():
+                schema_id = form.cleaned_data['schema']
+                print(Schema.objects.get(id=schema_id))
+
+                #TODO UNIQUE Constraint problem
+                for judgment in judgment_files:
+                    print(str(judgment))
+                    new_judg = Judgment.objects.create(
+                        judgment_file = judgment,
+                        xsd = Schema.objects.get(id=schema_id),
+                    )
+                    new_judg.save()
+
+                # redirect home
+                return HttpResponseRedirect(reverse('tag_sentenze:index') )
+
+        #add the CoicheField with the schemas
+        form = AddSchemaJudgmentsForm()
+        context = {
+            'form': form,
+        }
+
+        return render(request, 'tag_sentenze/add_multiple_judgment.html', context=context)
+    else:
+        print('Taggatore access')
+        return redirect('/sentenze/')
+
+@login_required
+def add_multiple_schemas(request):
+    #check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        print("Admin/Editor access")
+        if request.method == 'POST':
+            # Get all the file uploaded 
+            schema_files = request.FILES.getlist('schemas')
+
+            for schema in schema_files:
+                print(schema)
+                new_schema = Schema.objects.create(
+                    schema_file = schema,
+                )
+                new_schema.save()
+
+            # redirect home
+            return HttpResponseRedirect(reverse('tag_sentenze:index') )
+
+        return render(request, 'tag_sentenze/add_multiple_schema.html')
+    else:
+        print('Taggatore access')
+        return redirect('/sentenze/')
+
 @login_required
 def download(request, id):
     try:
@@ -191,81 +264,6 @@ def list_taggings(request):
     else:
         print('Taggatore access')
         return redirect('sentenze')
-=======
-        form = AddSchemaForm()
-        context = {
-            'form': form,
-        }
-        return render(request, 'tag_sentenze/new_schema.html', context=context)
-    else:
-        print('Taggatore access')
-        return redirect('/sentenze/')
-
-#upload multiplo
-@login_required
-def add_multiple_judgments(request):
-    #check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        print("Admin/Editor access")
-        if request.method == 'POST':
-            # Get all the file uploaded 
-            judgment_files = request.FILES.getlist('judgments')
-
-            form = AddSchemaJudgmentsForm(request.POST)
-            
-            if form.is_valid():
-                schema_id = form.cleaned_data['schema']
-                print(Schema.objects.get(id=schema_id))
-
-                #TODO UNIQUE Constraint problem
-                for judgment in judgment_files:
-                    print(str(judgment))
-                    new_judg = Judgment.objects.create(
-                        judgment_file = judgment,
-                        xsd = Schema.objects.get(id=schema_id),
-                    )
-                    new_judg.save()
-
-                # redirect home
-                return HttpResponseRedirect(reverse('tag_sentenze:index') )
-
-        #add the CoicheField with the schemas
-        form = AddSchemaJudgmentsForm()
-        context = {
-            'form': form,
-        }
-
-        return render(request, 'tag_sentenze/add_multiple_judgment.html', context=context)
-    else:
-        print('Taggatore access')
-        return redirect('/sentenze/')
-
-@login_required
-def add_multiple_schemas(request):
-    #check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        print("Admin/Editor access")
-        if request.method == 'POST':
-            # Get all the file uploaded 
-            schema_files = request.FILES.getlist('schemas')
-
-            for schema in schema_files:
-                print(schema)
-                new_schema = Schema.objects.create(
-                    schema_file = schema,
-                )
-                new_schema.save()
-
-            # redirect home
-            return HttpResponseRedirect(reverse('tag_sentenze:index') )
-
-        return render(request, 'tag_sentenze/add_multiple_schema.html')
-    else:
-        print('Taggatore access')
-        return redirect('/sentenze/')
->>>>>>> new_editor_page
 
 
 # APIs
