@@ -1,0 +1,41 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+    Schema-Judgments
+{% endblock %}
+
+{% block sidebar %}
+    <div class="navbar navbar-expand-lg">
+        <div class="navbar-brand mx-auto">
+            <h4 class="title" style="text-align: center;">Schemas</h4>
+        </div>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link"  href="{% url 'tag_sentenze:new-schema' %}">Add</a>
+        </div>
+    </div>
+    {% for schema in lista_schemas %}
+        <p>
+            <a class="nav-item nav-link" href="{% url 'users:join-judgment-schema' schema.id %}">{{ schema }}</a>
+        </p>
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">Schema-Judgment Association</h2>
+    <div class="border-yop pt-3">
+        Here you can associate a schema to a selected judgment
+    </div>
+{% endblock %}
+
+{% block graph %}
+    <div>
+        <h4 class="title">Judgments</h4>
+    </div>
+    <div style="overflow-y: auto;">
+        {% for sentenza in sentenze %}
+            <p>
+                {{ sentenza.name }}
+            </p>
+        {% endfor %}
+    </div>
+{% endblock %}

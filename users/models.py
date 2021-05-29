@@ -7,7 +7,7 @@ from django.dispatch import receiver
 
 #create a custom user model
 class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
     #many to many relationship between a Users and Judgments through Tagging
     taggings = models.ManyToManyField(Judgment, blank=True, through='users.Tagging')
     

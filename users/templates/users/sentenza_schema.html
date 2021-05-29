@@ -1,0 +1,188 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+    Schema {{ selected_schema }}
+{% endblock %}
+
+{% block script %}
+    <script>
+        
+        //function to set all the checkboxes to false after refreshing the page
+        function clearAll(name) {
+            var inputs = document.querySelectorAll(name);
+            for(var i=0; i<inputs.length; i++)
+                inputs[i].checked = false;
+        }
+
+        //function to select all the checkboxes
+        function selectAll(name) {
+            var inputs = document.querySelectorAll(name);
+            for(var i=0; i<inputs.length; i++)
+                inputs[i].checked = true;
+        }
+
+        $(document).ready(function () {
+            var csrf = $("input[name=csrfmiddlewaretoken]").val()
+            //join a single sentenza to the current selected schema
+            $(".add-sentenza-button").click(function () {
+                $.ajax({
+                    url: "{% url 'users:add-sentenza-schema' selected_schema %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenza: $(this).attr('id').substring(9),
+                        selected_schema: "{{ schema_id }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+            
+            //remove a single sentenza to the current selected schema
+            $(".remove-sentenza-button").click(function () {
+                $.ajax({
+                    url: "{% url 'users:remove-sentenza-schema' selected_schema %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenza: $(this).attr('id').substring(9),
+                        selected_schema: "{{ schema_id }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+
+            //add a schema to a list of selected judgments
+            $("#add_selected_schema").click(function () {
+                var inputs = document.querySelectorAll('.check-add');
+                var lista_sentenze = [];
+                for(var i=0; i<inputs.length; i++) {
+                    if(inputs[i].checked) {
+                        var id = inputs[i].id;
+                        var new_sentenza = id.substring(7);
+                        lista_sentenze.push(new_sentenza);
+                    }
+                }
+                console.log(lista_sentenze);
+                $.ajax({
+                    url: "{% url 'users:add-sentenza-schema-list' selected_schema %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenze: JSON.stringify(lista_sentenze),
+                        selected_schema: "{{ schema_id }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                        clearAll('.check-add');
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+
+            //remove the schema to a selected list of judgments
+            $("#remove_selected_schema").click(function () {
+                var inputs = document.querySelectorAll('.check-remove');
+                var lista_sentenze = [];
+                for(var i=0; i<inputs.length; i++) {
+                    if(inputs[i].checked) {
+                        var id = inputs[i].id;
+                        var new_sentenza = id.substring(7);
+                        lista_sentenze.push(new_sentenza);
+                    }
+                }
+                $.ajax({
+                    url: "{% url 'users:remove-sentenza-schema-list' selected_schema %}",
+                    type: 'post',
+                    data: {
+                        selected_sentenze: JSON.stringify(lista_sentenze),
+                        selected_schema: "{{ schema_id }}",
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        window.location.href = 'REDIRECT_URL'
+                        window.location.reload() //refresh the page
+                        clearAll('.check-remove');
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+            })
+           
+        })
+    </script>
+{% endblock %}
+
+{% block sidebar %}
+    <div class="navbar navbar-expand-lg">
+        <div class="navbar-brand mx-auto">
+            <h4 class="title" style="text-align: center;">Schemas</h4>
+        </div>
+        <div class="navbar-nav">
+            <a class="nav-item nav-link"  href="{% url 'tag_sentenze:new-schema' %}">Add</a>
+        </div>
+    </div>
+    {% for schema in lista_schema %}
+        <p>
+            <a class="nav-item nav-link" href="{% url 'users:join-judgment-schema' schema.id %}">{{ schema }}</a>
+        </p>
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">{{ selected_schema }}</h2>
+    <div class="border-yop pt-3">
+        Schema {{ selected_schema }} is related to the following judgments:
+    </div>
+    <button type="button" id="rselect_all" onclick="selectAll('.check-remove')" class="btn btn-outline-primary btn-sm">Select All</button>
+    <div style="overflow-y: auto;">
+        {% for elem in sentenze_schema %}
+            <div>
+                <input type="checkbox" id="rcheck_{{ elem.id }}" class="check-remove">
+                {{ elem }}
+                <button id="sentenza_{{ elem.id }}" type="button" class="remove-sentenza-button" style="float: right;">Remove</button>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="text-center">
+        <button type="button" id="remove_selected_schema" class="btn btn-primary">Remove Selected</button>
+    </div>
+{% endblock %}
+
+{% block graph %}
+    <div>
+        <h4 class="title">Judgments</h4>
+    </div>
+    <button type="button" id="aselect_all" onclick="selectAll('.check-add')" class="btn btn-outline-primary btn-sm">Select All</button>
+    <div style="overflow-y: auto;">
+        {% for sentenza in sentenze %}
+            <div class="align-items-center">
+                <input type="checkbox" id="acheck_{{ sentenza.id }}" class="check-add">
+                {{ sentenza.name }}
+                <button id="sentenza_{{ sentenza.id }}" type="button" class="add-sentenza-button" style="float: right;">Add</button>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="text-center">
+        <button type="button" id="add_selected_schema" class="btn btn-primary">Add Selected</button>
+    </div>
+{% endblock %}

@@ -5,35 +5,22 @@
 {% endblock %}
 
 {% block sidebar %}
-    <div class="navbar navbar-expand-lg">
-        <div class="navbar-brand mx-auto">
-            <h4 class="title" style="text-align: center;">Utenti</h4>
-        </div>
-        <div class="navbar-nav">
-            <a class="nav-item nav-link"  href="/register">Add</a>
-        </div>
-    </div>
-    {% for user in lista_users %}
-        <p>
-            <a class="nav-item nav-link" href="{% url 'users:user-permission' user.id %}">{{ user }}</a>
-        </p>
-    {% endfor %}
+    
 {% endblock %}
 
 {% block content %}
     <h2 class="title">Editor Page</h2>
     <div class="border-yop pt-3">
-        Sei nella pagina di gestione dell'editor
+        <a class="nav-item nav-link" href="/register/">Add a User</a>
+        <a class="nav-item nav-link" href="{% url 'tag_sentenze:new-schema' %}">Add a Schema</a>
+        <a class="nav-item nav-link" href="{% url 'tag_sentenze:multiple-schemas' %}">Add multiple Schemas</a>
+        <a class="nav-item nav-link" href="{% url 'tag_sentenze:new-sentenza' %}">Add a Judgment</a>
+        <a class="nav-item nav-link" href="{% url 'tag_sentenze:multiple-judgment' %}">Add multiple Judgments</a>
+        <a class="nav-item nav-link" href="{% url 'users:home-judgment-schema' %}">Associate judgments to schemas</a>
+        <a class="nav-item nav-link" href="{% url 'users:home-permission' %}">Associate judgments to Users</a>
     </div>
 {% endblock %}
 
 {% block graph %}
-    <div>
-        <h4 class="title">Sentenze</h4>
-    </div>
-    {% for sentenza in sentenze %}
-        <p>
-            {{ sentenza.nome }}
-        </p>
-    {% endfor %}
+    
 {% endblock %}

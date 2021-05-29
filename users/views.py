@@ -4,7 +4,7 @@ from django.http import Http404, JsonResponse
 from django.contrib import messages
 
 from .forms import UserRegisterForm
-from tag_sentenze.models import Judgment
+from tag_sentenze.models import Judgment, Schema
 
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
@@ -53,6 +53,24 @@ def editor_page(request):
         return render(request, 'users/editor_page.html', context=context)
     else:
         return render(request, 'users/no_permission.html')
+
+@login_required
+def home_permission(request):
+    #check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        #get all users from Taggatori group
+        taggers = User.objects.filter(groups__name='Taggatori').all()
+        print(taggers)
+
+        context = {
+            'lista_users': taggers,
+            'sentenze': Judgment.objects.all()
+        }
+
+        return render(request, 'users/home_permission.html', context=context)
+    else:
+        return redirect('/sentenze/')
 
 @login_required
 def user_permission(request, id):
@@ -203,8 +221,129 @@ def remove_permission_list(request, utente):
     return JsonResponse({'response': data}, status=200)
 
 @login_required
-def join_schema(request):
+def home_judgment_schema(request):
+    #check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        #get all users from Taggatori group
+        schemas = Schema.objects.all()
+        print(schemas)
+
+        context = {
+            'lista_schemas': schemas,
+            'sentenze': Judgment.objects.all()
+        }
+
+        return render(request, 'users/home_sentenza_schema.html', context=context)
+    else:
+        return redirect('/sentenze/')
+
+@login_required
+def join_schema(request, id):
+    try:
+        schema = Schema.objects.get(pk=id)
+    except User.DoesNotExist:
+        #raise Http404("The selected user doesn't exist")
+        schema = Schema.objects.get(pk=1)
+
+    #contains a list of all the sentenze related to the current selected schema
+    sentenze_list = Judgment.objects.filter(xsd=schema)
+
+    all_judgments = Judgment.objects.all()
+
+    #contains the rest of the sentenze (all sentenze - selected user sentenze)
+    for elem in all_judgments:
+        if elem in sentenze_list:
+            all_judgments = all_judgments.exclude(pk=elem.id)
+
+    context = {
+        'sentenze_schema': sentenze_list,
+        'selected_schema': schema,
+        'schema_id': schema.id,
+        'lista_schema': Schema.objects.all(),
+        'sentenze': all_judgments
+    }
+    
+    return render(request, 'users/sentenza_schema.html', context=context)
+
+@login_required
+def add_sentenza_schema(request, schema):
+
     data = {}
 
-    #prendi la sentenza selezionata e lo schema, associa lo schema alla sentenza
-    #refresh page
+    if request.method == 'POST' and request.is_ajax:
+        data['schema'] = request.POST.get('selected_schema')
+        data['sentenza'] = request.POST.get('selected_sentenza')
+
+    print(data)
+
+    #add the schema to the selected judgment
+    selected_schema = Schema.objects.get(id=data['schema'])
+    selected_sentenza = Judgment.objects.get(id=data['sentenza'])
+
+    selected_sentenza.xsd = selected_schema
+
+    selected_sentenza.save()
+
+    return JsonResponse({'response': data}, status=200)
+
+@login_required
+def remove_sentenza_schema(request, schema):
+
+    data = {}
+
+    if request.method == 'POST' and request.is_ajax:
+        data['schema'] = request.POST.get('selected_schema')
+        data['sentenza'] = request.POST.get('selected_sentenza')
+
+    print(data)
+
+    #remove the schema to the selected judgment
+    selected_schema = Schema.objects.get(id=data['schema'])
+    selected_sentenza = Judgment.objects.get(id=data['sentenza'])
+
+    selected_sentenza.xsd = None
+
+    selected_sentenza.save()
+
+    return JsonResponse({'response': data}, status=200)
+
+@login_required
+def add_sentenza_schema_list(request, schema):
+
+    data = {}
+
+    if request.method == 'POST' and request.is_ajax:
+        data['schema'] = request.POST.get('selected_schema')
+        data['sentenze'] = request.POST.get('selected_sentenze')
+
+    #add a schema to a list of selected judgments
+    selected_schema = Schema.objects.get(id=data['schema'])
+    selected_sentenze = json.loads(data['sentenze'])
+
+    for sentenza in selected_sentenze:
+        sel_sent = Judgment.objects.get(id=sentenza)
+        sel_sent.xsd = selected_schema
+        sel_sent.save()
+
+    return JsonResponse({'response': data}, status=200)
+
+@login_required
+def remove_sentenza_schema_list(request, schema):
+
+    data = {}
+
+    if request.method == 'POST' and request.is_ajax:
+        data['schema'] = request.POST.get('selected_schema')
+        data['sentenze'] = request.POST.get('selected_sentenze')
+
+    #add a schema to a list of selected judgments
+    selected_schema = Schema.objects.get(id=data['schema'])
+    selected_sentenze = json.loads(data['sentenze'])
+
+    for sentenza in selected_sentenze:
+        sel_sent = Judgment.objects.get(id=sentenza)
+        sel_sent.xsd = None
+        sel_sent.save()
+
+    return JsonResponse({'response': data}, status=200)

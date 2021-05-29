@@ -134,7 +134,7 @@
 {% block sidebar %}
     <div class="navbar navbar-expand-lg">
         <div class="navbar-brand mx-auto">
-            <h4 class="title" style="text-align: center;">Utenti</h4>
+            <h4 class="title" style="text-align: center;">Users</h4>
         </div>
         <div class="navbar-nav">
             <a class="nav-item nav-link"  href="/register">Add</a>
@@ -148,11 +148,11 @@
 {% endblock %}
 
 {% block content %}
-    <h2 class="title">Editor Page</h2>
+    <h2 class="title">User {{ selected_user }}</h2>
     <div class="border-yop pt-3">
-        User {{ selected_user }} permissions:
+        User {{ selected_user }} has access to the following judgments:
     </div>
-    <button type="button" id="rselect_all" onclick="selectAll('.check-remove')">Select All</button>
+    <button type="button" id="rselect_all" onclick="selectAll('.check-remove')" class="btn btn-outline-primary btn-sm">Select All</button>
     <div>
         {% for elem in permission %}
             <div>
@@ -162,20 +162,26 @@
             </div>
         {% endfor %}
     </div>
-    <button type="button" id="remove_selected">Remove Selected</button>
+    <div class="text-center">
+        <button type="button" id="remove_selected" class="btn btn-primary">Remove Selected</button>
+    </div>
 {% endblock %}
 
 {% block graph %}
     <div>
-        <h4 class="title">Sentenze</h4>
+        <h4 class="title">Judgments</h4>
     </div>
-    <button type="button" id="aselect_all" onclick="selectAll('.check-add')">Select All</button>
-    {% for sentenza in sentenze %}
-        <div>
-            <input type="checkbox" id="acheck_{{ sentenza.id }}" class="check-add">
-            {{ sentenza.name }}
-            <button id="sentenza_{{ sentenza.id }}" type="button" class="add-button" style="float: right;">Add</button>
-        </div>
-    {% endfor %}
-    <button type="button" id="add_selected">Add Selected</button>
+    <button type="button" id="aselect_all" onclick="selectAll('.check-add')" class="btn btn-outline-primary btn-sm">Select All</button>
+    <div style="overflow-y: auto;">
+        {% for sentenza in sentenze %}
+            <div>
+                <input type="checkbox" id="acheck_{{ sentenza.id }}" class="check-add">
+                {{ sentenza.name }}
+                <button id="sentenza_{{ sentenza.id }}" type="button" class="add-button" style="float: right;">Add</button>
+            </div>
+        {% endfor %}
+    </div>
+    <div class="text-center">
+        <button type="button" id="add_selected" class="btn btn-primary">Add Selected</button>
+    </div>
 {% endblock %}
