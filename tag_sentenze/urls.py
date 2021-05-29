@@ -9,8 +9,9 @@ urlpatterns = [
     path("sentenze/", views.list_sentenze, name="list-sentenze"),
     path("new_sentenza/", views.new_sentenza, name="new-sentenza"),
     path("sentenza/<int:id>/", views.tag_sentenza, name="tag-sentenza"),
-    path("api/<int:id>", views.sentenza_detail, name="api_get"),
-    path("api/update/<int:id>", views.update_sentenza, name="api_update"),
-    # path("new-tag/<str:nome>/", views.new_tag, name="new-tag"),
-    # path("detokenize/", views.detokenize, name="detokenize"),
+    path("api/<int:id>", views.tagging_detail, name="api-get"),
+    path("api/update/<int:id>", views.update_tagging, name="api-update"),
+    path("api/completed/<int:id>", views.completed_tagging, name="api-compeleted"),
+    path("download/<int:id>", views.download, name="download"),
+    path("taggings/", views.list_taggings, name="list-taggings"),
 ]

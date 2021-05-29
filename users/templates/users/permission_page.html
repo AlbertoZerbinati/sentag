@@ -29,7 +29,7 @@
                     url: "{% url 'users:add-permission' selected_user %}",
                     type: 'post',
                     data: {
-                        selected_sentenza: $(this).attr('id'),
+                        selected_sentenza: $(this).attr('id').substring(9),
                         selected_user: "{{ selected_user }}",
                         csrfmiddlewaretoken: csrf
                     },
@@ -50,7 +50,7 @@
                     url: "{% url 'users:remove-permission' selected_user %}",
                     type: 'post',
                     data: {
-                        selected_sentenza: $(this).attr('id'),
+                        selected_sentenza: $(this).attr('id').substring(9),
                         selected_user: "{{ selected_user }}",
                         csrfmiddlewaretoken: csrf
                     },
@@ -156,9 +156,9 @@
     <div>
         {% for elem in permission %}
             <div>
-                <input type="checkbox" id="rcheck_{{ elem }}" class="check-remove">
+                <input type="checkbox" id="rcheck_{{ elem.id }}" class="check-remove">
                 {{ elem }}
-                <button id="{{ elem }}" type="button" class="remove-button" style="float: right;">Remove</button>
+                <button id="sentenza_{{ elem.id }}" type="button" class="remove-button" style="float: right;">Remove</button>
             </div>
         {% endfor %}
     </div>
@@ -172,9 +172,9 @@
     <button type="button" id="aselect_all" onclick="selectAll('.check-add')">Select All</button>
     {% for sentenza in sentenze %}
         <div>
-            <input type="checkbox" id="acheck_{{ sentenza.nome }}" class="check-add">
-            {{ sentenza.nome }}
-            <button id="{{ sentenza.nome }}" type="button" class="add-button" style="float: right;">Add</button>
+            <input type="checkbox" id="acheck_{{ sentenza.id }}" class="check-add">
+            {{ sentenza.name }}
+            <button id="sentenza_{{ sentenza.id }}" type="button" class="add-button" style="float: right;">Add</button>
         </div>
     {% endfor %}
     <button type="button" id="add_selected">Add Selected</button>

@@ -12,6 +12,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="{% static 'tag_sentenze/styles.css' %}" rel="stylesheet">
     <link href="{% static 'tag_sentenze/favicon.png' %}" rel="icon">
+
+    <!-- save as meta information the id of the Tagging row. It will be used by Vue to access the correct API -->
+    <meta name="id-tagging" content="{{ taggings.id }}">
 </head>
 
 <body>
@@ -45,7 +48,7 @@
         <div class="row gx-2 top-buffer">
             <div class="col col-sm-3 sticky-top">
                 <div class="p-2 no-border sticky-top">
-                    <div id="classes"></div>
+                    <div id="sidebar"></div>
                 </div>
             </div>
             <div class="col col-sm-9">
@@ -57,7 +60,7 @@
                     {% endfor %}
                 {% endif %}
                 <div class="p-2 no-border">
-                    <div id="app"></div> 
+                    <div id="editor"></div> 
                     <script type="text/javascript" src="{% static 'src/vue/dist/js/chunk-vendors.js' %}"></script>
                     <script type="text/javascript" src="{% static 'src/vue/dist/js/app.js' %}"></script>
                 </div>

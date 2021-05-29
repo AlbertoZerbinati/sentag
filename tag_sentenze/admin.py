@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Sentenza
+from .models import Judgment, Schema
 
-# Register your models here.
-admin.site.register(Sentenza)
+admin.site.register(Judgment)
+admin.site.register(Schema)

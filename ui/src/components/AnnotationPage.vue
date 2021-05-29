@@ -3,7 +3,7 @@
     <div class="column">
       <div class="panel">
         <p class="panel-heading">
-          <strong>Tagga {{title}}</strong>
+          <strong>Tag {{title}}</strong>
         </p>
         <div class="panel-block">
           <div id="editor">
@@ -19,19 +19,29 @@
             />
           </div>
         </div>
-        <div class="panel-block">
-          <div class="field is-grouped">
+        <div class="panel-block is-justify-content-space-between">
+          <div class="field is-grouped is-pulled-left">
             <p class="control">
               <button class="button is-danger is-outlined" @click="resetBlocks">
-                Reset
+                <span class="icon is-small">
+                  <font-awesome-icon icon="undo" />
+                </span>
+                <span>Reset</span>
               </button>
             </p>
             <p class="control">
-              <button class="button is-link" @click="saveTags">Salva</button>
+              <button class="button is-link" @click="saveTags">
+                <span class="icon is-small">
+                  <font-awesome-icon icon="check" />
+                </span>
+                <span>Save</span>
+              </button>
             </p>
-            <p class="control">
-                <export/>
-            </p>
+          </div>
+
+          <div class="is-pulled-right">
+            <input id="switchRoundedSuccess" v-model="done" type="checkbox" name="switchRoundedSuccess" class="switch is-rounded is-success">
+            <label for="switchRoundedSuccess">Completed</label>
           </div>
         </div>
       </div>
@@ -42,6 +52,7 @@
 <script>
 import { mapState, mapMutations } from "vuex";
 import { toast } from "bulma-toast"
+import "bulma-switch"
 import axios from "../axios";
 import Token from "./Token";
 import TokenBlock from "./TokenBlock";
@@ -65,16 +76,31 @@ export default {
   },
   computed: {
     ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock", "unsavedWork"]),
+    done: {
+      get() {
+        return this.$store.state.done
+      },
+      set(value) {
+        if (value != this.$store.state.done) {
+          this.$store.commit('setDone', value)
+        }
+      }
+    }
   },
   watch: {
     inputSentences() {
       this.tokenizeCurrentSentence();
+    },
+    done() {       
+      //when done changes because of this component or because of AttributesBlock
+      this.completed()
     }
   },
   created() {
     //console.log(this.oldtm.length)
-    if(this.oldtm.length) {
-      this.tm = new TokenManager([],JSON.parse(this.oldtm))
+    if (this.oldtm.length) {
+      this.tm = new TokenManager([],JSON.parse(JSON.parse(this.oldtm)))
+      //note: double json parsing is needed
     } else { 
       this.tokenizeCurrentSentence();
     }
@@ -82,11 +108,17 @@ export default {
     document.addEventListener("mouseup", this.selectTokens);
     window.onbeforeunload = () => (this.unsavedWork ? true : null);
 
+    this.switchState = this.done;
   },
   beforeUnmount() {
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
+    print() {
+      console.log(this.done);
+      console.log(this.switchState);
+      
+    },
     ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
     tokenizeCurrentSentence() {
       this.currentSentence = this.inputSentences[0];
@@ -119,47 +151,40 @@ export default {
       )
         return;
       let startIdx, endIdx;
-      try {
-        startIdx = parseInt(
-          selection.anchorNode.parentElement.id.replace("t", "")
-        );
-        endIdx = parseInt(
-          selection.focusNode.parentElement.id.replace("t", "")
-        );
-      } catch (e) {
-        console.log("selected text were not tokens");
-        return;
-      }
-      let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
-      if(cb) {
-        this.$store.commit('setCurrentBlock',cb);
+      // try {
+      startIdx = parseInt(
+        selection.anchorNode.parentElement.id.replace("t", "")
+      );
+      endIdx = parseInt(
+        selection.focusNode.parentElement.id.replace("t", "")
+      );
+      // } catch (e) {
+      //   console.log("selected text were not tokens");
+      //   return;
+      // }
+      if (!isNaN(startIdx) && !isNaN(endIdx)) {
+        let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
+        if(cb) {
+          this.setCurrentBlock(cb);
+        }
+        this.setUnsavedWork(true);
+        this.done = false;
       }
       selection.empty();
-      this.setUnsavedWork(true);
     },
     onRemoveBlock(data) {
       this.tm.removeBlock(data.start,data.end);
       this.setCurrentBlock(new Object());
       this.setUnsavedWork(true);
+      this.done = false;
     },
     resetBlocks() {
       if(confirm("Are you sure you want to reset ALL the annotations? The unsaved work will be lost"))
       this.tm.resetBlocks();
       this.setUnsavedWork(true);
+      this.done = false;
     },
     saveTags() {
-      // let tmjson = JSON.stringify(this.tm);
-      // console.log(tmjson);
-      
-      // ( PROOF OF WORK
-      // this.tm = new TokenManager({}, JSON.parse(tmjson));
-      // console.log(this.tm); )
-
-      //retrieve sentenza number
-      const url = new URL(location.href)['pathname'];
-      const numero_sentenza = url.split('/')[2]
-
-
       //retrieve CSRF_TOKEN
       function getCookie(name) {
       let cookieValue = null;
@@ -177,10 +202,15 @@ export default {
         return cookieValue;
       }
       const csrftoken = getCookie('csrftoken'); 
+      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
+      const params = {
+        'tm': JSON.stringify(this.tm),
+        'cp': this.done,
+      } 
       axios
         .post(
-          "/api/update/"+numero_sentenza, 
-          JSON.stringify(this.tm),
+          "/api/update/"+tagging_id, 
+          params,
           {  
             headers: {
               "X-CSRFToken": csrftoken,
@@ -203,12 +233,88 @@ export default {
           console.log(e);
         });
     },
+    completed() {
+      function getCookie(name) {
+          let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  // Does this cookie string begin with the name we want?
+                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+            }
+            return cookieValue;
+      }
+      // console.log("done")
+      const csrftoken = getCookie('csrftoken'); 
+      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
+      const params = {
+        'tm': JSON.stringify(this.tm),
+        'cp': this.done,
+        } 
+
+      axios
+        .post(
+          "/api/completed/"+tagging_id,
+          params,
+          {  
+            headers: {
+              "X-CSRFToken": csrftoken,
+              "content-type": "application/json",
+              // "Access-Control-Allow-Origin": "*"
+          }}
+        )
+        .then( () => {
+          toast({
+            message:'Annotations saved',
+            type:'is-success',
+            dismissible:'true',
+            pauseOnHover:'true',
+            duration:2000,
+            position:'bottom-right'
+          });
+          if (this.done) { 
+          toast({
+            message:'Tagging Completed',
+            type:'is-info',
+            dismissible:'true',
+            pauseOnHover:'true',
+            duration:2000,
+            position:'bottom-right',
+          });
+          } else {
+            toast({
+              message:'Set Uncompleted',
+              type:'is-warning',
+              dismissible:'true',
+              pauseOnHover:'true',
+              duration:2000,
+              position:'bottom-right',
+            });
+          }
+          this.setUnsavedWork(false);
+        })
+        .catch((e) => {
+          // console.log(e);
+          // alert(e)
+          alert(e.response.data[0])
+          this.done = false
+        });
+    },
   },
-};
+}
 </script>
 
 <style lang="scss">
 #editor {
   padding: 0.2rem;
+}
+.right {
+  margin-left:100px;
+  margin-right:0px;
 }
 </style>

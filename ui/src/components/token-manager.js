@@ -12,13 +12,13 @@ class TokenManager {
         end: t[1],
         text: t[2],
       }));
-      this.words = tokens.map(t => t[2]);
+      // this.words = tokens.map(t => t[2]);
       this.initialTokens = this.tokens.slice(); //SHALLOW COPY
     }
     else { //in case an oldTM is available
       this.currentID = oldTM.currentID;
       this.tokens = oldTM.tokens
-      this.words = oldTM.words;
+      // this.words = oldTM.words;
       this.initialTokens = oldTM.initialTokens;
     }
     this.latestAddedToken = null;
@@ -66,15 +66,14 @@ class TokenManager {
           start: selectedTokens[0].start,
           end: selectedTokens[selectedTokens.length - 1].end,
           tokens: selectedTokens,
-          label: _class && _class.name ? _class.name : "Unlabelled",
-          classId: _class && _class.id ? _class.id : 0,
-          id:this.currentID,
+          label: _class.name,
+          id: this.currentID,
           attrs:{},
-          backgroundColor: _class && _class.color ? _class.color : null,
+          backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {
           if (key === 'ID')
-            newTokenBlock.attrs[key] = this.currentID.toString();
+            newTokenBlock.attrs[key] = _class.name + " " + this.currentID.toString();
           else 
             newTokenBlock.attrs[key] = "";
         }
@@ -116,15 +115,14 @@ class TokenManager {
           start: selectedTokens[0].start,
           end: selectedTokens[selectedTokens.length - 1].end,
           tokens: selectedTokens,
-          label: _class && _class.name ? _class.name : "Unlabelled",
-          classId: _class && _class.id ? _class.id : 0,
-          id:this.currentID,
+          label: _class.name,
+          id: this.currentID,
           attrs:{},
-          backgroundColor: _class && _class.color ? _class.color : null,
+          backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {
           if (key === 'ID')
-            newTokenBlock.attrs[key] = this.currentID.toString();
+            newTokenBlock.attrs[key] = _class.name + " " + this.currentID.toString();
           else 
             newTokenBlock.attrs[key] = "";
         }

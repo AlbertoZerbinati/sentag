@@ -6,11 +6,20 @@
 
 {% block content %}
     <h2 class="title">Scegli sentenza</h2>
-    <ul>
-        {% for sentenza in sentenze %}
-        <li> 
-            <a href="{% url 'tag_sentenze:tag-sentenza' sentenza.id %}"> {{ sentenza }} </a> 
-        </li>
-        {% endfor %}
-    </ul>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Judgment</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sentenza in sentenze %}
+            <tr>
+                <td>{{sentenza}}</td>
+                <td><a href="{% url 'tag_sentenze:tag-sentenza' sentenza.id %}"> TAG </a> </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 {% endblock %}

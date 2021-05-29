@@ -1,29 +1,28 @@
 import { createApp } from "vue";
-import App from "./App.vue";
-import Classes from "./Classes.vue";
+import Editor from "./Editor.vue";
+import Sidebar from "./Sidebar.vue";
 import "es6-promise/auto";
 import { createStore } from "vuex";
 import store from "./store.js";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
-  faFileAlt,
-  faPlusSquare,
+  faCheck,
+  faUndo,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
+library.add(faCheck);
+library.add(faUndo);
 
-library.add(faFileAlt);
-library.add(faPlusSquare);
-
-const app = createApp(App);
-const classes = createApp(Classes);
+const editor = createApp(Editor);
+const sidebar = createApp(Sidebar);
 
 const oneStore = createStore(store);
-app.use(oneStore);
-classes.use(oneStore);
+editor.use(oneStore);
+sidebar.use(oneStore);
 
-app.component("font-awesome-icon", FontAwesomeIcon);
-classes.component("font-awesome-icon", FontAwesomeIcon);
+editor.component("font-awesome-icon", FontAwesomeIcon);
+sidebar.component("font-awesome-icon", FontAwesomeIcon);
 
-app.mount("#app");
-classes.mount("#classes");
+editor.mount("#editor");
+sidebar.mount("#sidebar");

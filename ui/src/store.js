@@ -46,23 +46,17 @@ export const mutations = {
       state.currentClass = state.classes[0];
     }
   },
-  removeClass(state, payload) {
-    state.classes = state.classes.filter((c) => c.id != payload);
-    if (state.currentClass.id === payload) {
-      state.currentClass = state.classes[0];
-    }
-  },
   setCurrentClass(state, payload) {
     state.currentClass = state.classes.find((c) => c.id === payload);
   },
   setCurrentBlock(state, payload) {
     state.currentBlock = payload;
   },
+  setDone(state, payload) {
+    state.done = payload;
+  },
   setUnsavedWork(state, payload) {
     state.unsavedWork = payload;
-  },
-  addAnnotation(state, payload) {
-    state.annotations.push(payload);
   },
 };
 
@@ -73,10 +67,10 @@ export default {
       originalText: "",
       classes: [],
       inputSentences: [],
-      annotations: [],
       currentClass: {},
       currentBlock: {},
       unsavedWork: false,
+      done: false,
     };
   },
   getters,
