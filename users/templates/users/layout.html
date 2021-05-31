@@ -56,6 +56,21 @@
             </li>
         </div>
     </nav>
+    <br>
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+                <li class="page-item"><a class="page-link" href="/register/">Add User</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:new-schema' %}">Add Schema</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:multiple-schemas' %}">Add Schemas</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:new-sentenza' %}">Add Judgment</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:multiple-judgment' %}">Add Judgments</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'users:home-judgment-schema' %}">Associate Judgments - Schemas</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'users:home-permission' %}">Associate Judgments - Users</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:list-taggings' %}">Download</a></li>
+        </ul>
+    </nav>
+    <br>
+    
     <div class="container-fluid px-2">
         <div class="row gx-2 top-buffer">
             {% csrf_token %}
@@ -63,7 +78,10 @@
                 <div class="p-2 no-border sticky-top">{% block sidebar %} {% endblock %}</div>
             </div>
             <div class="col col-sm-6">
-                <div class="p-2 no-border">{% block content %} {% endblock %}</div>
+                <div class="p-2 no-border">
+                    {% block content %} 
+                    {% endblock %}</div>
+
             </div>
             <div class="col col-sm-3 ">
                 <div class="p-2 no-border sticky-top ">{% block graph %} {% endblock %}</div>

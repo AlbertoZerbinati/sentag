@@ -1,4 +1,4 @@
-{% extends "tag_sentenze/layout.html" %}
+{% extends "users/layout.html" %}
 {% load crispy_forms_tags %}
 
 {% block title %}
@@ -11,12 +11,12 @@
             {% csrf_token %}
 
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Register New User</legend>
+                <h2 class="title">Register New User</h2>
                 {{ form|crispy }}
             </fieldset>
 
             <div class="form-group">
-                <button class="btn btn-outline-info" type="submit">Create User</button>
+                <button class="btn btn-primary" type="submit">Create User</button>
             </div>
 
         </form>

@@ -134,14 +134,14 @@ def add_multiple_judgments(request):
             form = AddSchemaJudgmentsForm(request.POST)
             
             if form.is_valid():
-                schema_id = form.cleaned_data['schema']
-                print(Schema.objects.get(id=schema_id))
+                schema = form.cleaned_data['schema']
+                print(Schema.objects.get(id=schema.id))
 
                 for judgment in judgment_files:
                     print(str(judgment))
                     new_judg = Judgment.objects.create(
                         judgment_file = judgment,
-                        xsd = Schema.objects.get(id=schema_id),
+                        xsd = Schema.objects.get(id=schema.id),
                     )
                     new_judg.save()
 

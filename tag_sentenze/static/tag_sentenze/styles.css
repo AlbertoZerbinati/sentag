@@ -22,7 +22,7 @@
 
 .link {
     color:rgb(184, 184, 184);
-    width:130px;
+    /* width:130px; */
 }
 .link:hover{
     color:white
