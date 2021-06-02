@@ -198,7 +198,8 @@ def auto_assignment(judgment_id):
     admins = list(User.objects.filter(groups__name='Admins'))
     editors = list(User.objects.filter(groups__name='Editors'))
     both_users = admins + editors
-    
+    both_users = set(both_users) #remove duplicates
+
     #list with all id of editors and admins users
     id_list = [user.id for user in both_users]
 
