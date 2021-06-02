@@ -32,9 +32,8 @@ export default {
   methods: {
     ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork", "setDone"]),
     onKeyUp(e) {
-      if (e.key === ">" || e.key === "<") {
+      if (e.key === ">" || e.key === "<" || e.key === " " || e.key === '"') {
         e.preventDefault()
-        console.log("Sorry yout can't input '<' nor '>' char here.")
       } else {
         this.setUnsavedWork(true);
         this.setDone(false); 

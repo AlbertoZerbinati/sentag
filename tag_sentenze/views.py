@@ -4,6 +4,7 @@ from .models import Judgment, Schema
 from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm
 from users.models import Tagging, Profile
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 @login_required
 def index(request):
@@ -49,6 +50,11 @@ def new_sentenza(request):
             if form.is_valid():
                 # save the form into the DB
                 form.save()
+
+                #id of the new judgment uploaded
+                print(form.instance.id)
+                #assign a tagging object to all editors and admins
+                auto_assignment(form.instance.id)
 
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index') )
@@ -145,6 +151,9 @@ def add_multiple_judgments(request):
                     )
                     new_judg.save()
 
+                    #auto assign the new uploaded judgments to all editor and admin users
+                    auto_assignment(new_judg.id)
+
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index') )
 
@@ -183,6 +192,23 @@ def add_multiple_schemas(request):
     else:
         print('Taggatore access')
         return redirect('/sentenze/')
+
+#automatic assignment of a new uploaded judgment to all editors and admins
+def auto_assignment(judgment_id):
+    admins = list(User.objects.filter(groups__name='Admins'))
+    editors = list(User.objects.filter(groups__name='Editors'))
+    both_users = admins + editors
+    
+    #list with all id of editors and admins users
+    id_list = [user.id for user in both_users]
+
+    #create the new tagging
+    for user_id in id_list:
+        new_tagging = Tagging.objects.create(
+            profile = Profile.objects.get(pk=user_id),
+            judgment = Judgment.objects.get(id=judgment_id),
+        )
+        new_tagging.save()
 
 @login_required
 def download(request, id):
@@ -262,7 +288,7 @@ def list_taggings(request):
     #taggatori don't
     else:
         print('Taggatore access')
-        return redirect('sentenze')
+        return redirect('/sentenze')
 
 
 # APIs

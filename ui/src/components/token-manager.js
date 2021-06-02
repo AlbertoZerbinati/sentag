@@ -73,7 +73,7 @@ class TokenManager {
         }
         for (const key of _class.attributes) {
           if (key === 'ID')
-            newTokenBlock.attrs[key] = _class.name + " " + this.currentID.toString();
+            newTokenBlock.attrs[key] = _class.name + this.currentID.toString();
           else 
             newTokenBlock.attrs[key] = "";
         }
@@ -122,7 +122,7 @@ class TokenManager {
         }
         for (const key of _class.attributes) {
           if (key === 'ID')
-            newTokenBlock.attrs[key] = _class.name + " " + this.currentID.toString();
+            newTokenBlock.attrs[key] = _class.name + this.currentID.toString();
           else 
             newTokenBlock.attrs[key] = "";
         }

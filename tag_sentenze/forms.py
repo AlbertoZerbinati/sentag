@@ -14,10 +14,8 @@ class AddSchemaForm(ModelForm):
         fields = ['name', 'schema_file']
 
 class AddSchemaJudgmentsForm(forms.Form):
-    schema = forms.ModelChoiceField(Schema.objects, help_text='Choose the schema to match the uploaded judgments')
+    
+    schema = forms.ModelChoiceField(Schema.objects, help_text='Choose the schema to match the uploaded judgments', blank=False)
+
     class Meta:
         fields = ['schema']
-    # try:
-        # schema_choices = [(schema.id, schema.name) for schema in Schema.objects.all()]
-    # except OperationalError:
-    #     pass
