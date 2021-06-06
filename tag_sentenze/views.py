@@ -9,13 +9,13 @@ from django.contrib.auth.models import User
 @login_required
 def index(request):
     #check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        context = {
-            'num_sentenze': Judgment.objects.all().count()
-        }
-        return render(request, 'tag_sentenze/index.html', context=context)
-    else:
+    # current_user = request.user
+    # if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+    #     context = {
+    #         'num_sentenze': Judgment.objects.all().count()
+    #     }
+    #     return render(request, 'tag_sentenze/index.html', context=context)
+    # else:
         return redirect('/sentenze/')
 
 @login_required

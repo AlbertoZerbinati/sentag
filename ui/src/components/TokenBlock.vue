@@ -17,7 +17,8 @@
       />
     <span class="tag is-light is-info is-small"
     >
-      <span><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{ token.label }}</strong></span>
+      <span v-if="token.attrs['ID']"><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{ token.attrs['ID'] }}</strong></span>
+      <span v-if="!token.attrs['ID']"><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{ token.label }}</strong></span>
       
       <a class="tag delete is-small is-danger" 
       @click.stop="$emit('remove-block', {start:token.start, end:token.end}); ">
@@ -85,6 +86,6 @@ mark {
   margin-left: 4px;
 }
 .current {
-  border: 3px solid yellow;
+  border: 2px solid orange;
 }
 </style>
