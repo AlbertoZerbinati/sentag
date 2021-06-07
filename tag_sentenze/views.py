@@ -101,6 +101,10 @@ def tag_sentenza(request, id):
         return redirect('/sentenze/')
 
 @login_required
+def graph(request):
+    return render(request, 'tag_sentenze/graph.html')
+    
+@login_required
 def new_schema(request):
     #check if current user belongs to Editor or Admin Group
     current_user = request.user
