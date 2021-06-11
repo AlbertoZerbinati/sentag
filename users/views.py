@@ -4,6 +4,7 @@ from django.http import Http404, JsonResponse
 from django.contrib import messages
 
 from .forms import UserRegisterForm
+from .models import Tagging, Profile
 from tag_sentenze.models import Judgment, Schema
 
 from django.contrib.auth.models import User, Group
@@ -347,3 +348,206 @@ def remove_sentenza_schema_list(request, schema):
         sel_sent.save()
 
     return JsonResponse({'response': data}, status=200)
+
+import simpledorff
+import pandas as pd
+from lxml import etree
+
+#Agreement code
+def calc_agreement(judgment_id):
+    
+    #print('------------------ CALCOLO AGREEMENT -------------------')
+
+    #Creation of a list with all judgment tokens
+    judgment = Judgment.objects.get(id=judgment_id)
+    judgment_text = judgment.initial_text
+    judgment_tokens = judgment_text.split(' ')
+    #print(judgment_tokens)
+
+    #dictionary with token-value pairs
+    tokens_value = {}
+
+    #assign a integer value to every judgment's token
+    for i in range(len(judgment_tokens)):
+        tokens_value[judgment_tokens[i]] = i+1
+    #print(tokens_value)
+
+    #Get the schema associated to the Judgment and create dictionary with all the tags
+    schema = judgment.xsd.schema_file
+
+    tree = etree.ElementTree(file=schema)
+    tags = tree.xpath("//xsd:element/@name", namespaces={"xsd": "http://www.w3.org/2001/XMLSchema"})
+    #print(tags)
+
+    tags_value = {}
+
+    for i in range(len(tags)):
+        tags_value[tags[i]] = i+1
+
+    #Data structure for calculate the agreement
+    data = {'unit_id': [],
+		    'annotator_id': [],
+		    'annotation': []}
+
+    #list of all token managers for the selected judgments
+    #tm_list = []
+
+    #flag to see if at least two or more users has a token manager not empty
+    flag = 0
+
+    #For every token manager get the list of word-label pair as [[WORD: LABEL], [WORD2: LABEL]]
+    for elem in Tagging.objects.all():
+        #print(elem)
+        if(elem.judgment.id == judgment_id):
+            #print('Trovato profile {} con judgment id {}'.format(elem.profile, elem.judgment.id))
+            tm = elem.token_manager
+            user = elem.profile
+            #print(user)
+
+            if tm != ' ' and tm != '':
+                #increment flag
+                flag = flag + 1
+
+                #Double convertion to dict
+                tm = json.loads(tm)
+                tm = json.loads(tm)
+
+                #Get only tokens
+                tokens = tm['tokens']
+
+                #list of word-label pair as [{WORD: LABEL}, {WORD2: LABEL}]
+                words = []
+                while tokens:
+                    t = tokens.pop(0)
+                    #print(t)
+
+                    if isinstance(t, str):
+                        words.append(tuple([t, None]))
+                    elif 'text' in t:
+                        words.append(tuple([t['text'], None]))
+                    else:
+                        label = t['label']
+                        
+                        for child in t['tokens']:
+                            #words.append({child['text']: label})
+
+                            #if child is token block, insert again in tokens
+                            if child['type'] == 'token-block':
+                                tokens.insert(0, child)
+                                continue
+
+                            single_token = child['text']
+
+                            #insert directly the corrispondent value for every label/tag and token
+                            words.append(tuple([single_token, tags_value[label]]))
+                            #if label != None:
+                            #    words.append(tuple([single_token, tags_value[label]]))
+                            #else:
+                            #    print('Label None')
+                            #    words.append(tuple([single_token, None]))
+
+                #print('Words: ', words)
+
+                #Insert data into the structure for agreement
+                for pair in words:
+                    #print('Pair: ', pair)
+                    data['unit_id'].append(pair[0])
+                    data['annotator_id'].append(str(user))
+                    data['annotation'].append(pair[1])
+
+    #print('Secondo token Manager: ', tm_list[1])
+    #print('Type: ', type(tm_list[1]))
+    #sample_tk = json.loads(tm_list[1])
+    #print(sample_tk)
+    #print('Type: ', type(sample_tk))
+
+    #sample_tk = json.loads(sample_tk)
+    #print(sample_tk)
+    #print('Type: ', type(sample_tk))
+    
+    #tokens = sample_tk['tokens']
+    #print('Tokens: ', tokens)
+    #print(type(tokens))
+
+    #list of word-label pair as [{WORD: LABEL}, {WORD2: LABEL}]
+    #words = []
+    #while tokens:
+    #    t = tokens.pop(0)
+    #    print(t)
+
+    #    if isinstance(t, str):
+    #        words.append({t: None})
+    #    elif 'text' in t:
+    #        words.append({t['text']: None})
+    #    else:
+    #        label = t['label']
+    #        
+    #        for child in t['tokens']:
+    #            words.append({child['text']: label})
+
+    #print(words)
+
+    #print('Data: ', data)
+
+    #return None if flag is < 2
+    if flag < 2:
+        return None
+
+    #Calculate agreement with simpledorff package and pandas
+    Data = pd.DataFrame(data)
+    agreement = simpledorff.calculate_krippendorffs_alpha_for_df(Data,experiment_col='unit_id',
+                                                 annotator_col='annotator_id',
+                                                 class_col='annotation')
+
+    #print('Agreement Judgment {}: {}'.format(judgment_id, agreement))
+
+    #print(Data.head())
+
+    return agreement
+
+
+@login_required
+def agreement_page(request):
+
+    #Create table in template with judgments as rows and users as columns
+    users = User.objects.filter(groups__name='Taggatori').all()
+    judgments = Judgment.objects.all()
+
+    rows = []
+
+    #for every row there must be the judgment name, agreement, status of judgment-user
+    #Example: [JudgmentName, Agreement, 1, 0] if first user has the judgment associated to, 0 otherwise
+    for judgment in judgments:
+        single_row = []
+        single_row.append(judgment.name)
+
+        #Add agreement rate
+        agreement = calc_agreement(judgment.id)
+        print("Agreement judgment {}: {}".format(judgment.id, agreement))
+        
+        if agreement == None:
+            single_row.append('')
+        else:
+            single_row.append(agreement)
+
+        for user in users:
+            user_judgments = user.profile.taggings.all()
+            #print('Sentenze utente: ', user_judgments)
+            if judgment in user_judgments:
+                if Tagging.objects.get(profile=Profile.objects.get(user=user), judgment=judgment).completed:
+                    single_row.append(2)
+                else:
+                    single_row.append(1)
+            else:
+                single_row.append(0)
+        
+        rows.append(single_row)
+    print(rows)
+
+    context = {
+        'users': users,
+        'judgments': judgments,
+        'rows': rows
+    }
+
+    return render(request, 'users/agreement_page.html', context=context)

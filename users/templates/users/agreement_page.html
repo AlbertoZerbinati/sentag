@@ -1,0 +1,45 @@
+{% extends "users/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Agreement
+{% endblock %}
+
+{% block content %}
+    <style>
+        table {
+        font-family: arial, sans-serif;
+        border-collapse: collapse;
+        width: 100%;
+        }
+        
+        td, th {
+        border: 1px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+        }
+        
+        tr:nth-child(even) {
+        background-color: #dddddd;
+        }
+    </style>
+
+    <div class="content-section">
+        <table>
+            <tr>
+                <th>Judgments</th>
+                <th>Agreement</th>
+                {% for user in users %}
+                    <th>{{ user }}</th>
+                {% endfor %}
+            </tr>
+            {% for row in rows %}
+                <tr>
+                    {% for elem in row %}
+                        <td>{{ elem }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+          </table>
+    </div>
+{% endblock %}
