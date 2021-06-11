@@ -4,6 +4,8 @@
 
 - Vue.js frontend, inspired by [NER-annotator for Spacy](https://github.com/tecoholic/ner-annotator)
 
+- Python Package for agreement: [Simpledorff](https://github.com/LightTag/simpledorff)
+
 ## usage (for development)
 
 1. Install the dependencies, create the Database, the Admin User and start the Python Backend server
