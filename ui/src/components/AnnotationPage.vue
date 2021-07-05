@@ -2,9 +2,12 @@
   <div class="columns is-desktop">
     <div class="column">
       <div class="panel">
-        <p class="panel-heading">
+        <div class="panel-heading is-justify-content-space-between">
           <strong>Tag {{title}}</strong>
-        </p>
+          <div class="is-pulled-right">
+            <a class="button is-primary" align="center" :href="/graph/ + tagging_id">Edit Graph -></a>
+          </div>
+        </div>
         <div class="panel-block">
           <div id="editor">
             <component
@@ -108,6 +111,7 @@ export default {
     document.addEventListener("mouseup", this.selectTokens);
     window.onbeforeunload = () => (this.unsavedWork ? true : null);
 
+    this.tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content'),
     this.switchState = this.done;
   },
   beforeUnmount() {
@@ -202,14 +206,13 @@ export default {
         return cookieValue;
       }
       const csrftoken = getCookie('csrftoken'); 
-      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
       const params = {
         'tm': JSON.stringify(this.tm),
         'cp': this.done,
       } 
       axios
         .post(
-          "/api/update/"+tagging_id, 
+          "/api/update/"+this.tagging_id, 
           params,
           {  
             headers: {
@@ -251,7 +254,6 @@ export default {
       }
       // console.log("done")
       const csrftoken = getCookie('csrftoken'); 
-      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
       const params = {
         'tm': JSON.stringify(this.tm),
         'cp': this.done,
@@ -259,7 +261,7 @@ export default {
 
       axios
         .post(
-          "/api/completed/"+tagging_id,
+          "/api/completed/"+this.tagging_id,
           params,
           {  
             headers: {
@@ -278,14 +280,14 @@ export default {
             position:'bottom-right'
           });
           if (this.done) { 
-          toast({
-            message:'Tagging Completed',
-            type:'is-info',
-            dismissible:'true',
-            pauseOnHover:'true',
-            duration:2000,
-            position:'bottom-right',
-          });
+            toast({
+              message:'Tagging Completed',
+              type:'is-info',
+              dismissible:'true',
+              pauseOnHover:'true',
+              duration:2000,
+              position:'bottom-right',
+            });
           } else {
             toast({
               message:'Set Uncompleted',

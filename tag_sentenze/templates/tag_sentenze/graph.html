@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+{% load static %}
+{% load crispy_forms_tags %}
+{% load auth_extras %}
+
+<html lang="en">
+
+<head>
+    <title>Tagga sentenza</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="{% static 'tag_sentenze/styles.css' %}" rel="stylesheet">
+    <link href="{% static 'tag_sentenze/favicon.png' %}" rel="icon">
+
+    <!-- save as meta information the id of the Tagging row. It will be used by Vue to access the correct API -->
+    <meta name="id-tagging" content="{{ taggings.id }}">
+    <meta name="title-tagging" content="{{ taggings.judgment.name }}">
+</head>
+
+<body class="dx-viewport">
+    <nav class="navbar navbar-lg navbar-collapse w-100 order-1 order-md-0 dual-collapse2 navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'tag_sentenze:list-sentenze' %}" id="logo">
+                <img class="d-inline-block align-text-top" src="{% static 'tag_sentenze/favicon.png' %}" width="40">
+                SenTag
+            </a>
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <a class="nav-link link" style="margin-right: 5px;" href="/admin">Admin Page</a>
+                {% endif %}
+            {% endif %}
+            {% if user.is_authenticated %}
+                {% if user.is_staff %}
+                    <a class="nav-link link " style="margin-right: auto;" href="{% url 'users:editor_page' %}">Editor Page</a>
+                {% elif request.user|is_editor %}
+                    <a class="nav-link link" style="margin-right: auto;" href="{% url 'users:editor_page' %}">Editor Page</a>
+                {% endif %}
+            {% endif %}
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle link" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Account</a>
+                    <ul class="dropdown-menu">
+                        {% if user.is_staff %}
+                            <li><a class="nav-item nav-link" href="/admin">Admin Page</a></li>
+                            <li><a class="nav-item nav-link" href="{% url 'users:editor_page' %}">Editor Page</a></li>  
+                        {% elif request.user|is_editor %}
+                            <li><a class="nav-item nav-link" href="{% url 'users:editor_page' %}">Editor Page</a></li>
+                        {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                        {% if user.is_authenticated %}
+                            <li><a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a></li>
+                        {% else %}
+                            <li><a class="nav-item nav-link" href="{% url 'login' %}">Login</a></li>
+                        {% endif %}
+                    </ul>
+            </li>
+        </div>
+    </nav>
+        
+    <div class="dx-diagram" id="graph"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" 
+    crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/21.1.3/css/dx-diagram.min.css" />
+
+    <script type="text/javascript" src="{% static 'src/vue/dist/js/chunk-vendors.js' %}"></script>
+    <script type="text/javascript" src="{% static 'src/vue/dist/js/app.js' %}"></script>
+</body>
+
+</html>

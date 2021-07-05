@@ -101,8 +101,36 @@ def tag_sentenza(request, id):
         return redirect('/sentenze/')
 
 @login_required
-def graph(request):
-    return render(request, 'tag_sentenze/graph.html')
+def graph(request,id):
+    try:
+        sentenza = Judgment.objects.get(pk=id)
+    except Judgment.DoesNotExist:
+        raise Http404()
+
+    current_user = request.user
+    profile = Profile.objects.get(user=request.user)
+    user_taggings = current_user.profile.taggings.all()
+
+    #admins and editors have access to all the sentenze
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        print("Admin/Editor access")
+        #retrive the taging table starting using profile and judgment as unique identifiers
+        context = {
+            'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
+        }
+        print("---->",context['taggings'].id)
+        return render(request, 'tag_sentenze/graph.html', context=context)
+    #taggatori has access only to their set of sentenze
+    elif sentenza in user_taggings:
+        print('Taggatore access with permission')
+        #retrive the taging table starting using profile and judgment as unique identifiers
+        context = {
+            'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
+        }
+        return render(request, 'tag_sentenze/graph.html', context=context)
+    else:
+        print('Taggatori access with no permission')
+        return redirect('/sentenze/')
     
 @login_required
 def new_schema(request):
