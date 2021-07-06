@@ -2,11 +2,14 @@
   <div class="columns is-desktop" style="margin:1px">
     <div class="column">
       <div class="panel">
-        <div class="panel-heading">
-          <div class="is-pulled-left">
-            <a class="button is-primary" align="center" :href="/sentenza/ + tagging_id"> >- Edit Tagging</a>
-          </div>
-            <strong style="margin-left:12px;">Graph {{tagging_title}}</strong>
+        <div class="panel-heading" style="position:relative;">
+            <a class="button is-link" :href="/sentenza/ + tagging_id">
+              <span class="icon is-small">
+                <font-awesome-icon icon="angle-left" />
+              </span>
+              <span>Edit Tagging</span>
+            </a>
+            <strong style="position:absolute; left:180px; top:20px;">Graph {{tagging_title}}</strong>
         </div>
           <DxDiagram
             id="diagram"
@@ -21,13 +24,16 @@
               :height-expr="itemHeightExpr"
               :text-style-expr="itemTextStyleExpr"
               :style-expr="itemStyleExpr"
-              :color="'backgroundColor'"
             >
               <DxAutoLayout
                 :type="'tree'"
                 :orientation="'vertical'"
               />
             </DxNodes>
+            <DxEdges
+              :data-source="orgLinksDataSource"
+              :from-line-end-expr="linkFromLineEndExpr"
+            />
             <DxToolbox :visibility="'disabled'"/>
           </DxDiagram>
       </div>
@@ -38,7 +44,7 @@
 </template>
 
 <script>
-import { DxDiagram, DxNodes, DxAutoLayout, DxToolbox } from 'devextreme-vue/diagram';
+import { DxDiagram, DxNodes,DxEdges, DxToolbox, DxAutoLayout } from 'devextreme-vue/diagram';
 import ArrayStore from 'devextreme/data/array_store';
 import service from './assets/data.js';
 import axios from 'axios'
@@ -46,13 +52,12 @@ import TokenManager from "./components/token-manager";
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxAutoLayout, DxToolbox
+    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout
   },
   data() {
     return {
       tm: {},
       items: service.getOrgItems(),
-      id:1111,
       orgItemsDataSource: {},
       orgLinksDataSource: {},
     };
@@ -103,6 +108,7 @@ export default {
     .catch((err) => alert(err));
   },
   methods: {
+    /*
     addNode() {
       this.items.push({
         'id':this.id++,
@@ -117,6 +123,7 @@ export default {
 
       console.log(this.items);
     },
+    */
     itemTypeExpr(obj, value) {
       if(value) {
         obj.type = (value === 'rectangle') ? undefined : 'group';
@@ -145,10 +152,7 @@ export default {
       return {};
     },
     itemStyleExpr(obj) {
-      let style = { 'stroke': '#444444' };
-      if(obj.type === 'group') {
-        style['fill'] = '#f3f3f3';
-      }
+      let style = { 'stroke': obj.backgroundColor.substring(0,obj.backgroundColor.length -2), 'stroke-width':4 };
       return style;
     },
     linkStyleExpr() {

@@ -9,6 +9,8 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import {
   faCheck,
   faUndo,
+  faAngleRight,
+  faAngleLeft,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
@@ -16,6 +18,8 @@ import 'devextreme/dist/css/dx.light.css';
 
 library.add(faCheck);
 library.add(faUndo);
+library.add(faAngleLeft);
+library.add(faAngleRight);
 
 const editor = createApp(Editor);
 const sidebar = createApp(Sidebar);

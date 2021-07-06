@@ -2,11 +2,14 @@
   <div class="columns is-desktop">
     <div class="column">
       <div class="panel">
-        <div class="panel-heading is-justify-content-space-between">
+        <div class="panel-heading" style="position:relative;">
           <strong>Tag {{title}}</strong>
-          <div class="is-pulled-right">
-            <a class="button is-primary" align="center" :href="/graph/ + tagging_id">Edit Graph -></a>
-          </div>
+            <a class="button is-link" style="position:absolute; right:16px; top:8px;" :href="/graph/ + tagging_id">
+              <span>Edit Graph</span>
+              <span class="icon is-small">
+                <font-awesome-icon icon="angle-right" />
+              </span>
+            </a>
         </div>
         <div class="panel-block">
           <div id="editor">
