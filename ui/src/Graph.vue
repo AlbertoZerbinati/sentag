@@ -11,32 +11,24 @@
           <DxDiagram
             id="diagram"
             ref="diagram"
+            :simple-view="true"
           >
             <DxNodes
               :data-source="orgItemsDataSource"
               :type-expr="itemTypeExpr"
-              :text-expr="'name'"
+              :text-expr="'attrs[ID]'"
               :width-expr="itemWidthExpr"
               :height-expr="itemHeightExpr"
               :text-style-expr="itemTextStyleExpr"
               :style-expr="itemStyleExpr"
+              :color="'backgroundColor'"
             >
               <DxAutoLayout
                 :type="'tree'"
                 :orientation="'vertical'"
               />
             </DxNodes>
-            <DxEdges
-              :data-source="orgLinksDataSource"
-              :from-line-end-expr="linkFromLineEndExpr"
-              :style-expr="styleExpr"
-            />
-            <DxToolbox>
-              <DxGroup
-                :category="'general'"
-                :title="'General'"
-              />
-            </DxToolbox>
+            <DxToolbox :visibility="'disabled'"/>
           </DxDiagram>
       </div>
     </div>
@@ -46,31 +38,69 @@
 </template>
 
 <script>
-import { DxDiagram, DxNodes, DxAutoLayout, DxEdges, DxToolbox, DxGroup } from 'devextreme-vue/diagram';
+import { DxDiagram, DxNodes, DxAutoLayout, DxToolbox } from 'devextreme-vue/diagram';
 import ArrayStore from 'devextreme/data/array_store';
 import service from './assets/data.js';
+import axios from 'axios'
+import TokenManager from "./components/token-manager";
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxAutoLayout, DxEdges, DxToolbox, DxGroup
+    DxDiagram, DxNodes, DxAutoLayout, DxToolbox
   },
   data() {
     return {
+      tm: {},
       items: service.getOrgItems(),
       id:1111,
-      orgItemsDataSource: new ArrayStore({
-        key: 'id',
-        data: service.getOrgItems()
-      }),
-      orgLinksDataSource: new ArrayStore({
-        key: 'id',
-        data: service.getOrgLinks()
-      })
+      orgItemsDataSource: {},
+      orgLinksDataSource: {},
     };
   },
   created() {
     this.tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content')
     this.tagging_title = document.querySelector("meta[name='title-tagging']").getAttribute('content')
+
+    axios
+        .get("/api/"+this.tagging_id)
+        .then((res) => {
+
+          //il vecchio token manager
+          this.tm = res.data['token_manager']
+          this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
+          console.log({'tm':this.tm})
+
+
+          // flatten tm with the stack technique
+          const stack = [...this.tm.tokens];
+          const result = [];
+          while(stack.length) {
+            // pop value from stack
+            const next = stack.pop();
+            if(next.type === "token-block" && Array.isArray(next.tokens)) {
+              // push back array items, won't modify the original input
+              stack.push(...next.tokens);
+            }
+            result.push(next);
+            
+          }
+          // reverse to restore order
+          const flattened_tm = result.reverse();
+          
+          console.log({'tm':this.tm})
+
+          this.orgItemsDataSource = new ArrayStore({
+            key: 'id',
+            // FILTRO SUI TOKEN: PER ORA SELEZIONO TUTTI I BLOCKS CON ID VALIDO, BISOGNA IMPLEMENTARE
+            //    LA SELEZIONE TRAMITE xs:attribute "isNode"
+            data: flattened_tm.filter(token => token.type === "token-block" && token.attrs.ID)
+          }),
+          this.orgLinksDataSource =  new ArrayStore({
+            key: 'id',
+            data: service.getOrgLinks()
+          })
+        })
+    .catch((err) => alert(err));
   },
   methods: {
     addNode() {
