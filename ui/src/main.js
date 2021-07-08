@@ -15,6 +15,8 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 
 import 'devextreme/dist/css/dx.light.css';
+import 'devextreme/integration/jquery';  
+
 
 library.add(faCheck);
 library.add(faUndo);

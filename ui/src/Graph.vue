@@ -11,44 +11,54 @@
             </a>
             <strong style="position:absolute; left:180px; top:20px;">Graph {{tagging_title}}</strong>
         </div>
-          <DxDiagram
-            id="diagram"
-            ref="diagram"
-            :simple-view="true"
+        <DxDiagram
+          id="diagram"
+          ref="diagram"
+          @request-edit-operation="onRequestEditOperation"
+          :simple-view="true"
+        >
+          <DxNodes
+            :data-source="orgItemsDataSource"
+            :type-expr="'ellipse'"
+            :text-expr="'attrs[ID]'"
+            :text-style-expr="itemTextStyleExpr"
+            :style-expr="itemStyleExpr"
           >
-            <DxNodes
-              :data-source="orgItemsDataSource"
-              :type-expr="itemTypeExpr"
-              :text-expr="'attrs[ID]'"
-              :width-expr="itemWidthExpr"
-              :height-expr="itemHeightExpr"
-              :text-style-expr="itemTextStyleExpr"
-              :style-expr="itemStyleExpr"
-            >
-              <DxAutoLayout
-                :type="'tree'"
-                :orientation="'vertical'"
-              />
-            </DxNodes>
-            <DxEdges
-              :data-source="orgLinksDataSource"
-              :from-line-end-expr="linkFromLineEndExpr"
+            <DxAutoLayout
+              :type="'layered'"
+              :orientation="'horizontal'"
             />
-            <DxToolbox :visibility="'disabled'"/>
-          </DxDiagram>
+          </DxNodes>
+          <DxEdges
+            :data-source="orgLinksDataSource"
+            :style-expr="linkStyleExpr"
+          />
+          <DxToolbox :visibility="'disabled'"/>
+        </DxDiagram>
+        <div class="panel-block">
+          <div class="field is-grouped is-pulled-left">
+            <p class="control">
+              <button class="button is-link" @click="save">
+                <span class="icon is-small">
+                  <font-awesome-icon icon="check" />
+                </span>
+                <span>Save</span>
+              </button>
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
-
-<button class="button" @click="addNode()">add</button>
 </template>
 
 <script>
 import { DxDiagram, DxNodes,DxEdges, DxToolbox, DxAutoLayout } from 'devextreme-vue/diagram';
 import ArrayStore from 'devextreme/data/array_store';
-import service from './assets/data.js';
+import notify from 'devextreme/ui/notify';
 import axios from 'axios'
 import TokenManager from "./components/token-manager";
+// import $ from 'jquery'
 
 export default {
   components: {
@@ -57,7 +67,6 @@ export default {
   data() {
     return {
       tm: {},
-      items: service.getOrgItems(),
       orgItemsDataSource: {},
       orgLinksDataSource: {},
     };
@@ -73,8 +82,6 @@ export default {
           //il vecchio token manager
           this.tm = res.data['token_manager']
           this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
-          console.log({'tm':this.tm})
-
 
           // flatten tm with the stack technique
           const stack = [...this.tm.tokens];
@@ -89,7 +96,7 @@ export default {
             result.push(next);
             
           }
-          // reverse to restore order
+          // reverse order
           const flattened_tm = result.reverse();
           
           console.log({'tm':this.tm})
@@ -102,73 +109,123 @@ export default {
           }),
           this.orgLinksDataSource =  new ArrayStore({
             key: 'id',
-            data: service.getOrgLinks()
+            data: []
           })
         })
     .catch((err) => alert(err));
   },
   methods: {
-    /*
-    addNode() {
-      this.items.push({
-        'id':this.id++,
-        'name': 'added',
-        'type': 'group'
-      });
+    
+    // addNode() {
+    //   this.items.push({
+    //     'id':this.id++,
+    //     'name': 'added',
+    //     'type': 'group'
+    //   });
 
-      this.orgItemsDataSource.push([{
-        type: "insert",
-        data: this.items[this.items.length -1],
-      }])
+    //   this.orgItemsDataSource.push([{
+    //     type: "insert",
+    //     data: this.items[this.items.length -1],
+    //   }])
 
-      console.log(this.items);
-    },
-    */
-    itemTypeExpr(obj, value) {
-      if(value) {
-        obj.type = (value === 'rectangle') ? undefined : 'group';
-      } else {
-        return obj.type === 'group' ? 'ellipse' : 'rectangle';
+    //   console.log(this.items);
+    // },
+    
+
+    save() {
+      /*
+       * save the updated tm to database
+       */
+
+      // get diagram data using jquery 
+      // var diagram = $("#diagram").dxDiagram("instance");
+      // var diagramContent = diagram.export(); // load diagram content to a variable
+
+      // console.log(typeof diagramContent)
+
+      // for each created connection 
+      for(let connector of this.orgLinksDataSource._array) {
+        console.log(connector)
+
+        // get the start and end nodes
+        var from = this.orgItemsDataSource._array.filter(item => item['id'] == connector.from)[0]
+        var to = this.orgItemsDataSource._array.filter(item => item['id'] == connector.to)[0]
+        console.log({'from': from})
+        console.log({'to'  : to})
+
+
+        // TODO: modify their attributes: 'S', 'A', 'CON'
+
+        // TODO: propagate the changes to the TokenManager
+        //       and POST it into the DATABASE
+
       }
+
     },
-    itemWidthExpr(obj, value) {
-      if(value) {
-        obj.width = value;
-      } else {
-        return obj.width || (obj.type === 'group' && 1.5) || 1;
-      }
-    },
-    itemHeightExpr(obj, value) {
-      if(value) {
-        obj.height = value;
-      } else {
-        return obj.height || (obj.type === 'group' && 1) || 0.75;
-      }
-    },
-    itemTextStyleExpr(obj) {
-      if(obj.level === 'senior') {
-        return { 'font-weight': 'bold', 'text-decoration': 'underline' };
-      }
-      return {};
+    itemTextStyleExpr() {
+      return { 'font-weight': 'bold', 'text-decoration': 'underline', 'font-size': 15 };
     },
     itemStyleExpr(obj) {
-      let style = { 'stroke': obj.backgroundColor.substring(0,obj.backgroundColor.length -2), 'stroke-width':4 };
+      let style = { 'stroke': obj.backgroundColor.substring(0, obj.backgroundColor.length -2), 'stroke-width':4 };
       return style;
     },
     linkStyleExpr() {
-      return { 'stroke': '#444444' };
+      return { 'stroke': '#444444' }; // TODO: set color based on link text
     },
-    linkFromLineEndExpr() {
-      return 'none';
+    showToast(text) {
+      notify({
+        position: { at: 'top', my: 'top', of: '#diagram', offset: '0 4' },
+        message: text,
+        type: 'warning',
+        delayTime: 2000
+      });
     },
-    linkToLineEndExpr() {
-      return 'none';
-    }
+    onRequestEditOperation(e) {
+      if(e.operation === 'addShape') {
+        if(e.reason !== 'checkUIElementAvailability') {
+          this.showToast('You cannot ad a Tag through the Graph interface.');
+        }
+        e.allowed = false;
+      }
+      else if(e.operation === 'deleteShape') {
+        if(e.reason !== 'checkUIElementAvailability') {
+          this.showToast('You cannot delete a Tag.');
+        }
+        e.allowed = false;
+      }
+      else if(e.operation === 'resizeShape') {
+        if(e.args.newSize.width < 1 || e.args.newSize.height < 0.75) {
+          if(e.reason !== 'checkUIElementAvailability') {
+            this.showToast('The Tag size is too small.');
+          }
+          e.allowed = false;
+        }
+      } 
+      else if(e.operation === 'beforeChangeShapeText') {
+        if(e.reason !== 'checkUIElementAvailability') {
+          this.showToast('You cannot change a Tag\'s ID through the Graph interface.');
+        }
+        e.allowed = false;
+      }
+      else if(e.operation === 'changeConnection') {
+        // IF A NEW CONNECTION IS CREATED this will trigger twice: once for 'start' and once for 'end' node
+        if(e.args.connector !== undefined && e.args.connector.fromId && e.args.connector.toId && e.reason !== 'checkUIElementAvailability') {
+          console.log("connection created: " + e.args.connector.fromId + " -> " + e.args.connector.toId)
+        console.log(e)
+        }
+      }
+      else if(e.operation === 'beforeChangeConnectorText') {
+        e.allowed = true;
+      }
+      else if(e.operation === 'changeConnectorText') {
+        e.allowed = false;
+      }
+    },
   }
 };
-    // #diagram {
-    //      height: 1200px;
-    //  }
 </script>
 <style scoped>
+    #diagram {
+         height: 650px;
+     }
 </style>
