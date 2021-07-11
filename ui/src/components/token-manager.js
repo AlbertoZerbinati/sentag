@@ -69,6 +69,7 @@ class TokenManager {
           label: _class.name,
           id: this.currentID,
           attrs:{},
+          graph: _class.graph,
           backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {

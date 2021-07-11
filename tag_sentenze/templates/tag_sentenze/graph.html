@@ -39,23 +39,12 @@
                 {% endif %}
             {% endif %}
 
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle link" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Account</a>
-                    <ul class="dropdown-menu">
-                        {% if user.is_staff %}
-                            <li><a class="nav-item nav-link" href="/admin">Admin Page</a></li>
-                            <li><a class="nav-item nav-link" href="{% url 'users:editor_page' %}">Editor Page</a></li>  
-                        {% elif request.user|is_editor %}
-                            <li><a class="nav-item nav-link" href="{% url 'users:editor_page' %}">Editor Page</a></li>
-                        {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                        {% if user.is_authenticated %}
-                            <li><a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a></li>
-                        {% else %}
-                            <li><a class="nav-item nav-link" href="{% url 'login' %}">Login</a></li>
-                        {% endif %}
-                    </ul>
-            </li>
+            {% if user.is_authenticated %}
+                <span style="color:white;">{{user.username}}</span>
+                <li class="nav-item dropdown"><a class="nav-link link" href="{% url 'logout' %}"> Logout</a></li>
+            {% else %}
+                <li class="nav-item dropdown"><a class="nav-link link" href="{% url 'login' %}">Login</a></li>
+            {% endif %}
         </div>
     </nav>
     <div  class="dx-viewport">    

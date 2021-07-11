@@ -29,18 +29,15 @@ export const mutations = {
     state.inputSentences = payload.map((s, i) => ({ id: i, text: s }));
   },
   addClass(state, payload) {
-    // let existing = state.classes.find((c) => c.name == payload[0]);
-    // if (existing) {
-    //   return;
-    // }
     let lastIndex = state.classes.reduce((p, c) => {
       return c.id > p ? c.id : p;
     }, 0);
     state.classes.push({
       id: lastIndex + 1,
       name: payload[0],
-      attributes: payload[1],
+      attributes: payload[1].filter(a => a !== "GRAPH"),
       color: niceColors[lastIndex % niceColors.length],
+      graph: payload[1].includes("GRAPH"),
     });
     if (state.classes.length === 1) {
       state.currentClass = state.classes[0];
