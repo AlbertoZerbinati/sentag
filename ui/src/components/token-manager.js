@@ -225,20 +225,6 @@ class TokenManager {
   resetBlocks() {
     this.tokens = this.initialTokens.slice(); //SHALLOW COPY
   }
-
-  /**
-   * Exports the tokens and the token blocks as annotations
-   */
-  exportAsAnnotation() {
-    let entities = [];
-    for (let i = 0; i < this.tokens.length; i++) {
-      if (this.tokens[i].type === "token-block") {
-        let b = this.tokens[i];
-        entities.push([b.start, b.end, b.label]);
-      }
-    }
-    return entities;
-  }
 }
 
 export default TokenManager;

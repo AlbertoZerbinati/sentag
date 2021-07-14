@@ -63,7 +63,6 @@ import axios from "../axios";
 import Token from "./Token";
 import TokenBlock from "./TokenBlock";
 import TokenManager from "./token-manager";
-import Export from "./Export.vue";
 
 
 export default {
@@ -78,7 +77,6 @@ export default {
   components: {
     Token,
     TokenBlock,
-    Export,
   },
   computed: {
     ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock", "unsavedWork"]),
