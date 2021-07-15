@@ -1,10 +1,12 @@
-# Sentag
+# SenTag
 
 - Django backend
 
-- Vue.js frontend, inspired by [NER-annotator for Spacy](https://github.com/tecoholic/ner-annotator)
+- Vue.js frontend, inspired by [NER-annotator for Spacy](https://github.com/tecoholic/ner-annotator) (MIT Licence)
 
-## usage (for development)
+- Graph featuring [DevExtreme by DevExpress](https://github.com/DevExpress/devextreme-vue) (MIT License)
+
+## Usage (for development)
 
 1. Install the dependencies, create the Database, the Admin User and start the Python Backend server
     * Install the dependencies in a new python virtual environment
@@ -36,9 +38,9 @@
 We have access to the Admin-Page, where we should add Admins and Editors Groups (through the UI), with appropriate permissions.
 Remember to add your user to both these newly created groups.
 
-    * And finally we have complete access to all functionalities!
+   And finally we have complete access to all functionalities!
 
-3. OPTIONAL - if developing the frontend part open another terminal and start the server for the UI
+3. OPTIONAL - if developing the frontend, open another terminal and start the server for the UI
 
     ```
     cd ui
