@@ -19,10 +19,8 @@
           @selection-changed="onSelectionChanged"
           @item-dbl-click="onItemDblClick"
         >
-          <DxDefaultItemProperties :type-expr="'support'" />
-
           <DxNodes
-            :data-source="orgItemsDataSource"
+            :data-source="nodesDataSource"
             :type-expr="'ellipse'"
             :text-expr="'attrs[ID]'"
             :text-style-expr="itemTextStyleExpr"
@@ -34,7 +32,7 @@
             />
           </DxNodes>
           <DxEdges
-            :data-source="orgLinksDataSource"
+            :data-source="edgesDataSource"
             :style-expr="linkStyleExpr"
           />
           <DxToolbox :visibility="'disabled'"/>
@@ -51,176 +49,147 @@
             </p>
           </div>
         </div>
-        <button class="button" @click="diag">diag</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout, DxDefaultItemProperties } from 'devextreme-vue/diagram';
+import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout } from 'devextreme-vue/diagram';
 import ArrayStore from 'devextreme/data/array_store';
 import notify from 'devextreme/ui/notify';
 import axios from 'axios'
 import TokenManager from "./components/token-manager";
-import $ from 'jquery'
 import { toast } from "bulma-toast"
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxDefaultItemProperties
+    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout
   },
   data() {
     return {
       tm: {},
-      orgItemsDataSource: {},
-      orgLinksDataSource: {},
+      nodesDataSource: {},
+      edgesDataSource: {},
     };
   },
   created() {
+    // retrive this tagging's ID and Title
     this.tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content')
     this.tagging_title = document.querySelector("meta[name='title-tagging']").getAttribute('content')
 
     axios
-        .get("/api/" + this.tagging_id)
-        .then(res => {
+      .get("/api/" + this.tagging_id)
+      .then(res => {
+        // get the old token manager
+        this.tm = res.data['token_manager']
+        this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
 
-          // the old token manager
-          this.tm = res.data['token_manager']
-          this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
-
-          // flatten tm with the stack technique
-          const stack = [...this.tm.tokens];
-          const result = [];
-          while(stack.length) {
-            const next = stack.pop();
-            if(next.type === "token-block" && Array.isArray(next.tokens)) {
-              stack.push(...next.tokens);
-            }
-            result.push(next);
+        // flatten tm with the stack technique
+        const stack = [...this.tm.tokens];
+        const result = [];
+        while(stack.length) {
+          const next = stack.pop();
+          if(next.type === "token-block" && Array.isArray(next.tokens)) {
+            stack.push(...next.tokens);
           }
-          // reverse order
-          const flattened_tm = result.reverse();
-          const nodes = flattened_tm.filter(token => token.graph)
-          
-          // console.log({'tm':this.tm})
-
-          this.orgItemsDataSource = new ArrayStore({
-            key: 'id',
-            data: nodes,
-          })
-
-          this.orgLinksDataSource =  new ArrayStore({
-            key: 'id',
-            data: [],
-          })
-
-          for(var node of nodes) {
-            if(node.attrs['A'] !== "") { // if this node has a supporter
-              this.orgLinksDataSource.push([{
-                type:"insert",
-                data:{'from':nodes.filter(n => n.attrs['ID'] == node.attrs['A'])[0].id,'to':node.id, 'type':"support"}
-              }])
-            }
-            else if(node.attrs['CON'] !== "") { // if this node attaks another one
-              this.orgLinksDataSource.push([{
-                type:"insert",
-                data:{'to':nodes.filter(n => n.attrs['ID'] == node.attrs['CON'])[0].id,'from':node.id, 'type': "attack"}
-              }])
-            }
-          }
-          
+          result.push(next);
+        }
+        const flattened_tm = result.reverse();
+        
+        // get the graph's nodes
+        const nodes = flattened_tm.filter(token => token.graph)
+        
+        // istantiate nodes datasource
+        this.nodesDataSource = new ArrayStore({
+          key: 'id',
+          data: nodes,
         })
-        .catch((err) => alert(err));
-  },
-  /*
-  mounted() {
-    setTimeout(() => {  this.initializeEdgeTypes(); }, 1000);
-  }, */
-  methods: {
-    /*
-    initializeEdgeTypes() {
-      const edges = this.orgLinksDataSource._array.slice()
-      console.log(edges)
-      const diagram = $("#diagram").dxDiagram("instance");
-      
-      for(var edge of edges) {
-        if(diagram.getItemByKey(edge.to)["A"] !== "") {
-          console.log("support")
-          diagram.getItemByKey(edge.id).texts.push("+")
-          console.log(diagram.getItemByKey(edge.id).texts)
-        } 
-        else if(diagram.getItemByKey(edge.from)["CON"] !== "") {
-          console.log("attack")
-        }
-      }
-    },*/
-    diag() {
-      var diagram = $("#diagram").dxDiagram("instance")
-      console.log(diagram.export())
-    },
-    save() {
-      /*
-       * save the updated tm to database
-       */
 
-      // get diagram data using jquery 
-      // var diagram = $("#diagram").dxDiagram("instance");
-      // // var diagramContent = diagram.export(); // load diagram content to a variable
-      // console.log({'diagram SHAPES':diagram})
+        // istantiate edges datasource (initially empty)
+        this.edgesDataSource =  new ArrayStore({
+          key: 'id',
+          data: [],
+        })
 
-      // remove every old graph-related attribute
-      for(var node in this.orgItemsDataSource._array) {
-        for(var key in Object.keys(node.attrs)){
-          if(key === "A" || key === "CON") { // TODO: 'S' attr???
-            node.attrs[key] = ""
+        // populate the edges datsource with correct type of edges, based on nodes' attributes
+        for(var node of nodes) {
+          if(node.attrs['A'] !== "") { // if this node has supporters
+            const supporters = node.attrs['A'].split(",")
+            for(const supporter of supporters) {
+              // push a support edge
+              this.edgesDataSource.push([{
+                type:"insert",
+                data:{'from':nodes.filter(n => n.attrs['ID'] === supporter)[0].id,'to':node.id, 'type':"support"}
+              }])
+            }
+          }
+          else if(node.attrs['CON'] !== "") { // if this node attacks others
+            const attacked_nodes = node.attrs['CON'].split(",")
+            for(const attacked of attacked_nodes) {
+              // push an attack edge
+              this.edgesDataSource.push([{
+                type:"insert",
+                data:{'to':nodes.filter(n => n.attrs['ID'] === attacked)[0].id,'from':node.id, 'type':"attack"}
+              }])
+            }
           }
         }
+      })
+      .catch((err) => alert(err));
+  },
+  methods: {
+    save() {
+      // remove every old graph-related attribute
+      for(var node of this.nodesDataSource._array) {
+        node.attrs['A'] = ""
+        node.attrs['CON'] = ""
+        // TODO: 'S' attribute??
       }
 
-      for(let node of this.orgItemsDataSource._array) {
-        console.log(node.attrs)
-      }
-
-
-      // add new attrs based on connections
-      for(let connector of this.orgLinksDataSource._array) {
-        console.log({'connector':connector})
-
+      // add new attrs based on existing connections
+      for(let connector of this.edgesDataSource._array) {
+        // console.log({'connector':connector})
+        
+        // get the connector type
         var connectorType = connector.type
 
         // get the start and end nodes
-        var fromNode = this.orgItemsDataSource._array.filter(item => item['id'] == connector.from)[0]
-        var toNode = this.orgItemsDataSource._array.filter(item => item['id'] == connector.to)[0]
-        console.log({'from': fromNode})
-        console.log({'to'  : toNode})
+        var fromNode = this.nodesDataSource._array.filter(item => item['id'] == connector.from)[0]
+        var toNode = this.nodesDataSource._array.filter(item => item['id'] == connector.to)[0]
+        // console.log({'from': fromNode})
+        // console.log({'to'  : toNode})
 
         // modify their attributes: 'A', 'CON'
-        //    NOTE: this pushes the changes into the tokenManger already
-        //    TODO: 'S' attribute???
-        if(connectorType === "support") {  // SUPPORT CONNECTOR
-          if(toNode.attrs['A'] !== "") { // if not empty
+        //    NOTE: this also pushes the changes into the tokenManger already
+        //    TODO: 'S' attribute??
+        if(connectorType === "support") {  // support edge
+          if(toNode.attrs['A'] !== "") { // if there already is a supporter, append the new one
             toNode.attrs['A'] = toNode.attrs['A'] + "," + fromNode.attrs['ID']
-          } else {
+          } else { // else just set the supporter
             toNode.attrs['A'] = fromNode.attrs['ID']
           }
-          console.log("SAVED A SUPPORT CONNECTOR")
+          // console.log("SAVED A SUPPORT CONNECTOR")
 
-        } else if(connectorType === "attack") {  // ATTACK CONNECTOR
-          fromNode.attrs['CON'] = toNode.attrs['ID']
-          console.log("SAVED AN ATTACK CONNECTOR")
+        } else if(connectorType === "attack") {  // attack edge
+          if(fromNode.attrs['CON'] !== "") { // if there already is an attacked, append the new one
+            fromNode.attrs['CON'] = fromNode.attrs['CON'] + "," + toNode.attrs['ID']
+          } else { // else just set the attacked
+            fromNode.attrs['CON'] = toNode.attrs['ID']
+          }
+          // console.log("SAVED AN ATTACK CONNECTOR")
         }
+
+        // ignore edges without an assigned type (the black ones)!!! 
       }
 
-      // TODO: RIMUOVI ATTRS RELATIVI A CONNECTORS RIMOSSI
-
-      // now that all the changes have been made, push the token manager into the database
-      //retrieve CSRF_TOKEN
+      // now that all the changes have been pushed into the TM,
+      // POST the token manager into the database, via an axios call
       function getCookie(name) {
-      let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
-          for (let i = 0; i < cookies.length; i++) {
+        let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
               const cookie = cookies[i].trim();
               // Does this cookie string begin with the name we want?
               if (cookie.substring(0, name.length + 1) === (name + '=')) {
@@ -238,7 +207,7 @@ export default {
       } 
       axios
         .post(
-          "/api/update/"+this.tagging_id, 
+          "/api/update/" + this.tagging_id, 
           params,
           {  
             headers: {
@@ -261,22 +230,23 @@ export default {
         });
     },
     itemTextStyleExpr() {
-      return { 'font-weight': 'bold', 'text-decoration': '', 'font-size': 15 };
+      return { 'font-weight': 'bold', 'font-size': 15 };
     },
     itemStyleExpr(obj) {
       let style = { 'stroke': obj.backgroundColor.substring(0, obj.backgroundColor.length -2), 'stroke-width':4 };
       return style;
     },
     linkStyleExpr(obj) {
-      // console.log({"STYLE":obj})
+      // set edge color based on its type
       if(obj.type === "attack")
-        return { 'stroke': '#FF0000' }; // TODO: set color based on link text
+        return { 'stroke': '#FF0000' };
       else if(obj.type === "support")
         return { 'stroke': "#22FF11"}
       
-      return {'stroke': "#000000"}
+      return {'stroke': "#000000"} // default for a newly created edge
     },
     showToast(text) {
+      // function for in-graph toast messages
       notify({
         position: { at: 'top', my: 'top', of: '#diagram', offset: '0 4' },
         message: text,
@@ -285,6 +255,7 @@ export default {
       });
     },
     onRequestEditOperation(e) {
+      // manage the edit requests...
       if(e.operation === 'addShape') {
         if(e.reason !== 'checkUIElementAvailability') {
           this.showToast('You cannot add a Tag through the Graph interface.');
@@ -312,54 +283,31 @@ export default {
         e.allowed = false;
       }
       else if(e.operation === 'changeConnection') {
-        // IF A NEW CONNECTION IS CREATED this will trigger twice: once for 'start' and once for 'end' node
-        if(e.args.connector !== undefined && e.args.connector.fromId && e.args.connector.toId && e.reason !== 'checkUIElementAvailability') {
-          console.log(e.args)
-          console.log("connection created: " + e.args.connector.fromId + " -> " + e.args.connector.toId)
-          // if(!e.args.connector.dataItem.type){
-          //   console.log("DEVO ASSEGNARE TYPE")
-          // }
-        }
+        // if(e.args.connector !== undefined && e.args.connector.fromId && e.args.connector.toId && e.reason !== 'checkUIElementAvailability') {
+        //   console.log(e.args)
+        //   console.log("connection created: " + e.args.connector.fromId + " -> " + e.args.connector.toId)
+        // }
         e.allowed = true;
       }
       else if(e.operation === 'beforeChangeConnectorText') {
+        // do not allow having text in the connector: double click has another behaviour!!!
         e.allowed = false;
       }
       else if(e.operation === 'changeConnectorText') {
-        console.log({'E':e})
-        if(e.args.text === "+") {
-          const key = e.args.connector.key
-          const dataObj = e.args.connector.dataItem
-          dataObj.type = "support"
-          this.orgLinksDataSource.push([{ 
-            type: "update", 
-            data: dataObj, 
-            key: key }]);
-        }
-        else if(e.args.text === "-") {
-          const key = e.args.connector.key
-          const dataObj = e.args.connector.dataItem
-          dataObj.type = "attack"
-          this.orgLinksDataSource.push([{ 
-            type: "update", 
-            data: dataObj, 
-            key: key }]);
-        }
-        e.allowed = true;
+        e.allowed = false;
       }
     },
     onSelectionChanged({ items }) {
-      // if(items.length === 1 && items[0].itemType === 'connector'){
-          console.log({'selected item':items[0]})
-      // }
+      console.log({'selected item':items[0]})
     },
     onItemDblClick(obj) {
+      // if a connector is double clicked, change its type
       if(obj.item.itemType === "connector" && obj.item.dataItem.type === "attack") {
         console.log("attack => support")
         const key = obj.item.key
         const dataObj = obj.item.dataItem
         dataObj.type = "support"
-        this.orgLinksDataSource.push([{ 
+        this.edgesDataSource.push([{ 
           type: "update", 
           data: dataObj, 
           key: key }]);
@@ -368,16 +316,16 @@ export default {
         const key = obj.item.key
         const dataObj = obj.item.dataItem
         dataObj.type = "attack"
-        this.orgLinksDataSource.push([{ 
+        this.edgesDataSource.push([{ 
           type: "update", 
           data: dataObj, 
           key: key }]);
-      } else if (obj.item.itemType === "connector"){
+      } else if (obj.item.itemType === "connector"){ // default connector does not have a type!! -> on double click assing support type
         console.log("null => support")
         const key = obj.item.key
         const dataObj = obj.item.dataItem
         dataObj.type = "support"
-        this.orgLinksDataSource.push([{ 
+        this.edgesDataSource.push([{ 
           type: "update", 
           data: dataObj, 
           key: key }]);
@@ -387,7 +335,7 @@ export default {
 };
 </script>
 <style scoped>
-    #diagram {
-         height: 650px;
-     }
+  #diagram {
+    height: 650px;
+  }
 </style>
