@@ -17,11 +17,13 @@
           :simple-view="true"
           @request-edit-operation="onRequestEditOperation"
           @selection-changed="onSelectionChanged"
+          @item-dbl-click="onItemDblClick"
         >
+          <DxDefaultItemProperties :type-expr="'support'" />
 
           <DxNodes
             :data-source="orgItemsDataSource"
-            :type-expr="'Ellipse'"
+            :type-expr="'ellipse'"
             :text-expr="'attrs[ID]'"
             :text-style-expr="itemTextStyleExpr"
             :style-expr="itemStyleExpr"
@@ -56,7 +58,7 @@
 </template>
 
 <script>
-import { DxDiagram, DxNodes,DxEdges, DxToolbox, DxAutoLayout } from 'devextreme-vue/diagram';
+import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout, DxDefaultItemProperties } from 'devextreme-vue/diagram';
 import ArrayStore from 'devextreme/data/array_store';
 import notify from 'devextreme/ui/notify';
 import axios from 'axios'
@@ -66,7 +68,7 @@ import { toast } from "bulma-toast"
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout
+    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxDefaultItemProperties
   },
   data() {
     return {
@@ -83,7 +85,7 @@ export default {
         .get("/api/" + this.tagging_id)
         .then(res => {
 
-          //il vecchio token manager
+          // the old token manager
           this.tm = res.data['token_manager']
           this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
 
@@ -91,93 +93,68 @@ export default {
           const stack = [...this.tm.tokens];
           const result = [];
           while(stack.length) {
-            // pop value from stack
             const next = stack.pop();
             if(next.type === "token-block" && Array.isArray(next.tokens)) {
-              // push back array items, won't modify the original input
               stack.push(...next.tokens);
             }
             result.push(next);
-            
           }
           // reverse order
           const flattened_tm = result.reverse();
           const nodes = flattened_tm.filter(token => token.graph)
           
-          console.log({'tm':this.tm})
+          // console.log({'tm':this.tm})
 
           this.orgItemsDataSource = new ArrayStore({
             key: 'id',
-            // FILTRO SUI TOKEN: PER ORA SELEZIONO TUTTI I BLOCKS CON ID VALIDO, BISOGNA IMPLEMENTARE
-            //    LA SELEZIONE TRAMITE xs:attribute "isNode"
             data: nodes,
           })
 
           this.orgLinksDataSource =  new ArrayStore({
             key: 'id',
             data: [],
-            reshapeOnPush: true
           })
 
-
-          this.initialize()
-
-          // var diagram = $("#diagram").dxDiagram("instance")
-          // diagram.contentReady(() => {
-          //   this.initialize()
-          // })
+          for(var node of nodes) {
+            if(node.attrs['A'] !== "") { // if this node has a supporter
+              this.orgLinksDataSource.push([{
+                type:"insert",
+                data:{'from':nodes.filter(n => n.attrs['ID'] == node.attrs['A'])[0].id,'to':node.id, 'type':"support"}
+              }])
+            }
+            else if(node.attrs['CON'] !== "") { // if this node attaks another one
+              this.orgLinksDataSource.push([{
+                type:"insert",
+                data:{'to':nodes.filter(n => n.attrs['ID'] == node.attrs['CON'])[0].id,'from':node.id, 'type': "attack"}
+              }])
+            }
+          }
           
-
         })
         .catch((err) => alert(err));
   },
+  /*
+  mounted() {
+    setTimeout(() => {  this.initializeEdgeTypes(); }, 1000);
+  }, */
   methods: {
-    initialize() {
-      console.log({'INITIALIZE:TM':this.tm})
-      const stack = [...this.tm.tokens];
-      const result = [];
-      while(stack.length) {
-        // pop value from stack
-        const next = stack.pop();
-        if(next.type === "token-block" && Array.isArray(next.tokens)) {
-          // push back array items, won't modify the original input
-          stack.push(...next.tokens);
-        }
-        result.push(next);
-        
-      }
-      // reverse order
-      const flattened_tm = result.reverse();
-      const nodes = flattened_tm.filter(token => token.graph)
-      var lastId = 100
-
-      for(var node of nodes) {
-        if(node.attrs['A'] !== "") { // if this node has a supporter
-          this.orgLinksDataSource.push([{
-            type:"insert",
-            data:{'id':lastId,'from':nodes.filter(n => n.attrs['ID'] == node.attrs['A'])[0].id,'to':node.id}
-          }])
-
-          var x = this.$refs;
-          console.log(x)
-          
-          // var diagram = $("#diagram").dxDiagram("instance")
-          // console.log(diagram.export())
-          // var connector = diagram.getItemByKey(lastId)
-          // console.log({'INITIALIZE:CONN':connector})
-          // connector.texts.push("+")
-
-          lastId = lastId+1
-        }
-        else if(node.attrs['CON'] !== "") { // if this node attaks another one
-          this.orgLinksDataSource.push([{
-            type:"insert",
-            data:{'id':lastId,'to':nodes.filter(n => n.attrs['ID'] == node.attrs['CON'])[0].id,'from':node.id, 'text':"-"}
-          }])
-          lastId = lastId+1
+    /*
+    initializeEdgeTypes() {
+      const edges = this.orgLinksDataSource._array.slice()
+      console.log(edges)
+      const diagram = $("#diagram").dxDiagram("instance");
+      
+      for(var edge of edges) {
+        if(diagram.getItemByKey(edge.to)["A"] !== "") {
+          console.log("support")
+          diagram.getItemByKey(edge.id).texts.push("+")
+          console.log(diagram.getItemByKey(edge.id).texts)
+        } 
+        else if(diagram.getItemByKey(edge.from)["CON"] !== "") {
+          console.log("attack")
         }
       }
-    },
+    },*/
     diag() {
       var diagram = $("#diagram").dxDiagram("instance")
       console.log(diagram.export())
@@ -188,21 +165,29 @@ export default {
        */
 
       // get diagram data using jquery 
-      var diagram = $("#diagram").dxDiagram("instance");
-      // var diagramContent = diagram.export(); // load diagram content to a variable
+      // var diagram = $("#diagram").dxDiagram("instance");
+      // // var diagramContent = diagram.export(); // load diagram content to a variable
+      // console.log({'diagram SHAPES':diagram})
 
-      console.log({'diagram':diagram})
+      // remove every old graph-related attribute
+      for(var node in this.orgItemsDataSource._array) {
+        for(var key in Object.keys(node.attrs)){
+          if(key === "A" || key === "CON") { // TODO: 'S' attr???
+            node.attrs[key] = ""
+          }
+        }
+      }
 
-      // console.log({'links':this.orgLinksDataSource})
+      for(let node of this.orgItemsDataSource._array) {
+        console.log(node.attrs)
+      }
 
-      // for each created connection 
+
+      // add new attrs based on connections
       for(let connector of this.orgLinksDataSource._array) {
         console.log({'connector':connector})
 
-        // extract the full connector object from the diagram 
-        var fullConnector = diagram.getItemByKey(connector.id)
-        console.log({'full connector':fullConnector})
-        var connectorType = fullConnector.texts[0] // ASSUMING THERE IS ONLY AND EXACTLY ONE TEXT PER CONNECTOR, RATHER '+' OR '-'
+        var connectorType = connector.type
 
         // get the start and end nodes
         var fromNode = this.orgItemsDataSource._array.filter(item => item['id'] == connector.from)[0]
@@ -210,19 +195,24 @@ export default {
         console.log({'from': fromNode})
         console.log({'to'  : toNode})
 
-
         // modify their attributes: 'A', 'CON'
         //    NOTE: this pushes the changes into the tokenManger already
         //    TODO: 'S' attribute???
-        if(connectorType.trim() === "+") {  // SUPPORT CONNECTOR
-          toNode.attrs['A'] = fromNode.attrs['ID']
-          console.log("THIS IS A SUPPORT CONNECTOR")
+        if(connectorType === "support") {  // SUPPORT CONNECTOR
+          if(toNode.attrs['A'] !== "") { // if not empty
+            toNode.attrs['A'] = toNode.attrs['A'] + "," + fromNode.attrs['ID']
+          } else {
+            toNode.attrs['A'] = fromNode.attrs['ID']
+          }
+          console.log("SAVED A SUPPORT CONNECTOR")
 
-        } else if(connectorType.trim() === "-") {  // ATTACK CONNECTOR
+        } else if(connectorType === "attack") {  // ATTACK CONNECTOR
           fromNode.attrs['CON'] = toNode.attrs['ID']
-          console.log("THIS IS AN ATTACK CONNECTOR")
+          console.log("SAVED AN ATTACK CONNECTOR")
         }
       }
+
+      // TODO: RIMUOVI ATTRS RELATIVI A CONNECTORS RIMOSSI
 
       // now that all the changes have been made, push the token manager into the database
       //retrieve CSRF_TOKEN
@@ -271,14 +261,20 @@ export default {
         });
     },
     itemTextStyleExpr() {
-      return { 'font-weight': 'bold', 'text-decoration': 'underline', 'font-size': 15 };
+      return { 'font-weight': 'bold', 'text-decoration': '', 'font-size': 15 };
     },
     itemStyleExpr(obj) {
       let style = { 'stroke': obj.backgroundColor.substring(0, obj.backgroundColor.length -2), 'stroke-width':4 };
       return style;
     },
-    linkStyleExpr() {
-      return { 'stroke': '#FF0000' }; // TODO: set color based on link text
+    linkStyleExpr(obj) {
+      // console.log({"STYLE":obj})
+      if(obj.type === "attack")
+        return { 'stroke': '#FF0000' }; // TODO: set color based on link text
+      else if(obj.type === "support")
+        return { 'stroke': "#22FF11"}
+      
+      return {'stroke': "#000000"}
     },
     showToast(text) {
       notify({
@@ -318,14 +314,37 @@ export default {
       else if(e.operation === 'changeConnection') {
         // IF A NEW CONNECTION IS CREATED this will trigger twice: once for 'start' and once for 'end' node
         if(e.args.connector !== undefined && e.args.connector.fromId && e.args.connector.toId && e.reason !== 'checkUIElementAvailability') {
+          console.log(e.args)
           console.log("connection created: " + e.args.connector.fromId + " -> " + e.args.connector.toId)
+          // if(!e.args.connector.dataItem.type){
+          //   console.log("DEVO ASSEGNARE TYPE")
+          // }
         }
         e.allowed = true;
       }
       else if(e.operation === 'beforeChangeConnectorText') {
-        e.allowed = true;
+        e.allowed = false;
       }
       else if(e.operation === 'changeConnectorText') {
+        console.log({'E':e})
+        if(e.args.text === "+") {
+          const key = e.args.connector.key
+          const dataObj = e.args.connector.dataItem
+          dataObj.type = "support"
+          this.orgLinksDataSource.push([{ 
+            type: "update", 
+            data: dataObj, 
+            key: key }]);
+        }
+        else if(e.args.text === "-") {
+          const key = e.args.connector.key
+          const dataObj = e.args.connector.dataItem
+          dataObj.type = "attack"
+          this.orgLinksDataSource.push([{ 
+            type: "update", 
+            data: dataObj, 
+            key: key }]);
+        }
         e.allowed = true;
       }
     },
@@ -333,6 +352,36 @@ export default {
       // if(items.length === 1 && items[0].itemType === 'connector'){
           console.log({'selected item':items[0]})
       // }
+    },
+    onItemDblClick(obj) {
+      if(obj.item.itemType === "connector" && obj.item.dataItem.type === "attack") {
+        console.log("attack => support")
+        const key = obj.item.key
+        const dataObj = obj.item.dataItem
+        dataObj.type = "support"
+        this.orgLinksDataSource.push([{ 
+          type: "update", 
+          data: dataObj, 
+          key: key }]);
+      } else if(obj.item.itemType === "connector" && obj.item.dataItem.type === "support") {
+        console.log("support => attack")
+        const key = obj.item.key
+        const dataObj = obj.item.dataItem
+        dataObj.type = "attack"
+        this.orgLinksDataSource.push([{ 
+          type: "update", 
+          data: dataObj, 
+          key: key }]);
+      } else if (obj.item.itemType === "connector"){
+        console.log("null => support")
+        const key = obj.item.key
+        const dataObj = obj.item.dataItem
+        dataObj.type = "support"
+        this.orgLinksDataSource.push([{ 
+          type: "update", 
+          data: dataObj, 
+          key: key }]);
+      }
     }
   }
 };
