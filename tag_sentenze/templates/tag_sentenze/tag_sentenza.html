@@ -15,6 +15,7 @@
 
     <!-- save as meta information the id of the Tagging row. It will be used by Vue to access the correct API -->
     <meta name="id-tagging" content="{{ taggings.id }}">
+    <meta name="title-tagging" content="{{ taggings.judgment.name }}">
 </head>
 
 <body>
@@ -37,23 +38,12 @@
                 {% endif %}
             {% endif %}
 
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle link" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Account</a>
-                    <ul class="dropdown-menu">
-                        {% if user.is_staff %}
-                            <li><a class="nav-item nav-link" href="/admin">Admin Page</a></li>
-                            <li><a class="nav-item nav-link" href="{% url 'users:editor_page' %}">Editor Page</a></li>  
-                        {% elif request.user|is_editor %}
-                            <li><a class="nav-item nav-link" href="{% url 'users:editor_page' %}">Editor Page</a></li>
-                        {% endif %}
-                            <li><hr class="dropdown-divider"></li>
-                        {% if user.is_authenticated %}
-                            <li><a class="nav-item nav-link" href="{% url 'logout' %}">Logout</a></li>
-                        {% else %}
-                            <li><a class="nav-item nav-link" href="{% url 'login' %}">Login</a></li>
-                        {% endif %}
-                    </ul>
-            </li>
+            {% if user.is_authenticated %}
+                <span style="color:white;">{{user.username}}</span>
+                <li class="nav-item dropdown"><a class="nav-link link" href="{% url 'logout' %}"> Logout</a></li>
+            {% else %}
+                <li class="nav-item dropdown"><a class="nav-link link" href="{% url 'login' %}">Login</a></li>
+            {% endif %}
         </div>
     </nav>
     <div class="container-fluid px-2">
@@ -79,14 +69,17 @@
             </div>
         </div>
     </div>
-    <div id="graph" style="border:2px solid black; height:400px; text-align:center; padding-top:190px; margin:15px;">
-        Your graph will appear HERE!
-    </div>
 
+
+    <!-- <div  class="dx-viewport">    
+    <div class="dx-diagram" id="graph"></div>
+    </div> -->
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" 
     integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" 
     crossorigin="anonymous"></script>
+
+    <!-- <link rel="stylesheet" type="text/css" href="https://cdn3.devexpress.com/jslib/21.1.3/css/dx-diagram.min.css" /> -->
 
     <script type="text/javascript" src="{% static 'src/vue/dist/js/chunk-vendors.js' %}"></script>
     <script type="text/javascript" src="{% static 'src/vue/dist/js/app.js' %}"></script>

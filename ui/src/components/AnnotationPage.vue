@@ -2,9 +2,15 @@
   <div class="columns is-desktop">
     <div class="column">
       <div class="panel">
-        <p class="panel-heading">
+        <div class="panel-heading" style="position:relative;">
           <strong>Tag {{title}}</strong>
-        </p>
+            <a class="button is-link" style="position:absolute; right:16px; top:8px;" :href="/graph/ + tagging_id">
+              <span>Edit Graph</span>
+              <span class="icon is-small">
+                <font-awesome-icon icon="angle-right" />
+              </span>
+            </a>
+        </div>
         <div class="panel-block">
           <div id="editor">
             <component
@@ -57,7 +63,6 @@ import axios from "../axios";
 import Token from "./Token";
 import TokenBlock from "./TokenBlock";
 import TokenManager from "./token-manager";
-import Export from "./Export.vue";
 
 
 export default {
@@ -72,7 +77,6 @@ export default {
   components: {
     Token,
     TokenBlock,
-    Export,
   },
   computed: {
     ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock", "unsavedWork"]),
@@ -108,6 +112,7 @@ export default {
     document.addEventListener("mouseup", this.selectTokens);
     window.onbeforeunload = () => (this.unsavedWork ? true : null);
 
+    this.tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content'),
     this.switchState = this.done;
   },
   beforeUnmount() {
@@ -202,14 +207,13 @@ export default {
         return cookieValue;
       }
       const csrftoken = getCookie('csrftoken'); 
-      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
       const params = {
         'tm': JSON.stringify(this.tm),
         'cp': this.done,
       } 
       axios
         .post(
-          "/api/update/"+tagging_id, 
+          "/api/update/"+this.tagging_id, 
           params,
           {  
             headers: {
@@ -251,7 +255,6 @@ export default {
       }
       // console.log("done")
       const csrftoken = getCookie('csrftoken'); 
-      const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
       const params = {
         'tm': JSON.stringify(this.tm),
         'cp': this.done,
@@ -259,7 +262,7 @@ export default {
 
       axios
         .post(
-          "/api/completed/"+tagging_id,
+          "/api/completed/"+this.tagging_id,
           params,
           {  
             headers: {
@@ -278,14 +281,14 @@ export default {
             position:'bottom-right'
           });
           if (this.done) { 
-          toast({
-            message:'Tagging Completed',
-            type:'is-info',
-            dismissible:'true',
-            pauseOnHover:'true',
-            duration:2000,
-            position:'bottom-right',
-          });
+            toast({
+              message:'Tagging Completed',
+              type:'is-info',
+              dismissible:'true',
+              pauseOnHover:'true',
+              duration:2000,
+              position:'bottom-right',
+            });
           } else {
             toast({
               message:'Set Uncompleted',

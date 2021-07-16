@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Created with Liquid Technologies Online Tools 1.0 (https://www.liquid-technologies.com) -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="body">
+    <xs:complexType mixed="true">
+      <xs:sequence>
+        <xs:element minOccurs="0" name="njud" type="xs:string" />
+        <xs:element minOccurs="0" name="nreg" type="xs:string" />
+        <xs:element minOccurs="0" name="judoff" type="xs:string" />
+        <xs:element minOccurs="0" name="judge">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute name="C" type="xs:string" use="optional" />
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" name="jud" type="xs:string" />
+        <xs:element minOccurs="0" maxOccurs="unbounded" name="part">
+          <xs:complexType>
+            <xs:simpleContent>
+              <xs:extension base="xs:string">
+                <xs:attribute name="P" type="xs:string" use="optional" />
+              </xs:extension>
+            </xs:simpleContent>
+          </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" name="obj" type="xs:string" />
+        <xs:element minOccurs="0" name="proc">
+          <xs:complexType mixed="true">
+            <xs:sequence>
+              <xs:choice maxOccurs="unbounded">
+                <xs:element minOccurs="0" name="fact" type="xs:string" />
+                <xs:element minOccurs="0" maxOccurs="unbounded" name="req">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="ID" type="xs:string" use="optional" />
+                        <xs:attribute name="G" type="xs:string" use="optional" />
+                        <xs:attribute name="P" type="xs:string" use="optional" />
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+                <xs:element minOccurs="0" maxOccurs="unbounded" name="claim">
+                  <xs:complexType>
+                    <xs:simpleContent>
+                      <xs:extension base="xs:string">
+                        <xs:attribute name="ID" type="xs:string" use="optional" />
+                        <xs:attribute name="G" type="xs:string" use="optional" />
+                        <xs:attribute name="P" type="xs:string" use="optional" />
+                        <xs:attribute name="PRO" type="xs:string" use="optional" />
+                        <xs:attribute name="GRAPH" type="xs:string" use="optional" />
+                        <xs:attribute name="A" type="xs:string" use="optional" />
+                        <xs:attribute name="CON" type="xs:string" use="optional" />
+                      </xs:extension>
+                    </xs:simpleContent>
+                  </xs:complexType>
+                </xs:element>
+              </xs:choice>
+            </xs:sequence>
+            <xs:attribute name="G" type="xs:string" use="optional" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" name="mot">
+          <xs:complexType mixed="true">
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="mot">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="ID" type="xs:string" use="optional" />
+                      <xs:attribute name="G" type="xs:string" use="optional" />
+                      <xs:attribute name="O" type="xs:string" use="optional" />
+                      <xs:attribute name="I" type="xs:string" use="optional" />
+                      <xs:attribute name="GRAPH" type="xs:string" use="optional" />
+                      <xs:attribute name="A" type="xs:string" use="optional" />
+                      <xs:attribute name="CON" type="xs:string" use="optional" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="G" type="xs:string" use="optional" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" name="dec">
+          <xs:complexType mixed="true">
+            <xs:sequence>
+              <xs:element minOccurs="0" maxOccurs="unbounded" name="dec">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="ID" type="xs:string" use="optional" />
+                      <xs:attribute name="G" type="xs:string" use="optional" />
+                      <xs:attribute name="E" type="xs:string" use="optional" />
+                      <xs:attribute name="O" type="xs:string" use="optional" />
+                      <xs:attribute name="D" type="xs:string" use="optional" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+              <xs:element minOccurs="0" name="cost">
+                <xs:complexType>
+                  <xs:simpleContent>
+                    <xs:extension base="xs:string">
+                      <xs:attribute name="P" type="xs:string" use="optional" />
+                    </xs:extension>
+                  </xs:simpleContent>
+                </xs:complexType>
+              </xs:element>
+            </xs:sequence>
+            <xs:attribute name="G" type="xs:string" use="optional" />
+          </xs:complexType>
+        </xs:element>
+        <xs:element minOccurs="0" name="pres" type="xs:string" />
+        <xs:element minOccurs="0" name="est" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

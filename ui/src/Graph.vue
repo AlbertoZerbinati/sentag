@@ -1,0 +1,336 @@
+<template>
+  <div class="columns is-desktop" style="margin:1px">
+    <div class="column">
+      <div class="panel">
+        <div class="panel-heading" style="position:relative;">
+            <a class="button is-link" :href="/sentenza/ + tagging_id">
+              <span class="icon is-small">
+                <font-awesome-icon icon="angle-left" />
+              </span>
+              <span>Edit Tagging</span>
+            </a>
+            <strong style="position:absolute; left:180px; top:20px;">Graph {{tagging_title}}</strong>
+        </div>
+        <DxDiagram
+          id="diagram"
+          ref="diagram"
+          :simple-view="true"
+          :show-grid="false"
+          :snap-to-grid="false"
+          :page-color="'#F9F9F9'"
+          @request-edit-operation="onRequestEditOperation"
+          @selection-changed="onSelectionChanged"
+          @item-dbl-click="onItemDblClick"
+        >
+          <DxNodes
+            :data-source="nodesDataSource"
+            :type-expr="itemTypeExpr"
+            :text-expr="'attrs[ID]'"
+            :text-style-expr="itemTextStyleExpr"
+            :style-expr="itemStyleExpr"
+            :custom-data-expr="'attrs[ID]'"
+          >
+            <DxAutoLayout
+              :type="'layered'"
+              :orientation="'horizontal'"
+            />
+          </DxNodes>
+          <DxEdges
+            :data-source="edgesDataSource"
+            :style-expr="linkStyleExpr"
+          />
+          <DxToolbox :visibility="'disabled'"/>
+          <DxContextToolbox :enabled="false"/>
+        </DxDiagram>
+        <div class="panel-block">
+          <div class="field is-grouped is-pulled-left">
+            <p class="control">
+              <button class="button is-link" @click="save">
+                <span class="icon is-small">
+                  <font-awesome-icon icon="check" />
+                </span>
+                <span>Save</span>
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout, DxContextToolbox } from 'devextreme-vue/diagram';
+import ArrayStore from 'devextreme/data/array_store';
+import notify from 'devextreme/ui/notify';
+import axios from 'axios'
+import TokenManager from "./components/token-manager";
+import { toast } from "bulma-toast"
+
+export default {
+  components: {
+    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxContextToolbox,
+  },
+  data() {
+    return {
+      tm: {},
+      nodesDataSource: {},
+      edgesDataSource: {},
+    };
+  },
+  created() {
+    // retrive this tagging's ID and Title
+    this.tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content')
+    this.tagging_title = document.querySelector("meta[name='title-tagging']").getAttribute('content')
+
+    axios
+      .get("/api/" + this.tagging_id)
+      .then(res => {
+        // get the old token manager
+        this.tm = res.data['token_manager']
+        this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
+
+        // flatten tm with the stack technique
+        const stack = [...this.tm.tokens];
+        const result = [];
+        while(stack.length) {
+          const next = stack.pop();
+          if(next.type === "token-block" && Array.isArray(next.tokens)) {
+            stack.push(...next.tokens);
+          }
+          result.push(next);
+        }
+        const flattened_tm = result.reverse();
+        
+        // get the graph's nodes
+        const nodes = flattened_tm.filter(token => token.graph)
+        
+        // istantiate nodes datasource
+        this.nodesDataSource = new ArrayStore({
+          key: 'id',
+          data: nodes,
+        })
+
+        // istantiate edges datasource (initially empty)
+        this.edgesDataSource =  new ArrayStore({
+          key: 'id',
+          data: [],
+        })
+
+        // populate the edges datsource with correct type of edges, based on nodes' attributes
+        for(var node of nodes) {
+          if(node.attrs['A'] !== "") { // if this node has supporters
+            const supporters = node.attrs['A'].split(",")
+            for(const supporter of supporters) {
+              // push a support edge
+              this.edgesDataSource.push([{
+                type:"insert",
+                data:{'from':nodes.filter(n => n.attrs['ID'] === supporter)[0].id,'to':node.id, 'type':"support"}
+              }])
+            }
+          }
+          else if(node.attrs['CON'] !== "") { // if this node attacks others
+            const attacked_nodes = node.attrs['CON'].split(",")
+            for(const attacked of attacked_nodes) {
+              // push an attack edge
+              this.edgesDataSource.push([{
+                type:"insert",
+                data:{'to':nodes.filter(n => n.attrs['ID'] === attacked)[0].id,'from':node.id, 'type':"attack"}
+              }])
+            }
+          }
+        }
+      })
+      .catch((err) => alert(err));
+  },
+  methods: {
+    save() {
+      // remove every old graph-related attribute
+      for(var node of this.nodesDataSource._array) {
+        node.attrs['A'] = ""
+        node.attrs['CON'] = ""
+        // TODO: 'S' attribute??
+      }
+
+      // add new attrs based on existing connections
+      for(let connector of this.edgesDataSource._array) {
+        // console.log({'connector':connector})
+        
+        // get the connector type
+        var connectorType = connector.type
+
+        // get the start and end nodes
+        var fromNode = this.nodesDataSource._array.filter(item => item['id'] == connector.from)[0]
+        var toNode = this.nodesDataSource._array.filter(item => item['id'] == connector.to)[0]
+        // console.log({'from': fromNode})
+        // console.log({'to'  : toNode})
+
+        // modify their attributes: 'A', 'CON'
+        //    NOTE: this also pushes the changes into the tokenManger already
+        //    TODO: 'S' attribute??
+        if(connectorType === "support") {  // support edge
+          if(toNode.attrs['A'] !== "") { // if there already is a supporter, append the new one
+            toNode.attrs['A'] = toNode.attrs['A'] + "," + fromNode.attrs['ID']
+          } else { // else just set the supporter
+            toNode.attrs['A'] = fromNode.attrs['ID']
+          }
+          // console.log("SAVED A SUPPORT CONNECTOR")
+
+        } else if(connectorType === "attack") {  // attack edge
+          if(fromNode.attrs['CON'] !== "") { // if there already is an attacked, append the new one
+            fromNode.attrs['CON'] = fromNode.attrs['CON'] + "," + toNode.attrs['ID']
+          } else { // else just set the attacked
+            fromNode.attrs['CON'] = toNode.attrs['ID']
+          }
+          // console.log("SAVED AN ATTACK CONNECTOR")
+        }
+
+        // ignore edges without an assigned type (the black ones)!!! 
+      }
+
+      // now that all the changes have been pushed into the TM,
+      // POST the token manager into the database, via an axios call
+      function getCookie(name) {
+        let cookieValue = null;
+          if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+              const cookie = cookies[i].trim();
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+        }
+        return cookieValue;
+      }
+      const csrftoken = getCookie('csrftoken'); 
+      const params = {
+        'tm': JSON.stringify(this.tm),
+        'cp': false, // set as not completed: the tagger will have to manually set it in the tagging page
+      } 
+      axios
+        .post(
+          "/api/update/" + this.tagging_id, 
+          params,
+          {  
+            headers: {
+              "X-CSRFToken": csrftoken,
+              "content-type": "application/json",
+          }}
+        )
+        .then(
+          toast({
+            message:'Graph saved',
+            type:'is-success',
+            dismissible:'true',
+            pauseOnHover:'true',
+            duration:2000,
+            position:'bottom-right'
+          }),
+        )
+        .catch((e) => {
+          console.log(e);
+        });
+    },
+    itemTypeExpr() {
+      return "ellipse"
+    },
+    itemTextStyleExpr() {
+      return { 'font-weight': 'bold', 'font-size': 15 };
+    },
+    itemStyleExpr(obj) {
+      let style = { 'stroke': obj.backgroundColor.substring(0, obj.backgroundColor.length -2), 'stroke-width':4 };
+      return style;
+    },
+    linkStyleExpr(obj) {
+      // set edge color based on its type
+      if(obj.type === "attack")
+        return { 'stroke': '#EE5555' };
+      else if(obj.type === "support")
+        return { 'stroke': "#22DD66"}
+      
+      return {'stroke': "#000000"} // default for a newly created edge
+    },
+    showToast(text) {
+      // function for in-graph toast messages
+      notify({
+        position: { at: 'top', my: 'top', of: '#diagram', offset: '0 4' },
+        message: text,
+        type: 'warning',
+        delayTime: 2000
+      });
+    },
+    onRequestEditOperation(e) {
+      // manage the edit requests...
+      if(e.operation === 'addShape') {
+        e.allowed = false;
+      }
+      else if(e.operation === 'deleteShape') {
+        e.allowed = false;
+      }
+      else if(e.operation === 'resizeShape') {
+        if(e.args.newSize.width < 1 || e.args.newSize.height < 0.75) {
+          if(e.reason !== 'checkUIElementAvailability') {
+            this.showToast('The Tag size is too small.');
+          }
+          e.allowed = false;
+        }
+      } 
+      else if(e.operation === 'beforeChangeShapeText') {
+        e.allowed = false;
+      }
+      else if(e.operation === 'changeConnection') {
+        e.allowed = true;
+      }
+      else if(e.operation === 'beforeChangeConnectorText') {
+        // do not allow having text in the connector: double click has another behaviour!!!
+        e.allowed = false;
+      }
+      else if(e.operation === 'changeConnectorText') {
+        e.allowed = false;
+      }
+    },
+    onSelectionChanged({ items }) {
+      console.log({'selected item':items[0]})
+    },
+    onItemDblClick(obj) {
+      // if a connector is double clicked, change its type
+      if(obj.item.itemType === "connector" && obj.item.dataItem.type === "attack") {
+        console.log("attack => support")
+        const key = obj.item.key
+        const dataObj = obj.item.dataItem
+        dataObj.type = "support"
+        this.edgesDataSource.push([{ 
+          type: "update", 
+          data: dataObj, 
+          key: key }]);
+      } else if(obj.item.itemType === "connector" && obj.item.dataItem.type === "support") {
+        console.log("support => attack")
+        const key = obj.item.key
+        const dataObj = obj.item.dataItem
+        dataObj.type = "attack"
+        this.edgesDataSource.push([{ 
+          type: "update", 
+          data: dataObj, 
+          key: key }]);
+      } else if (obj.item.itemType === "connector"){ // default connector does not have a type!! -> on double click assing support type
+        console.log("null => support")
+        const key = obj.item.key
+        const dataObj = obj.item.dataItem
+        dataObj.type = "support"
+        this.edgesDataSource.push([{ 
+          type: "update", 
+          data: dataObj, 
+          key: key }]);
+      }
+    }
+  }
+};
+</script>
+<style scoped>
+  #diagram {
+    height: 650px;
+  }
+</style>

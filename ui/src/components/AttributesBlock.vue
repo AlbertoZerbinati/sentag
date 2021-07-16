@@ -3,15 +3,28 @@
   <div v-if="Object.keys(currentBlock).length && Object.keys(currentBlock.attrs)">
     <div class="field is-horizontal" v-for="at in Object.keys(currentBlock.attrs)" :key="at.id">
       <div class="field-label is-normal">
-        <label class="label tag is-dark"><strong :style="{color: currentBlock.backgroundColor }">{{at}}</strong></label>
+        <label class="label tag"><strong :style="{color: currentBlock.backgroundColor }">{{at}}</strong></label>
       </div>
-      <div class="field-body">
+      <div class="field-body" v-if="at !== 'A' && at !== 'CON'">
         <div class="field">
           <p class="control">
             <input 
               @keydown="onKeyUp"
               v-model="currentBlock.attrs[at]" 
               class="input is-normal" 
+              type="text" >
+          </p>
+        </div>
+      </div>     
+      <div class="field-body" v-if="at === 'A' || at === 'CON'">
+        <div class="field">
+          <p class="control">
+            <input 
+              @keydown="onKeyUp"
+              v-model="currentBlock.attrs[at]" 
+              class="input is-normal"
+              disabled
+              title="You can only edit this through the Graph interface"
               type="text" >
           </p>
         </div>
