@@ -17,5 +17,6 @@ urlpatterns = [
     path("add_sentenza_schema/<str:schema>", views.add_sentenza_schema, name="add-sentenza-schema"),
     path("remove_sentenza_schema/<str:schema>", views.remove_sentenza_schema, name="remove-sentenza-schema"),
     path("add_sentenza_schema_list/<str:schema>", views.add_sentenza_schema_list, name="add-sentenza-schema-list"),
-    path("remove_sentenza_schema_list/<str:schema>", views.remove_sentenza_schema_list, name="remove-sentenza-schema-list")
+    path("remove_sentenza_schema_list/<str:schema>", views.remove_sentenza_schema_list, name="remove-sentenza-schema-list"),
+    path("agreement", views.agreement_page, name="agreement-page")
 ]

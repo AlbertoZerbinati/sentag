@@ -22,17 +22,24 @@ def index(request):
 def list_sentenze(request):
     
     current_user = request.user
+    profile = Profile.objects.get(user=current_user)
     sentenze = Judgment.objects.all()
 
     #admins and editors has access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():   
         context = {
-            'sentenze': sentenze
+            #'sentenze': current_user.profile.taggings.all()
+            'sentenze': Tagging.objects.filter(profile=profile)
         }
         return render(request, 'tag_sentenze/list_sentenze.html', context=context)
     #taggatori has access only to their set of sentenze, so they will see a list of this set
     else:
-        sentenze_user = current_user.profile.taggings.all()
+        #sentenze_user = current_user.profile.taggings.all()
+        sentenze_user = Tagging.objects.filter(profile=profile)
+
+        for elem in sentenze_user:
+            print('{} con id: '.format(elem, elem.id))
+
         print('Current user: ', current_user)
         print('Permission: ', sentenze_user)
         return render(request, 'tag_sentenze/list_sentenze.html', {'sentenze': sentenze_user})
@@ -71,7 +78,8 @@ def new_sentenza(request):
 @login_required
 def tag_sentenza(request, id):
     try:
-        sentenza = Judgment.objects.get(pk=id)
+        #sentenza = Judgment.objects.get(pk=id)
+        sentenza = Tagging.objects.get(id=id).judgment
     except Judgment.DoesNotExist:
         raise Http404()
 
@@ -103,7 +111,8 @@ def tag_sentenza(request, id):
 @login_required
 def graph(request,id):
     try:
-        sentenza = Judgment.objects.get(pk=id)
+        #sentenza = Judgment.objects.get(pk=id)
+        sentenza = Tagging.objects.get(id=id).judgment
     except Judgment.DoesNotExist:
         raise Http404()
 
