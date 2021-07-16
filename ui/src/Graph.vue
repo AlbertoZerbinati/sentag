@@ -15,16 +15,20 @@
           id="diagram"
           ref="diagram"
           :simple-view="true"
+          :show-grid="false"
+          :snap-to-grid="false"
+          :page-color="'#F9F9F9'"
           @request-edit-operation="onRequestEditOperation"
           @selection-changed="onSelectionChanged"
           @item-dbl-click="onItemDblClick"
         >
           <DxNodes
             :data-source="nodesDataSource"
-            :type-expr="'ellipse'"
+            :type-expr="itemTypeExpr"
             :text-expr="'attrs[ID]'"
             :text-style-expr="itemTextStyleExpr"
             :style-expr="itemStyleExpr"
+            :custom-data-expr="'attrs[ID]'"
           >
             <DxAutoLayout
               :type="'layered'"
@@ -36,6 +40,7 @@
             :style-expr="linkStyleExpr"
           />
           <DxToolbox :visibility="'disabled'"/>
+          <DxContextToolbox :enabled="false"/>
         </DxDiagram>
         <div class="panel-block">
           <div class="field is-grouped is-pulled-left">
@@ -55,7 +60,7 @@
 </template>
 
 <script>
-import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout } from 'devextreme-vue/diagram';
+import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout, DxContextToolbox } from 'devextreme-vue/diagram';
 import ArrayStore from 'devextreme/data/array_store';
 import notify from 'devextreme/ui/notify';
 import axios from 'axios'
@@ -64,7 +69,7 @@ import { toast } from "bulma-toast"
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout
+    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxContextToolbox,
   },
   data() {
     return {
@@ -229,6 +234,9 @@ export default {
           console.log(e);
         });
     },
+    itemTypeExpr() {
+      return "ellipse"
+    },
     itemTextStyleExpr() {
       return { 'font-weight': 'bold', 'font-size': 15 };
     },
@@ -239,9 +247,9 @@ export default {
     linkStyleExpr(obj) {
       // set edge color based on its type
       if(obj.type === "attack")
-        return { 'stroke': '#FF0000' };
+        return { 'stroke': '#EE5555' };
       else if(obj.type === "support")
-        return { 'stroke': "#22FF11"}
+        return { 'stroke': "#22DD66"}
       
       return {'stroke': "#000000"} // default for a newly created edge
     },
@@ -257,15 +265,9 @@ export default {
     onRequestEditOperation(e) {
       // manage the edit requests...
       if(e.operation === 'addShape') {
-        if(e.reason !== 'checkUIElementAvailability') {
-          this.showToast('You cannot add a Tag through the Graph interface.');
-        }
         e.allowed = false;
       }
       else if(e.operation === 'deleteShape') {
-        if(e.reason !== 'checkUIElementAvailability') {
-          this.showToast('You cannot delete a Tag.');
-        }
         e.allowed = false;
       }
       else if(e.operation === 'resizeShape') {
@@ -277,16 +279,9 @@ export default {
         }
       } 
       else if(e.operation === 'beforeChangeShapeText') {
-        if(e.reason !== 'checkUIElementAvailability') {
-          this.showToast('You cannot change a Tag\'s ID through the Graph interface.');
-        }
         e.allowed = false;
       }
       else if(e.operation === 'changeConnection') {
-        // if(e.args.connector !== undefined && e.args.connector.fromId && e.args.connector.toId && e.reason !== 'checkUIElementAvailability') {
-        //   console.log(e.args)
-        //   console.log("connection created: " + e.args.connector.fromId + " -> " + e.args.connector.toId)
-        // }
         e.allowed = true;
       }
       else if(e.operation === 'beforeChangeConnectorText') {
