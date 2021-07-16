@@ -501,7 +501,7 @@ def calc_agreement(judgment_id):
 
     #print('Agreement Judgment {}: {}'.format(judgment_id, agreement))
 
-    #print(Data.head())
+    #print(Data.iloc[:100])
 
     return agreement
 
