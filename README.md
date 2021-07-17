@@ -6,6 +6,8 @@
 
 - Graph featuring [DevExtreme by DevExpress](https://github.com/DevExpress/devextreme-vue) (MIT License)
 
+- Python Package for agreement: [Simpledorff](https://github.com/LightTag/simpledorff) (MIT License)
+
 ## Usage (for development)
 
 1. Install the dependencies, create the Database, the Admin User and start the Python Backend server
