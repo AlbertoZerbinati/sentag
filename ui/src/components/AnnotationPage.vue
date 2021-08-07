@@ -315,6 +315,7 @@ export default {
 <style lang="scss">
 #editor {
   padding: 0.2rem;
+  font-size: 1.2rem;
 }
 .right {
   margin-left:100px;

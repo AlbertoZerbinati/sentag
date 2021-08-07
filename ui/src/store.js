@@ -1,22 +1,22 @@
 const niceColors = [
-  "#FFEE00BB", //giallo
-  "#FCD060BB", //giallo scuro
-  "#B4FFB3BB", //verde chiaro
-  "#85DE77BB", //verde
-  "#8DA290BB", //verde scuro
-  "#B8E1EDBB", //azzurro
-  "#95B4CCBB", //turchese
-  "#63CBBFBB", //cobalto
-  "#4F9EC4BB", //blu
-  "#9375C3BB", //viola
-  "#E078EDBB", //fucsia
-  "#C7A4DABB", //violetto
-  "#FFB8DEBB", //rosa
-  "#F65151BB", //rosso
-  "#CB3461BB", //bordeaux
-  "#f7933bBB", //arancio
-  "#DFA995BB", //marrone
-  "#D5D5D5BB", //grigio (18)
+  "#FFEE00", //giallo
+  "#FCD060", //giallo scuro
+  "#B4FFB3", //verde chiaro
+  "#85DE77", //verde
+  "#8DA290", //verde scuro
+  "#B8E1ED", //azzurro
+  "#95B4CC", //turchese
+  "#63CBBF", //cobalto
+  "#4F9EC4", //blu
+  "#9375C3", //viola
+  "#E078ED", //fucsia
+  "#C7A4DA", //violetto
+  "#FFB8DE", //rosa
+  "#F65151", //rosso
+  "#CB3461", //bordeaux
+  "#f7933b", //arancio
+  "#DFA995", //marrone
+  "#D5D5D5", //grigio (18)
 
 ];
 

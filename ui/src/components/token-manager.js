@@ -118,6 +118,7 @@ class TokenManager {
           tokens: selectedTokens,
           label: _class.name,
           id: this.currentID,
+          graph: _class.graph,
           attrs:{},
           backgroundColor: _class.color,
         }

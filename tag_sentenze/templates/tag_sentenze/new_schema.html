@@ -5,13 +5,29 @@
     New Schema
 {% endblock %}
 
+{% block nav %}
+    <nav label="Page navigation">
+        <ul class="pagination justify-content-center">
+                <li class="page-item"><a class="page-link" href="/register/">Add User</a></li>
+                <li class="page-item active"><a class="page-link" href="{% url 'tag_sentenze:new-schema' %}">Add Schema</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:multiple-schemas' %}">Add Schemas</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:new-sentenza' %}">Add Judgment</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:multiple-judgment' %}">Add Judgments</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'users:home-judgment-schema' %}">Associate Judgments - Schemas</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'users:home-permission' %}">Associate Judgments - Users</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'users:agreement-page' %}">Agreement</a></li>
+                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:list-taggings' %}">Download</a></li>
+        </ul>
+    </nav>
+{% endblock %}
+
 {% block content %}
     <h2 class="title">New Schema</h2>
     <form enctype="multipart/form-data" action="{% url 'tag_sentenze:new-schema' %}" method="POST">
         {% csrf_token %}
         {{ form|crispy}} 
         <p class="mt-3">
-            <input type="submit" class="btn btn-primary" value="Upload">
+            <input type="submit" class="btn btn-primary" value="Submit">
         </p>
     </form>
 {% endblock %}

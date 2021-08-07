@@ -104,6 +104,7 @@ export default {
         
         // get the graph's nodes
         const nodes = flattened_tm.filter(token => token.graph)
+        console.log(flattened_tm)
         
         // istantiate nodes datasource
         this.nodesDataSource = new ArrayStore({
@@ -129,8 +130,10 @@ export default {
               }])
             }
           }
-          else if(node.attrs['CON'] !== "") { // if this node attacks others
+          if(node.attrs['CON'] !== "") { // if this node attacks others
             const attacked_nodes = node.attrs['CON'].split(",")
+            console.log(attacked_nodes)
+
             for(const attacked of attacked_nodes) {
               // push an attack edge
               this.edgesDataSource.push([{
@@ -241,7 +244,7 @@ export default {
       return { 'font-weight': 'bold', 'font-size': 15 };
     },
     itemStyleExpr(obj) {
-      let style = { 'stroke': obj.backgroundColor.substring(0, obj.backgroundColor.length -2), 'stroke-width':4 };
+      let style = { 'stroke': obj.backgroundColor, 'stroke-width':4 };
       return style;
     },
     linkStyleExpr(obj) {
@@ -331,6 +334,5 @@ export default {
 </script>
 <style scoped>
   #diagram {
-    height: 650px;
   }
 </style>
