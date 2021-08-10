@@ -212,7 +212,7 @@ export default {
         'cp': this.done,
       } 
       axios
-        .post(
+        .put(
           "/api/update/"+this.tagging_id, 
           params,
           {  
@@ -261,7 +261,7 @@ export default {
         } 
 
       axios
-        .post(
+        .put(
           "/api/completed/"+this.tagging_id,
           params,
           {  

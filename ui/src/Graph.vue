@@ -214,7 +214,7 @@ export default {
         'cp': false, // set as not completed: the tagger will have to manually set it in the tagging page
       } 
       axios
-        .post(
+        .put(
           "/api/update/" + this.tagging_id, 
           params,
           {  

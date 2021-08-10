@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'corsheaders',
-
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -141,3 +141,5 @@ LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = '/login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SESSION_COOKIE_AGE = 60*60 # 60-minutes-long sessions

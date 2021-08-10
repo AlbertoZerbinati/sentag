@@ -353,7 +353,7 @@ def tagging_detail(request, id):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['POST'])
+@api_view(['PUT'])
 def update_tagging(request, id):
     try:
         tagging = Tagging.objects.get(pk=id)
@@ -362,7 +362,7 @@ def update_tagging(request, id):
 
     #read tm and cp from request
     token_manager = json.dumps(request.data['tm'])
-    completed = request.data['cp']
+    completed = False
 
     serializer = TaggingSerializer(instance=tagging, data={'token_manager':token_manager, 'completed':completed}, partial=True, many=False)
     if serializer.is_valid():
@@ -371,7 +371,7 @@ def update_tagging(request, id):
 
 
 @permission_classes([IsAuthenticated])
-@api_view(['POST'])
+@api_view(['PUT'])
 def completed_tagging(request, id):
     try:
         tagging = Tagging.objects.get(pk=id)

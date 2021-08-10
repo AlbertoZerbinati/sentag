@@ -30,6 +30,6 @@ urlpatterns = [
     path('editor_page/', include('users.urls'))
 ]
 
-# for handling uploaded files
+# for visualizing uploaded files during developement
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
