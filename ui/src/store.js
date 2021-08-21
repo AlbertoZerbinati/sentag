@@ -1,32 +1,27 @@
 const niceColors = [
-  "#FFEE00", //giallo
-  "#FCD060", //giallo scuro
-  "#B4FFB3", //verde chiaro
-  "#85DE77", //verde
-  "#8DA290", //verde scuro
-  "#B8E1ED", //azzurro
-  "#95B4CC", //turchese
-  "#63CBBF", //cobalto
-  "#4F9EC4", //blu
-  "#9375C3", //viola
-  "#E078ED", //fucsia
-  "#C7A4DA", //violetto
-  "#FFB8DE", //rosa
-  "#F65151", //rosso
-  "#CB3461", //bordeaux
-  "#f7933b", //arancio
-  "#DFA995", //marrone
-  "#D5D5D5", //grigio (18)
-
+  "#FFEE00", // giallo
+  "#FCD060", // giallo scuro
+  "#B4FFB3", // verde chiaro
+  "#85DE77", // verde
+  "#8DA290", // verde scuro
+  "#B8E1ED", // azzurro
+  "#95B4CC", // turchese
+  "#63CBBF", // cobalto
+  "#4F9EC4", // blu
+  "#9375C3", // viola
+  "#E078ED", // fucsia
+  "#C7A4DA", // violetto
+  "#FFB8DE", // rosa
+  "#F65151", // rosso
+  "#CB3461", // bordeaux
+  "#f7933b", // arancio
+  "#DFA995", // marrone
+  "#D5D5D5", // grigio (18)
 ];
 
 export const mutations = {
-  setInputSentences(state, payload) {
-    if (!Array.isArray(payload)) {
-      state.originalText = payload;
-      payload = payload.split();
-    }
-    state.inputSentences = payload.map((s, i) => ({ id: i, text: s }));
+  setInputText(state, payload) {
+    state.inputText = payload;
   },
   addClass(state, payload) {
     let lastIndex = state.classes.reduce((p, c) => {
@@ -57,20 +52,16 @@ export const mutations = {
   },
 };
 
-export const getters = {};
 export default {
   state() {
     return {
-      originalText: "",
       classes: [],
-      inputSentences: [],
+      inputText: "",
       currentClass: {},
       currentBlock: {},
-      unsavedWork: false,
       done: false,
+      unsavedWork: false,
     };
   },
-  getters,
   mutations,
-  actions: {},
 };

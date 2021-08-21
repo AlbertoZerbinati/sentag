@@ -104,7 +104,6 @@ export default {
         
         // get the graph's nodes
         const nodes = flattened_tm.filter(token => token.graph)
-        console.log(flattened_tm)
         
         // istantiate nodes datasource
         this.nodesDataSource = new ArrayStore({
@@ -132,7 +131,6 @@ export default {
           }
           if(node.attrs['CON'] !== "") { // if this node attacks others
             const attacked_nodes = node.attrs['CON'].split(",")
-            console.log(attacked_nodes)
 
             for(const attacked of attacked_nodes) {
               // push an attack edge
@@ -156,17 +154,13 @@ export default {
       }
 
       // add new attrs based on existing connections
-      for(let connector of this.edgesDataSource._array) {
-        // console.log({'connector':connector})
-        
+      for(let connector of this.edgesDataSource._array) {        
         // get the connector type
         var connectorType = connector.type
 
         // get the start and end nodes
         var fromNode = this.nodesDataSource._array.filter(item => item['id'] == connector.from)[0]
         var toNode = this.nodesDataSource._array.filter(item => item['id'] == connector.to)[0]
-        // console.log({'from': fromNode})
-        // console.log({'to'  : toNode})
 
         // modify their attributes: 'A', 'CON'
         //    NOTE: this also pushes the changes into the tokenManger already
@@ -177,29 +171,25 @@ export default {
           } else { // else just set the supporter
             toNode.attrs['A'] = fromNode.attrs['ID']
           }
-          // console.log("SAVED A SUPPORT CONNECTOR")
-
         } else if(connectorType === "attack") {  // attack edge
           if(fromNode.attrs['CON'] !== "") { // if there already is an attacked, append the new one
             fromNode.attrs['CON'] = fromNode.attrs['CON'] + "," + toNode.attrs['ID']
           } else { // else just set the attacked
             fromNode.attrs['CON'] = toNode.attrs['ID']
           }
-          // console.log("SAVED AN ATTACK CONNECTOR")
         }
 
         // ignore edges without an assigned type (the black ones)!!! 
       }
 
       // now that all the changes have been pushed into the TM,
-      // POST the token manager into the database, via an axios call
+      // PUT the token manager into the database, via an axios call
       function getCookie(name) {
         let cookieValue = null;
           if (document.cookie && document.cookie !== '') {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
               const cookie = cookies[i].trim();
-              // Does this cookie string begin with the name we want?
               if (cookie.substring(0, name.length + 1) === (name + '=')) {
                   cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                   break;
@@ -211,7 +201,7 @@ export default {
       const csrftoken = getCookie('csrftoken'); 
       const params = {
         'tm': JSON.stringify(this.tm),
-        'cp': false, // set as not completed: the tagger will have to manually set it in the tagging page
+        'cp': false, // set as not completed: the annotator will have to manually set it in the tagging page
       } 
       axios
         .put(
@@ -295,13 +285,13 @@ export default {
         e.allowed = false;
       }
     },
-    onSelectionChanged({ items }) {
-      console.log({'selected item':items[0]})
-    },
+    // onSelectionChanged({ items }) {
+    //   console.log({'selected item':items[0]})
+    // },
     onItemDblClick(obj) {
       // if a connector is double clicked, change its type
       if(obj.item.itemType === "connector" && obj.item.dataItem.type === "attack") {
-        console.log("attack => support")
+        // console.log("attack => support")
         const key = obj.item.key
         const dataObj = obj.item.dataItem
         dataObj.type = "support"
@@ -310,7 +300,7 @@ export default {
           data: dataObj, 
           key: key }]);
       } else if(obj.item.itemType === "connector" && obj.item.dataItem.type === "support") {
-        console.log("support => attack")
+        // console.log("support => attack")
         const key = obj.item.key
         const dataObj = obj.item.dataItem
         dataObj.type = "attack"
@@ -319,7 +309,7 @@ export default {
           data: dataObj, 
           key: key }]);
       } else if (obj.item.itemType === "connector"){ // default connector does not have a type!! -> on double click assing support type
-        console.log("null => support")
+        // console.log("null => support")
         const key = obj.item.key
         const dataObj = obj.item.dataItem
         dataObj.type = "support"

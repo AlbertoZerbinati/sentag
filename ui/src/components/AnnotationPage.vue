@@ -79,7 +79,7 @@ export default {
     TokenBlock,
   },
   computed: {
-    ...mapState(["inputSentences", "classes", "annotations", "currentClass", "currentBlock", "unsavedWork"]),
+    ...mapState(["inputText", "classes", "annotations", "currentClass", "currentBlock", "unsavedWork"]),
     done: {
       get() {
         return this.$store.state.done
@@ -92,25 +92,20 @@ export default {
     }
   },
   watch: {
-    inputSentences() {
-      this.tokenizeCurrentSentence();
-    },
     done() {       
-      //when done changes because of this component or because of AttributesBlock
+      // when done changes because of this component or because of AttributesBlock
       this.completed()
     }
   },
   created() {
-    //console.log(this.oldtm.length)
     if (this.oldtm.length) {
-      this.tm = new TokenManager([],JSON.parse(JSON.parse(this.oldtm)))
-      //note: double json parsing is needed
+      this.tm = new TokenManager([],JSON.parse(JSON.parse(this.oldtm))) // note: double json parsing is needed
     } else { 
       this.tokenizeCurrentSentence();
     }
 
     document.addEventListener("mouseup", this.selectTokens);
-    window.onbeforeunload = () => (this.unsavedWork ? true : null);
+    window.onbeforeunload = () => (this.unsavedWork ? true : null); // exit confirmation if there is unsaved work
 
     this.tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content'),
     this.switchState = this.done;
@@ -119,22 +114,18 @@ export default {
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
-    print() {
-      console.log(this.done);
-      console.log(this.switchState);
-      
-    },
     ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
     tokenizeCurrentSentence() {
-      this.currentSentence = this.inputSentences[0];
-
-      let words = this.currentSentence["text"].split(" ");
+      let words = this.inputText.split(" ");
       let tokens = [];
       let last_index = 0;
+
       for(let i=0; i<words.length; i+=1){
           let token = [];
+
           let start = this.currentSentence["text"].indexOf(words[i],last_index);
           let end = start+words[i].length; 
+
           token.push(start);
           token.push(end);
           token.push(words[i]);
@@ -144,29 +135,29 @@ export default {
           last_index = end;
       }
 
-      this.tm = new TokenManager(tokens);
+      this.tm = new TokenManager(tokens); // istanzia token manager coi tokens
     },
     selectTokens() {
-      //console.log(this.classes);
       let selection = document.getSelection();
 
+      // if empty selection then return
       if (
         selection.anchorOffset === selection.focusOffset &&
         selection.anchorNode === selection.focusNode
-      )
+      ) {
         return;
+      }
+
+      // else get indexes
       let startIdx, endIdx;
-      // try {
       startIdx = parseInt(
         selection.anchorNode.parentElement.id.replace("t", "")
       );
       endIdx = parseInt(
         selection.focusNode.parentElement.id.replace("t", "")
       );
-      // } catch (e) {
-      //   console.log("selected text were not tokens");
-      //   return;
-      // }
+
+      // if valid indexes then add the new block, of type currentClass
       if (!isNaN(startIdx) && !isNaN(endIdx)) {
         let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
         if(cb) {
@@ -190,14 +181,13 @@ export default {
       this.done = false;
     },
     saveTags() {
-      //retrieve CSRF_TOKEN
+      // retrieve CSRF_TOKEN
       function getCookie(name) {
       let cookieValue = null;
       if (document.cookie && document.cookie !== '') {
           const cookies = document.cookie.split(';');
           for (let i = 0; i < cookies.length; i++) {
               const cookie = cookies[i].trim();
-              // Does this cookie string begin with the name we want?
               if (cookie.substring(0, name.length + 1) === (name + '=')) {
                   cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                   break;
@@ -210,7 +200,9 @@ export default {
       const params = {
         'tm': JSON.stringify(this.tm),
         'cp': this.done,
-      } 
+      }
+
+      // axios PUT
       axios
         .put(
           "/api/update/"+this.tagging_id, 
@@ -219,7 +211,6 @@ export default {
             headers: {
               "X-CSRFToken": csrftoken,
               "content-type": "application/json",
-              // "Access-Control-Allow-Origin": "*"
           }}
         )
         .then(
@@ -244,7 +235,6 @@ export default {
               const cookies = document.cookie.split(';');
               for (let i = 0; i < cookies.length; i++) {
                   const cookie = cookies[i].trim();
-                  // Does this cookie string begin with the name we want?
                   if (cookie.substring(0, name.length + 1) === (name + '=')) {
                       cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                       break;
@@ -253,13 +243,11 @@ export default {
             }
             return cookieValue;
       }
-      // console.log("done")
       const csrftoken = getCookie('csrftoken'); 
       const params = {
         'tm': JSON.stringify(this.tm),
         'cp': this.done,
         } 
-
       axios
         .put(
           "/api/completed/"+this.tagging_id,
@@ -268,7 +256,6 @@ export default {
             headers: {
               "X-CSRFToken": csrftoken,
               "content-type": "application/json",
-              // "Access-Control-Allow-Origin": "*"
           }}
         )
         .then( () => {
@@ -302,9 +289,7 @@ export default {
           this.setUnsavedWork(false);
         })
         .catch((e) => {
-          // console.log(e);
-          // alert(e)
-          alert(e.response.data[0])
+          alert(e.response.data[0]) // if there was a validation problem, alert the user with the provided message
           this.done = false
         });
     },

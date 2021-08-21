@@ -6,6 +6,7 @@
     {{ token.text }}
   </span>
 </template>
+
 <script>
 export default {
   name: "Token",
@@ -17,6 +18,7 @@ export default {
   }
 }
 </script>
+
 <style lang="scss">
   .token {
     font-size: large;

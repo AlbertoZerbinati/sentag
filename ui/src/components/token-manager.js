@@ -1,66 +1,65 @@
 class TokenManager {
   /**
-   *
+   * class constuctor
    * @param {Array} tokens
+   * @param {TokenManager} oldTM
    */
-  constructor(tokens, oldTM) { //manage the recreation from an old TM
-    if (arguments.length == 1) { //new token manager
-      this.currentID = 0; //univocal identifier
+  constructor(tokens, oldTM) {    // manage the recreation from an old TM or with an array of tokens
+    if (arguments.length == 1) {  // new token manager
+      this.currentID = 0;         // univocal identifier
       this.tokens = tokens.map((t) => ({
         type: "token",
         start: t[0],
         end: t[1],
         text: t[2],
       }));
-      // this.words = tokens.map(t => t[2]);
-      this.initialTokens = this.tokens.slice(); //SHALLOW COPY
+      this.initialTokens = this.tokens.slice(); // SHALLOW COPY
     }
-    else { //in case an oldTM is available
+    else { // in case an oldTM is available
       this.currentID = oldTM.currentID;
       this.tokens = oldTM.tokens
-      // this.words = oldTM.words;
       this.initialTokens = oldTM.initialTokens;
     }
     this.latestAddedToken = null;
   }
 
   /**
-   * Creates a new token block with the tokens whose starts match the input
+   * Creates a new token block with the tokens whose indexes match the input
    * parameters
    *
    * @param {Number} start 'start' value of the token forming the start of the token block
    * @param {Number} end 'start' value of the token forming the end of the token block
    * @param {Number} _class the id of the class to highlight
+   * 
+   * @returns {Object} the added token or null if indexes were invalid
    */
   addNewBlock(_start, _end, _class) {
     let start = _end < _start ? _end : _start;
     let end = _end > _start ? _end : _start;
-    //console.log(start);
-    //console.log(end);
+
     this.recursiveAddNewBlock(start, end, _class, this.tokens);
-    //console.log(this.tokens)
+
     return this.latestAddedToken;
-    // return this.tokens.find((t) => t.id === this.currentID -1); //ritorno il tokenblock aggiunto
   }
   recursiveAddNewBlock(start, end, _class, _tokens) {
     let selectedTokens = null;
 
-    //livello 0: ci entra solo e sempre per _tokens=this.tokens
+    // livello 0: ci entra solo e sempre per _tokens=this.tokens
     if (Array.isArray(_tokens)) {
       selectedTokens = []
-      //pusha tutti i TOKEN e TOKEN-BLOCK di livello 0 selezionati in selectedTokens con chiamate ricorsive sui figli
+      // pusha tutti i TOKEN e TOKEN-BLOCK di livello 0 selezionati in selectedTokens con chiamate ricorsive sui figli
       for (let child of _tokens) {
         let selected = this.recursiveAddNewBlock(start, end, _class, child);
         if (selected !== null)
-        selectedTokens.push(selected);
+          selectedTokens.push(selected);
       }
-      //se qualche TOKEN o TOKEN-BLOCK è stato selezionato -->
+      // se qualche TOKEN o TOKEN-BLOCK e' stato selezionato -->
       if (selectedTokens.length) {
-        //prendo start del primo token selezionato e trovo l'indice a cui corrisponde tra i _tokens
+        // prende start del primo token selezionato e trova l'indice a cui corrisponde tra i _tokens
         let first_token_start = selectedTokens[0].start;
         let first_index = _tokens.map(t => t.start).indexOf(first_token_start);
         
-        //costruisco nuovo TOKEN-BLOCK coi selectedTokens
+        // costruisce nuovo TOKEN-BLOCK coi selectedTokens
         let newTokenBlock = {
           type: "token-block",
           start: selectedTokens[0].start,
@@ -78,34 +77,28 @@ class TokenManager {
           else 
             newTokenBlock.attrs[key] = "";
         }
-        //console.log(newTokenBlock.attrs);
         this.currentID += 1;
-        //rimpiazzo ogni token selezionato col nuovo TOKEN-BLOCK (che li contiene)
+        // rimpiazzo ogni token selezionato col nuovo TOKEN-BLOCK (che li contiene)
         _tokens.splice(first_index, selectedTokens.length, newTokenBlock);
         this.latestAddedToken = newTokenBlock;
       }
     } 
-    // selezione INTERO TOKEN-BLOCK, se è token-block non interamente selezionato entrerà nel 4o elseif
+    // selezione INTERO TOKEN-BLOCK, se e' token-block non interamente selezionato entrera' nel 4o elseif
     else if (_tokens.type === "token-block" && _tokens.start >= start && _tokens.end <= end) {
-      //console.log(_tokens.start + " " + _tokens.end + " " + start + " " + end)
-      if (start <= _tokens.start && end >= _tokens.end)
       return _tokens;
-        //console.log("tokenblock")
     } 
     // selezione TOKEN
     else if (_tokens.type === "token" && _tokens.start >= start && _tokens.start <= end) {
-      //console.log(_tokens.start + " " + _tokens.end + " " + start + " " + end)
-      //console.log("token")
       return _tokens;
     } 
     // scansione TOKEN dentro un TOKEN-BLOCK non interamente selezionato
     else if (Array.isArray(_tokens.tokens)) {
-      //è come al livello 0 ma applicato a _tokens.tokens
+      // e' come al livello 0 ma applicato a _tokens.tokens
       selectedTokens = []
       for (let child of _tokens.tokens) {
         let selected = this.recursiveAddNewBlock(start, end, _class, child);
         if (selected !== null)
-        selectedTokens.push(selected);
+          selectedTokens.push(selected);
       }
       if (selectedTokens.length) {
         let first_token_start = selectedTokens[0].start;
@@ -130,24 +123,21 @@ class TokenManager {
         }
         this.currentID += 1;
         _tokens.tokens.splice(first_index, selectedTokens.length, newTokenBlock);
-        //per evitare di far aggiungere TOKEN-BLOCK a livelli ricorsivi precedenti, comunico che i tokens sono stati
-        //trasformati in token-blocks settando selectedTokens a null
-        selectedTokens = null
         this.latestAddedToken = newTokenBlock;
       }
+      // per evitare di far aggiungere TOKEN-BLOCK a livelli ricorsivi precedenti, comunico che i tokens sono stati
+      // trasformati in token-blocks settando selectedTokens a null
+      selectedTokens = null
     }
-    //se selectedTokens = [] --> ritorna null (possibile con livelli successivi allo 0 se TOKEN-BLOCK senza TOKEN selezionati)
-    if (selectedTokens !== null && !selectedTokens.length)
-    selectedTokens = null
-
-    // se TOKEN non selezionato --> return null 
-    // se TOKEN-BLOCK non interamente selezionato e senza TOKEN interni selezionati
-    // il valore ritornato da livello 0 (this.tokens) viene ignorato
+    // fin qua si puo' arrivare se:
+    // 1) TOKEN non selezionato -> return null
+    // 2) TOKEN-BLOCK non interamente selezionato  -> return null
+    // 3) e' la chiamata di livello 0 (this.tokens) -> return [] ma viene ignorato
     return selectedTokens
   }
+
   /**
    * Removes a token block and puts back all the tokens in their original position
-   * problema performance RISOLTO
    *
    * @param {Number} blockStart 'start' value of the token block to remove
    * @param {Number} blockEnd 'end' value of the token block to remove
@@ -161,35 +151,38 @@ class TokenManager {
     // LIVELLO 0
     if (Array.isArray(_tokens)) {
       for (let child of _tokens) {
-        if (child.type === "token-block") { //per performance: verifico se sia un blocco da rimuovere o se ne contenga solo se è un TOKEN-BLOCK
+        if (child.type === "token-block") { // per performance: verifica se sia 
+                                            // un blocco da rimuovere o se ne 
+                                            // contenga da rimuovere solo se e' un TOKEN-BLOCK
           let selected = this.recursiveRemoveBlock(blockStart, blockEnd, child);
           if (selected !== null) {
             selectedBlock = selected;
-            break; //mi fermo se ho indiviuato il token-block da rimuovere
+            break; // si ferma se ha individuato il token-block da rimuovere
           }
         }
       }
-      //se ho trovato a questo livello il BLOCK da rimuovere 
+      // se ha trovato a questo livello il BLOCK da rimuovere 
       if (selectedBlock !== null) {
-        //ottengo inici per la rimozione
+        // ottiene inici per la rimozione
         let block_start = selectedBlock.start;
         let block_index = _tokens.map(t => t.start).indexOf(block_start);
-        //mi salvo i TOKENS e TOKEN-BLOCK contenuti in modo da aggiungeri singolarmente
+        // salva i TOKENS e TOKEN-BLOCK contenuti in modo da aggiungerli singolarmente
         let tokens = selectedBlock.tokens;
 
-        //rimuovo il token block
+        // rimuove il token block
         _tokens.splice(block_index, 1);
-        //aggiungo i tokens interni, a livello 0 (quidni sovrascivo tranquillamente this.tokens, visto che _tokens è passato per valore)
+        // aggiunge i tokens interni, a livello 0 (quidni sovrascive tranquillamente this.tokens, visto che _tokens e' passato per valore)
         this.tokens = _tokens.slice(0, block_index).concat(tokens, _tokens.slice(block_index)); //(per performance)
-        //ritorno null... verrà ignorato
+        // ritorna null... verra' ignorato
         selectedBlock = null;
       }
     } 
-    //rimozione di questo TOCKEN-BLOCK ad un certo livello innestato >0 --> ritorno il BLOCK così ai livelli richiamanti mi sostituiscono coi miei .tokens
+    // rimozione di questo TOKEN-BLOCK ad un certo livello innestato (>0) --> ritorna il BLOCK 
+    // cosi' ai livelli richiamanti questo blocco puo' essere sostituito dai tokens interni se necessario
     else if (_tokens.type === "token-block" && _tokens.start === blockStart && _tokens.end === blockEnd) {
       return _tokens;
     } 
-    //se TOCKEN-BLOCK non è da rimuovere allora mi comporto ricorsivamente, come per LIVELLO 0 ma agendo sui .tokens
+    // se TOKEN-BLOCK non e' da rimuovere allora chiamata ricorsiva, come per LIVELLO 0 ma agendo sui .tokens
     else if (Array.isArray(_tokens.tokens)) {
       for (let child of _tokens.tokens) {
         if (child.type === "token-block") { //(per performance)
@@ -212,19 +205,19 @@ class TokenManager {
         selectedBlock = null;
       }
     }
-    //LIVELLO 0 ritorna null
-    //LIVELLI innestati non da rimuovere ritornano null
-    //su TOCKEN non viene mai avviata la chiamata ricorsiva
-    //TOCKEN-BLOCK selezionati ritornano prima di questa riga, nel loro elseif
-    //è importante ritornare null in modo che funzionino i controlli su selected
+    // LIVELLO 0 ritorna null
+    // LIVELLI innestati non da rimuovere ritornano null
+    // su TOKEN non viene mai avviata la chiamata ricorsiva
+    // TOCKEN-BLOCK da rimuovere ritorna prima di questa riga, nell'elseif di riga 182
+    // e' importante ritornare null in modo che funzionino i controlli su selected
     return selectedBlock
   }
 
   /**
-   * Removes all the tag blocks and leaves only tokens
+   * Removes all the token-blocks and leaves only tokens
    */
   resetBlocks() {
-    this.tokens = this.initialTokens.slice(); //SHALLOW COPY
+    this.tokens = this.initialTokens.slice();
   }
 }
 

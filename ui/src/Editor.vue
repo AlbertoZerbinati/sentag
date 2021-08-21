@@ -25,33 +25,34 @@ export default {
     AnnotationPage,
   },
   methods: {
-    ...mapMutations(["setInputSentences","addClass", "setDone"]),
+    ...mapMutations(["setInputText","addClass", "setDone"]),
   },
   created() {
-    //ottengo il numero sentenza dall'url
-    
+    // ottengo il tagging ID dai metadati
     const tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content');
+    
+    // axios GET
     axios
         .get("/api/"+tagging_id)
         .then((res) => {
-          // console.table(res.data)
 
-          //la risposta contiene:
-          //le parole della sentenza
-          this.setInputSentences(res.data['initial_text']);
-          //il titolo della sentenza
+          // la risposta contiene:
+          // 1) le parole della sentenza
+          this.setInputText(res.data['initial_text']);
+          // 2) il titolo della sentenza
           this.title = res.data['name'];
-          //il vecchio token manager
+          // 3) il vecchio token manager
           this.oldtm = res.data['token_manager'];
-          //il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
+          // 4) il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
           this.setDone(res.data['completed'])
-          
-
-          //i tag da parsare, perché passati come xsd string
+          // 5) i tag da parsare, perché passati come xsd string
           let xml = res.data['tags']
 
+          // parsing delle classi di tag, sfrutta XPath
           let parser = new DOMParser();
           let xmlDoc = parser.parseFromString(xml,"text/xml");
+          
+          // tutti gli xs:element
           let elements = xmlDoc.evaluate("//xs:element", xmlDoc, 
             function(prefix) { 
               if (prefix === 'xs') { 
@@ -60,41 +61,49 @@ export default {
                 return null; 
                 }},XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
 
+          // per ogni xs:element
           for(let i = 1; i < elements.snapshotLength; i++) {
             let element = elements.snapshotItem(i);
-            //console.log(element);
+            // nome dell'element
             let name = element.getAttribute('name');
-            //console.log(name);
-            let attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']/xs:complexType/xs:attribute', xmlDoc, 
-            function(prefix) { 
-              if (prefix === 'xs') { 
-                return 'http://www.w3.org/2001/XMLSchema';
-              } else { 
-                return null;
-              }
-            },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
-            if (attributes.snapshotLength == 0) {
-              attributes = xmlDoc.evaluate('//xs:element[@name=\''+name+'\']/xs:complexType/xs:simpleContent/xs:extension/xs:attribute', xmlDoc, 
+            // attributi dell'element (MODO 1)
+            let attributes = xmlDoc.evaluate(
+              '//xs:element[@name=\''+name+'\']/xs:complexType/xs:attribute',
+              xmlDoc, 
               function(prefix) { 
                 if (prefix === 'xs') { 
-                  return 'http://www.w3.org/2001/XMLSchema'; 
+                  return 'http://www.w3.org/2001/XMLSchema';
                 } else { 
-                  return null; 
+                  return null;
                 }
-              },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+              },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null
+            );
+            // attributi dell'element (MODO 2, solo se MODO 1 non ne ha trovati)
+            if (attributes.snapshotLength == 0) {
+              attributes = xmlDoc.evaluate(
+                '//xs:element[@name=\''+name+'\']/xs:complexType/xs:simpleContent/xs:extension/xs:attribute',
+                xmlDoc, 
+                function(prefix) { 
+                  if (prefix === 'xs') { 
+                    return 'http://www.w3.org/2001/XMLSchema'; 
+                  } else { 
+                    return null; 
+                  }
+                },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null
+              );
             }
+            // costruisi la lista completa di nomi degli attributi
             let attrs = []
             for(let i = 0; i < attributes.snapshotLength; i++) {
               let attribute = attributes.snapshotItem(i); 
               let attr = attribute.getAttribute('name');
-              //console.log(attr);
               attrs.push(attr);
             }
+            // pusha la classe coi suoi attributi nello store
             this.addClass([name,attrs])
             element.setAttribute('name','CONSUMED')
-            //consoe.log("\n");
           }
-          this.go=true; //now we can load the annotation page
+          this.go = true; // now we can load the annotation page
         })
     .catch((err) => alert(err));
   }
