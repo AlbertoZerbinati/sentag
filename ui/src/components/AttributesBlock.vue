@@ -40,10 +40,10 @@ import { mapState, mapMutations } from "vuex";
 export default {
   name: "AttributesBlock",
   computed: {
-    ...mapState(["classes", "currentClass", "currentBlock", "unsavedWork", "done"]),
+    ...mapState(["currentBlock", "unsavedWork", "done"]),
   },
   methods: {
-    ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork", "setDone"]),
+    ...mapMutations(["setUnsavedWork", "setDone"]),
     onKeyUp(e) {
       if (e.key === ">" || e.key === "<" || e.key === " " || e.key === '"') {
         e.preventDefault()

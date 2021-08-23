@@ -70,7 +70,6 @@ export default {
   data: function() {
     return {
       tm: {},
-      currentSentence: {},
     };
   },
   props: ['title','oldtm'],
@@ -116,6 +115,7 @@ export default {
   methods: {
     ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
     tokenizeCurrentSentence() {
+
       let words = this.inputText.split(" ");
       let tokens = [];
       let last_index = 0;
@@ -123,7 +123,7 @@ export default {
       for(let i=0; i<words.length; i+=1){
           let token = [];
 
-          let start = this.currentSentence["text"].indexOf(words[i],last_index);
+          let start = this.inputText.indexOf(words[i],last_index);
           let end = start+words[i].length; 
 
           token.push(start);
@@ -183,15 +183,15 @@ export default {
     saveTags() {
       // retrieve CSRF_TOKEN
       function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
           const cookies = document.cookie.split(';');
           for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                  break;
-              }
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
           }
         }
         return cookieValue;
@@ -207,11 +207,12 @@ export default {
         .put(
           "/api/update/"+this.tagging_id, 
           params,
-          {  
+          {
             headers: {
               "X-CSRFToken": csrftoken,
               "content-type": "application/json",
-          }}
+            }
+          }
         )
         .then(
           toast({
@@ -230,18 +231,18 @@ export default {
     },
     completed() {
       function getCookie(name) {
-          let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-              const cookies = document.cookie.split(';');
-              for (let i = 0; i < cookies.length; i++) {
-                  const cookie = cookies[i].trim();
-                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                      cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                      break;
-                  }
-              }
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
             }
-            return cookieValue;
+          }
+        }
+        return cookieValue;
       }
       const csrftoken = getCookie('csrftoken'); 
       const params = {

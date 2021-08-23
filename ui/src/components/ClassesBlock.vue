@@ -29,10 +29,10 @@ import { mapState, mapMutations } from "vuex";
 export default {
   name: "ClassesBlock",
   computed: {
-    ...mapState(["classes", "currentClass", "currentBlock", "unsavedWork"]),
+    ...mapState(["classes", "currentClass"]),
   },
   methods: {
-    ...mapMutations(["removeClass", "setCurrentClass", "setUnsavedWork"]),
+    ...mapMutations(["setCurrentClass"]),
   }
 };
 </script>

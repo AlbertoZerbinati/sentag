@@ -35,13 +35,16 @@
               :orientation="'horizontal'"
             />
           </DxNodes>
+
           <DxEdges
             :data-source="edgesDataSource"
             :style-expr="linkStyleExpr"
           />
+
           <DxToolbox :visibility="'disabled'"/>
           <DxContextToolbox :enabled="false"/>
         </DxDiagram>
+
         <div class="panel-block">
           <div class="field is-grouped is-pulled-left">
             <p class="control">
@@ -69,7 +72,7 @@ import { toast } from "bulma-toast"
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxContextToolbox,
+    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxContextToolbox
   },
   data() {
     return {
@@ -86,21 +89,24 @@ export default {
     axios
       .get("/api/" + this.tagging_id)
       .then(res => {
-        // get the old token manager
+        // get the old token manager, if available
         this.tm = res.data['token_manager']
+        if(this.tm === "") {
+          return
+        }
+
         this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
 
         // flatten tm with the stack technique
         const stack = [...this.tm.tokens];
-        const result = [];
+        const flattened_tm = [];
         while(stack.length) {
           const next = stack.pop();
           if(next.type === "token-block" && Array.isArray(next.tokens)) {
             stack.push(...next.tokens);
+            flattened_tm.push(next);
           }
-          result.push(next);
         }
-        const flattened_tm = result.reverse();
         
         // get the graph's nodes
         const nodes = flattened_tm.filter(token => token.graph)
@@ -131,7 +137,6 @@ export default {
           }
           if(node.attrs['CON'] !== "") { // if this node attacks others
             const attacked_nodes = node.attrs['CON'].split(",")
-
             for(const attacked of attacked_nodes) {
               // push an attack edge
               this.edgesDataSource.push([{
@@ -154,7 +159,7 @@ export default {
       }
 
       // add new attrs based on existing connections
-      for(let connector of this.edgesDataSource._array) {        
+      for(let connector of this.edgesDataSource._array) {
         // get the connector type
         var connectorType = connector.type
 
@@ -186,14 +191,14 @@ export default {
       // PUT the token manager into the database, via an axios call
       function getCookie(name) {
         let cookieValue = null;
-          if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-              const cookie = cookies[i].trim();
-              if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                  break;
-              }
+        if (document.cookie && document.cookie !== '') {
+          const cookies = document.cookie.split(';');
+          for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+              break;
+            }
           }
         }
         return cookieValue;
@@ -274,9 +279,6 @@ export default {
       else if(e.operation === 'beforeChangeShapeText') {
         e.allowed = false;
       }
-      else if(e.operation === 'changeConnection') {
-        e.allowed = true;
-      }
       else if(e.operation === 'beforeChangeConnectorText') {
         // do not allow having text in the connector: double click has another behaviour!!!
         e.allowed = false;
@@ -285,43 +287,41 @@ export default {
         e.allowed = false;
       }
     },
-    // onSelectionChanged({ items }) {
-    //   console.log({'selected item':items[0]})
-    // },
+    onSelectionChanged({ items }) {
+      console.log({'selected item':items[0]})
+    },
     onItemDblClick(obj) {
       // if a connector is double clicked, change its type
-      if(obj.item.itemType === "connector" && obj.item.dataItem.type === "attack") {
-        // console.log("attack => support")
-        const key = obj.item.key
-        const dataObj = obj.item.dataItem
-        dataObj.type = "support"
-        this.edgesDataSource.push([{ 
-          type: "update", 
-          data: dataObj, 
-          key: key }]);
-      } else if(obj.item.itemType === "connector" && obj.item.dataItem.type === "support") {
+      
+      // not a connector
+      if(obj.item.itemType !== "connector")
+        return
+      
+      // get connector type and set parameters to push
+      let key;
+      let dataObj;
+      if(obj.item.dataItem.type === "support") {
         // console.log("support => attack")
-        const key = obj.item.key
-        const dataObj = obj.item.dataItem
+        key = obj.item.key
+        dataObj = obj.item.dataItem
         dataObj.type = "attack"
-        this.edgesDataSource.push([{ 
-          type: "update", 
-          data: dataObj, 
-          key: key }]);
-      } else if (obj.item.itemType === "connector"){ // default connector does not have a type!! -> on double click assing support type
-        // console.log("null => support")
-        const key = obj.item.key
-        const dataObj = obj.item.dataItem
+      } else { // default connector does not have any type!! -> on double click assing support type
+        // console.log("null or attack => support")
+        key = obj.item.key
+        dataObj = obj.item.dataItem
         dataObj.type = "support"
-        this.edgesDataSource.push([{ 
+      }
+
+      // push the change
+      this.edgesDataSource.push([{ 
           type: "update", 
           data: dataObj, 
           key: key }]);
-      }
     }
   }
 };
 </script>
+
 <style scoped>
   #diagram {
   }
