@@ -142,4 +142,4 @@ LOGIN_URL = '/login'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-SESSION_COOKIE_AGE = 60*60 # 60-minutes-long sessions
+# SESSION_COOKIE_AGE = 60*60 # 60-minutes-long sessions

@@ -8,33 +8,25 @@ from django.contrib.auth.models import User
 
 @login_required
 def index(request):
-    #check if current user belongs to Editor or Admin Group
-    # current_user = request.user
-    # if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-    #     context = {
-    #         'num_sentenze': Judgment.objects.all().count()
-    #     }
-    #     return render(request, 'tag_sentenze/index.html', context=context)
-    # else:
-        return redirect('/sentenze/')
+    # the home page shows the list of assigned judgments
+    return redirect('/sentenze/')
 
 @login_required
 def list_sentenze(request):
-    
     current_user = request.user
     profile = Profile.objects.get(user=current_user)
     sentenze = Judgment.objects.all()
 
-    #admins and editors has access to all the sentenze
+    # admins and editors has access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():   
         context = {
-            #'sentenze': current_user.profile.taggings.all()
+            # 'sentenze': current_user.profile.taggings.all()
             'sentenze': Tagging.objects.filter(profile=profile)
         }
         return render(request, 'tag_sentenze/list_sentenze.html', context=context)
-    #taggatori has access only to their set of sentenze, so they will see a list of this set
+    # taggatori has access only to their set of sentenze, so they will see a list of this set
     else:
-        #sentenze_user = current_user.profile.taggings.all()
+        # sentenze_user = current_user.profile.taggings.all()
         sentenze_user = Tagging.objects.filter(profile=profile)
 
         for elem in sentenze_user:
@@ -46,7 +38,7 @@ def list_sentenze(request):
 
 @login_required
 def new_sentenza(request):
-    #check if current user belongs to Editor or Admin Group
+    # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
@@ -57,10 +49,7 @@ def new_sentenza(request):
             if form.is_valid():
                 # save the form into the DB
                 form.save()
-
-                #id of the new judgment uploaded
-                print(form.instance.id)
-                #assign a tagging object to all editors and admins
+                # assign a tagging object to all editors and admins
                 auto_assignment(form.instance.id)
 
                 # redirect home
@@ -78,7 +67,7 @@ def new_sentenza(request):
 @login_required
 def tag_sentenza(request, id):
     try:
-        #sentenza = Judgment.objects.get(pk=id)
+        # sentenza = Judgment.objects.get(pk=id)
         sentenza = Tagging.objects.get(id=id).judgment
     except Judgment.DoesNotExist:
         raise Http404()
@@ -87,19 +76,19 @@ def tag_sentenza(request, id):
     profile = Profile.objects.get(user=request.user)
     user_taggings = current_user.profile.taggings.all()
 
-    #admins and editors have access to all the sentenze
+    # admins and editors have access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
-        #retrive the taging table starting using profile and judgment as unique identifiers
+        # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
         print("---->",context['taggings'].id)
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
-    #taggatori has access only to their set of sentenze
+    # taggatori has access only to their set of sentenze
     elif sentenza in user_taggings:
         print('Taggatore access with permission')
-        #retrive the taging table starting using profile and judgment as unique identifiers
+        # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
@@ -111,7 +100,7 @@ def tag_sentenza(request, id):
 @login_required
 def graph(request,id):
     try:
-        #sentenza = Judgment.objects.get(pk=id)
+        # sentenza = Judgment.objects.get(pk=id)
         sentenza = Tagging.objects.get(id=id).judgment
     except Judgment.DoesNotExist:
         raise Http404()
@@ -120,19 +109,19 @@ def graph(request,id):
     profile = Profile.objects.get(user=request.user)
     user_taggings = current_user.profile.taggings.all()
 
-    #admins and editors have access to all the sentenze
+    # admins and editors have access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
-        #retrive the taging table starting using profile and judgment as unique identifiers
+        # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
         print("---->",context['taggings'].id)
         return render(request, 'tag_sentenze/graph.html', context=context)
-    #taggatori has access only to their set of sentenze
+    # taggatori has access only to their set of sentenze
     elif sentenza in user_taggings:
         print('Taggatore access with permission')
-        #retrive the taging table starting using profile and judgment as unique identifiers
+        # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings':Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
@@ -143,7 +132,7 @@ def graph(request,id):
     
 @login_required
 def new_schema(request):
-    #check if current user belongs to Editor or Admin Group
+    # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
@@ -154,7 +143,6 @@ def new_schema(request):
             if form.is_valid():
                 # save the form into the Database
                 form.save()
-
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index') )
                 
@@ -167,23 +155,23 @@ def new_schema(request):
         print('Taggatore access')
         return redirect('/sentenze/')
 
-#upload multiplo
+# upload multiplo
 @login_required
 def add_multiple_judgments(request):
-    #check if current user belongs to Editor or Admin Group
+    # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
         if request.method == 'POST':
             # Get all the file uploaded 
             judgment_files = request.FILES.getlist('judgments')
-
+            
             form = AddSchemaJudgmentsForm(request.POST)
             
             if form.is_valid():
                 schema = form.cleaned_data['schema']
                 print(Schema.objects.get(id=schema.id))
-
+                
                 for judgment in judgment_files:
                     print(str(judgment))
                     new_judg = Judgment.objects.create(
@@ -192,13 +180,13 @@ def add_multiple_judgments(request):
                     )
                     new_judg.save()
 
-                    #auto assign the new uploaded judgments to all editor and admin users
+                    # auto assign the new uploaded judgments to all editor and admin users
                     auto_assignment(new_judg.id)
 
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index') )
 
-        #add the CoicheField with the schemas
+        # add the CoicheField with the schemas
         form = AddSchemaJudgmentsForm()
         context = {
             'form': form,
@@ -211,7 +199,7 @@ def add_multiple_judgments(request):
 
 @login_required
 def add_multiple_schemas(request):
-    #check if current user belongs to Editor or Admin Group
+    # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
@@ -234,17 +222,17 @@ def add_multiple_schemas(request):
         print('Taggatore access')
         return redirect('/sentenze/')
 
-#automatic assignment of a new uploaded judgment to all editors and admins
+# automatic assignment of a new uploaded judgment to all editors and admins
 def auto_assignment(judgment_id):
     admins = list(User.objects.filter(groups__name='Admins'))
     editors = list(User.objects.filter(groups__name='Editors'))
     both_users = admins + editors
-    both_users = set(both_users) #remove duplicates
+    both_users = set(both_users) # remove duplicates
 
-    #list with all id of editors and admins users
+    # list with all id of editors and admins users
     id_list = [user.id for user in both_users]
 
-    #create the new tagging
+    # create the new tagging
     for user_id in id_list:
         new_tagging = Tagging.objects.create(
             profile = Profile.objects.get(pk=user_id),
@@ -258,76 +246,32 @@ def download(request, id):
         tagging = Tagging.objects.get(pk=id)
     except Tagging.DoesNotExist:
         raise Http404()
-
+    
     current_user = request.user
-
-    #taggers don't have access to this functionality
+    
+    # taggers don't have access to this functionality
     if not current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         return redirect('/')
-
-    #load tagging xml text
-    response = {'name':tagging.judgment.name[:tagging.judgment.name.rfind(".")], 'xml':tagging.xml_text}
+    
+    # load tagging xml text
+    response = {
+        'name': tagging.judgment.name[:tagging.judgment.name.rfind(".")], 
+        'xml':tagging.xml_text
+    }
     return JsonResponse(response)
-
-    # #load token manager: again I need double loads, in Vue I need double parse instead...
-    # tm = json.loads(json.loads(tagging.token_manager))
-    # # print(type(tm))
-
-    # #now I need to build the xml string
-
-    # #list of tokens (and token-blocks)
-    # words=[] #stack for words: <tags> + tokens
-    # s = tm['tokens']
-    # # print(s)
-    # # print("\n")
-    # while s:
-    #     #extract first token
-    #     t = s.pop(0)
-    #     # print(t)
-    #     # print(t.items())
-    #     # print()
-    #     #check if it is a token
-    #     if isinstance(t, str):
-    #         words.append(t)
-    #         # print(words)
-    #         # print(s)
-    #         # print()
-    #         # print(words)
-    #         # print()
-    #     elif 'text' in t:
-    #         # print('sono un TOKEN!',t['text'])
-    #         words.append(t['text'])
-    #     else: #else it is a token-block so we push to the stack his 'tokens' and print the label into the xml
-    #         label = t['label']
-    #         start_tag = '<' + str(label)
-    #         for k,v in t['attrs'].items():
-    #             start_tag = start_tag + f' {k}="{v}"'
-    #         start_tag = start_tag + '>'
-    #         end_tag = '</' + str(label) + '>'
-    #         # print('sono un TOKEN-BLOCK!', start_tag)
-    #         words.append(start_tag)
-    #         s.insert(0,end_tag)
-    #         for child in reversed(t['tokens']):
-    #             s.insert(0,child)
-
-    # #!!! MANCA INCIPIT XML !!!
-    # xml_string = ' '.join(words)
-    # xml_string = """<body>\n""" + xml_string + """\n</body>"""
-    # # print(xml_string)
-
 
 @login_required
 def list_taggings(request):    
     current_user = request.user
     taggings = Tagging.objects.all()
 
-    #admins and editors have access to all taggings
+    # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():   
         context = {
             'taggings': taggings
         }
         return render(request, 'tag_sentenze/list_taggings.html', context=context)
-    #taggatori don't
+    # taggatori don't
     else:
         print('Taggatore access')
         return redirect('/sentenze')
@@ -339,6 +283,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from .serializers import TaggingSerializer
+from lxml import etree
 
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
@@ -347,6 +292,11 @@ def tagging_detail(request, id):
         tagging = Tagging.objects.get(pk=id)
     except Tagging.DoesNotExist:
         raise Http404()
+    
+    # check permission
+    user_tagging = Tagging.objects.filter(profile=request.user.profile)
+    if tagging not in user_tagging:
+        return Response({"detail":"Not found"})
     
     serializer = TaggingSerializer(tagging, many=False)
     return Response(serializer.data)
@@ -359,8 +309,13 @@ def update_tagging(request, id):
         tagging = Tagging.objects.get(pk=id)
     except Tagging.DoesNotExist:
         raise Http404()
+    
+    # check permission
+    user_tagging = Tagging.objects.filter(profile=request.user.profile)
+    if tagging not in user_tagging:
+        return Response({"detail":"Not found"})
 
-    #read tm and cp from request
+    # read tm from request
     token_manager = json.dumps(request.data['tm'])
     completed = False
 
@@ -369,7 +324,6 @@ def update_tagging(request, id):
         serializer.save();
     return HttpResponse("Updated")
 
-
 @permission_classes([IsAuthenticated])
 @api_view(['PUT'])
 def completed_tagging(request, id):
@@ -377,65 +331,69 @@ def completed_tagging(request, id):
         tagging = Tagging.objects.get(pk=id)
     except Tagging.DoesNotExist:
         raise Http404()
-
-    #read tm and cp from request
+    
+    # check permission
+    user_tagging = Tagging.objects.filter(profile=request.user.profile)
+    if tagging not in user_tagging:
+        return Response({"detail":"Not found"})
+    
+    # read tm and cp from request
     token_manager = json.loads(request.data['tm'])
     completed = request.data['cp']
     
-    #if completed we need to validate the xml text
     if completed:
-        #build xml_string
-        words=[]
-        s = token_manager['tokens']
+        # build xml_string
+        words = []
+        s = token_manager['tokens'] # stack
         while s:
             t = s.pop(0)
-            if isinstance(t, str):
+            if isinstance(t, str):  # <tag>
                 words.append(t)
-            elif 'text' in t:
+            elif 'text' in t:       # token
                 words.append(t['text'])
-            else:
+            else:                   # token block
+                # append start-tag
                 label = t['label']
                 start_tag = '<' + str(label)
                 for k,v in t['attrs'].items():
-                    start_tag = start_tag + f' {k}="{v}"'
+                    if v != "":
+                        start_tag = start_tag + f' {k}="{v}"'
                 start_tag = start_tag + '>'
-                end_tag = '</' + str(label) + '>'
                 words.append(start_tag)
+                
+                # push end-tag
+                end_tag = '</' + str(label) + '>'
                 s.insert(0,end_tag)
+                
+                # push tokens in reversed order
                 for child in reversed(t['tokens']):
                     s.insert(0,child)
 
-        #!!! MANCA INCIPIT XML !!!
+        # TODO: incipit XML
         xml_string = ' '.join(words)
         xml_string = """<body>\n""" + xml_string + """\n</body>"""
-
-
-        #validate xml
-        from lxml import etree
-
+        
+        # validate xml
         schema_string = tagging.judgment.xsd.tags
         schema_root = etree.XML(schema_string.encode('ascii'))
         xmlschema = etree.XMLSchema(schema_root)
         parser = etree.XMLParser(schema = xmlschema)
-
         try:
             etree.fromstring(xml_string, parser)
         except etree.XMLSyntaxError as error:
-            #if not valid return fail with error message
+            # if not valid return fail with error message
             print(str(error))
             return Response(data={str(error)}, status=500)
 
-        print("salvo tmmmm")
         # else if valid then save in db WITH XML TEXT and return success
         serializer = TaggingSerializer(instance=tagging, data={'token_manager':json.dumps(request.data['tm']), 'completed':completed, 'xml_text':xml_string}, partial=True, many=False)
+        
         if serializer.is_valid():
             serializer.save();
-
+        
         return Response("Updated")
-
-
-    print("salvo tmmmm")
-    #if set uncompleted then save in db and return success
+    
+    # if set uncompleted then save in db and return success
     serializer = TaggingSerializer(instance=tagging, data={'token_manager':json.dumps(request.data['tm']), 'completed':completed, }, partial=True, many=False)
     if serializer.is_valid():
         serializer.save();
