@@ -141,48 +141,59 @@
             <a class="nav-item nav-link"  href="{% url 'tag_sentenze:new-schema' %}">Add</a>
         </div>
     </div>
-    {% for schema in lista_schema %}
-        <p>
-            <a class="nav-item nav-link" href="{% url 'users:join-judgment-schema' schema.id %}">{{ schema }}</a>
-        </p>
-    {% endfor %}
+    <ul class="list-group" style="overflow-y: auto;">
+        {% for schema in lista_schema %}
+                <a class="list-group-item list-group-item-action" href="{% url 'users:join-judgment-schema' schema.id %}">{{ schema }}</a>
+        {% endfor %}
+    </ul>
 {% endblock %}
 
 {% block content %}
-    <h2 class="title">{{ selected_schema }}</h2>
-    <div class="border-yop pt-3">
-        Schema {{ selected_schema }} is related to the following judgments:
-    </div>
-    <button type="button" id="rselect_all" onclick="selectAll('.check-remove')" class="btn btn-outline-primary btn-sm">Select All</button>
-    <div style="overflow-y: auto;">
+    <h2 class="title" style="text-align: center; margin-bottom: 20px;">{{ selected_schema }}</h2>
+    {% if sentenze_schema %}
+        <button type="button" id="rselect_all" onclick="selectAll('.check-remove')" class="btn btn-outline-primary btn-sm">Select All</button>
+        <button type="button" id="rclear_all" onclick="clearAll('.check-remove')" class="btn btn-outline-primary btn-sm">Clear All</button>
+    {% endif %}
+    <div style="margin-top: 5px; margin-bottom: 10px; overflow-y: auto;">
         {% for elem in sentenze_schema %}
-            <div>
-                <input type="checkbox" id="rcheck_{{ elem.id }}" class="check-remove">
-                {{ elem }}
-                <button id="sentenza_{{ elem.id }}" type="button" class="remove-sentenza-button" style="float: right;">Remove</button>
+            <div class="card mb-2">
+                <div class="card-body">
+                    <input type="checkbox" id="rcheck_{{ elem.id }}" class="check-remove">
+                    {{ elem }}
+                    <button id="sentenza_{{ elem.id }}" type="button" class="remove-sentenza-button" style="float: right;">Remove</button>
+                </div>
             </div>
         {% endfor %}
     </div>
-    <div class="text-center">
-        <button type="button" id="remove_selected_schema" class="btn btn-primary">Remove Selected</button>
-    </div>
+    {% if sentenze_schema %}
+        <div class="text-center">
+            <button type="button" id="remove_selected_schema" class="btn btn-primary">Remove Selected</button>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block graph %}
     <div>
-        <h4 class="title">Judgments</h4>
+        <h4 class="title" style="text-align: center; margin-bottom: 20px;">Judgments</h4>
     </div>
-    <button type="button" id="aselect_all" onclick="selectAll('.check-add')" class="btn btn-outline-primary btn-sm">Select All</button>
-    <div style="overflow-y: auto;">
+    {% if sentenze %}
+        <button type="button" id="aselect_all" onclick="selectAll('.check-add')" class="btn btn-outline-primary btn-sm" style="margin-bottom: 5px;">Select All</button>
+        <button type="button" id="aclear_all" onclick="clearAll('.check-add')" class="btn btn-outline-primary btn-sm" style="margin-bottom: 5px;">Clear All</button>
+    {% endif %}
+    <div style="overflow-y: auto; margin-bottom: 10px;">
         {% for sentenza in sentenze %}
-            <div class="align-items-center">
-                <input type="checkbox" id="acheck_{{ sentenza.id }}" class="check-add">
-                {{ sentenza.name }}
-                <button id="sentenza_{{ sentenza.id }}" type="button" class="add-sentenza-button" style="float: right;">Add</button>
+            <div class="card mb-2">
+                <div class="card-body">
+                    <input type="checkbox" id="acheck_{{ sentenza.id }}" class="check-add">
+                    {{ sentenza.name }}
+                    <button id="sentenza_{{ sentenza.id }}" type="button" class="add-sentenza-button" style="float: right;">Add</button>
+                </div>
             </div>
         {% endfor %}
     </div>
-    <div class="text-center">
-        <button type="button" id="add_selected_schema" class="btn btn-primary">Add Selected</button>
-    </div>
+    {% if sentenze %}
+        <div class="text-center">
+            <button type="button" id="add_selected_schema" class="btn btn-primary">Add Selected</button>
+        </div>
+    {% endif %}
 {% endblock %}

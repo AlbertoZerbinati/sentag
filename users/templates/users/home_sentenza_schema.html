@@ -13,15 +13,15 @@
             <a class="nav-item nav-link"  href="{% url 'tag_sentenze:new-schema' %}">Add</a>
         </div>
     </div>
-    {% for schema in lista_schemas %}
-        <p>
-            <a class="nav-item nav-link" href="{% url 'users:join-judgment-schema' schema.id %}">{{ schema }}</a>
-        </p>
-    {% endfor %}
+    <ul class="list-group" style="overflow-y: auto;">
+        {% for schema in lista_schemas %}
+                <a class="list-group-item list-group-item-action" href="{% url 'users:join-judgment-schema' schema.id %}">{{ schema }}</a>
+        {% endfor %}
+    </ul>
 {% endblock %}
 
 {% block content %}
-    <h2 class="title">Schema-Judgment Association</h2>
+    <h2 class="title" style="text-align: center;">Schema-Judgment Association</h2>
     <div class="border-yop pt-3">
         Here you can associate a schema to a selected judgment
     </div>
@@ -29,13 +29,15 @@
 
 {% block graph %}
     <div>
-        <h4 class="title">Judgments</h4>
+        <h4 class="title" style="text-align: center; margin-bottom: 20px;">Judgments</h4>
     </div>
     <div style="overflow-y: auto;">
         {% for sentenza in sentenze %}
-            <p>
-                {{ sentenza.name }}
-            </p>
+            <div class="card mb-2">
+                <div class="card-body">
+                    {{ sentenza.name }}
+                </div>
+            </div>
         {% endfor %}
     </div>
 {% endblock %}

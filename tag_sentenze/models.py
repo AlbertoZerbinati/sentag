@@ -34,6 +34,7 @@ class Judgment(models.Model):
         Schema, on_delete=models.DO_NOTHING, blank=True, null=True, 
         verbose_name="The related xsd Schema", related_name="attached_judgments"
         ) #on_update=models.DO_NOTHING no available in Django
+    score = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, editable=False)
 
     def save(self, *args, **kwargs):
         #initialize initial_text on every save(), mantaining coherence 

@@ -13,15 +13,15 @@
             <a class="nav-item nav-link"  href="/register">Add</a>
         </div>
     </div>
-    {% for user in lista_users %}
-        <p>
-            <a class="nav-item nav-link" href="{% url 'users:user-permission' user.id %}">{{ user }}</a>
-        </p>
-    {% endfor %}
+    <ul class="list-group" style="overflow-y: auto;">
+        {% for user in lista_users %}
+            <a class="list-group-item list-group-item-action" href="{% url 'users:user-permission' user.id %}">{{ user }}</a>
+        {% endfor %}
+    </ul>
 {% endblock %}
 
 {% block content %}
-    <h2 class="title">User-Judgment Association</h2>
+    <h2 class="title" style="text-align: center;">User-Judgment Association</h2>
     <div class="border-yop pt-3">
         Here you can associate judgments to a selected user
     </div>
@@ -29,13 +29,15 @@
 
 {% block graph %}
     <div>
-        <h4 class="title">Judgments</h4>
+        <h4 class="title" style="text-align: center;">Judgments</h4>
     </div>
-    <div style="overflow-y: auto;">
+    <div style="overflow-y: auto; margin-top: 20px;">
         {% for sentenza in sentenze %}
-            <p>
-                {{ sentenza.name }}
-            </p>
+            <div class="card mb-2">
+                <div class="card-body">
+                    {{ sentenza.name }}
+                </div>
+            </div>
         {% endfor %}
     </div>
 {% endblock %}

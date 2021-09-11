@@ -505,6 +505,33 @@ def calc_agreement(judgment_id):
 
     return agreement
 
+#Receive the POST request to calculate the agreement score on a specific judgment
+@login_required
+def agreement_post(request, id):
+
+    if request.method == 'POST' and request.is_ajax:
+        judgment_id = request.POST.get('selected_judgment')
+        #print('Judgment ID', judgment_id)
+
+        #print('ID: ', id)
+
+        #Get the judgment object
+        judgment = Judgment.objects.get(id=id)
+
+        #Agreement value
+        score = calc_agreement(id)
+        print('Score: ', score)
+
+        #Save score on the Database if it isn't None
+        if score != None:
+            score = round(score, 2)
+            judgment.score = score
+            judgment.save()
+        else:
+            score = '-'
+        print(score)
+
+    return JsonResponse({'response': score}, status=200)
 
 @login_required
 def agreement_page(request):
@@ -515,18 +542,20 @@ def agreement_page(request):
 
     rows = []
 
-    #for every row there must be the judgment name, agreement, status of judgment-user
-    #Example: [JudgmentName, Agreement, 1, 0] if first user has the judgment associated to, 0 otherwise
+    #for every row there must be the judgment id, judgment name, agreement, status of judgment-user
+    #Example: [JudgmentID, JudgmentName, Agreement, 1, 0] if first user has the judgment associated to, 0 otherwise
+    #In Django template the first value (JudgmentID) must be skipped during the insertion loop into the table
     for judgment in judgments:
         single_row = []
+        single_row.append(judgment.id)
         single_row.append(judgment.name)
 
-        #Add agreement rate
-        agreement = calc_agreement(judgment.id)
+        #Add agreement score from database
+        agreement = judgment.score
         print("Agreement judgment {}: {}".format(judgment.id, agreement))
         
         if agreement == None:
-            single_row.append('')
+            single_row.append('-')
         else:
             single_row.append(agreement)
 
