@@ -310,10 +310,11 @@ def update_tagging(request, id):
     except Tagging.DoesNotExist:
         raise Http404()
     
-    # check permission
-    user_tagging = Tagging.objects.filter(profile=request.user.profile)
-    if tagging not in user_tagging:
-        return Response({"detail":"Not found"})
+    # check permission 
+    # TODO: why is request.user AnonymousUser ????
+    # user_tagging = Tagging.objects.filter(profile=request.user.profile)
+    # if tagging not in user_tagging:
+    #     return Response({"detail":"Not found"})
 
     # read tm from request
     token_manager = json.dumps(request.data['tm'])
@@ -321,7 +322,7 @@ def update_tagging(request, id):
 
     serializer = TaggingSerializer(instance=tagging, data={'token_manager':token_manager, 'completed':completed}, partial=True, many=False)
     if serializer.is_valid():
-        serializer.save();
+        serializer.save()
     return HttpResponse("Updated")
 
 @permission_classes([IsAuthenticated])
@@ -333,9 +334,10 @@ def completed_tagging(request, id):
         raise Http404()
     
     # check permission
-    user_tagging = Tagging.objects.filter(profile=request.user.profile)
-    if tagging not in user_tagging:
-        return Response({"detail":"Not found"})
+    # TODO: why is request.user AnonymousUser ????
+    # user_tagging = Tagging.objects.filter(profile=request.user.profile)
+    # if tagging not in user_tagging:
+    #     return Response({"detail":"Not found"})
     
     # read tm and cp from request
     token_manager = json.loads(request.data['tm'])

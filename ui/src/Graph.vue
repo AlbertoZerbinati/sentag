@@ -146,7 +146,7 @@ export default {
                 // push an attack edge
                 this.edgesDataSource.push([{
                   type:"insert",
-                  data:{'to':,'from':node.id, 'type':"attack"}
+                  data:{'to':toNode,'from':node.id, 'type':"attack"}
                 }])
               }
             }
