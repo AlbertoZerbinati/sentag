@@ -16,7 +16,7 @@
         <tbody>
             {% for sentenza in sentenze %}
             <tr>
-                <td>{{sentenza}}</td>
+                <td>{{sentenza.judgment.name}}</td>
                 <td><a href="{% url 'tag_sentenze:tag-sentenza' sentenza.id %}"> TAG </a> </td>
             </tr>
             {% endfor %}

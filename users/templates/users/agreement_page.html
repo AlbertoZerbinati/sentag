@@ -21,22 +21,133 @@
     </nav>
 {% endblock %}
 
+{% block script %}
+    <script>
+        //function that calculate the agreement score of a specific judgment
+        function calcAgreement(button) {
+            //CSRF
+            var csrf = $("input[name=csrfmiddlewaretoken]").val()
+            //Judgment ID
+            var judgment_id = button.id.substring(5);
+            //Trick to generate the correct url
+            var dajngo_url = "{% url 'users:calculate-agreement' 12345 %}".replace(/12345/, judgment_id.toString());
+            console.log(judgment_id);
+            console.log(dajngo_url)
+            
+            $.ajax({
+                    url: dajngo_url,
+                    type: 'post',
+                    data: {
+                        selected_judgment: judgment_id,
+                        csrfmiddlewaretoken: csrf
+                    },
+                    success: function(response) {
+                        console.log(response)
+                        
+                        console.log(typeof response)
+                        //var judg_id = response['judgment_id']
+                        var score = response['response']
+                        var div_name = "#div_score_" + judgment_id.toString()
+                        console.log(score)
+                        console.log(div_name)
+                        $(div_name).text(score)
+
+                        //window.location.href = 'REDIRECT_URL'
+                        //window.location.reload() //refresh the page
+                    },
+                    error: function(response) {
+                        alert("error");
+                    }
+                })
+
+        }
+    </script>
+{% endblock %}
+
+{% block sidebar %}
+<div class="card mb-2">
+    <div class="card-body">
+        <span class="green-dot"></span>
+        <div style="float: right;">Annotation Completed and Validated</div>
+    </div>
+    <div class="card-body">
+        <span class="red-dot"></span>
+        <div style="float: right;">Annotation Not Completed Yet</div>
+    </div>
+    <div class="card-body">
+        <span class="empty-dot"></span>
+        <div style="float: right;">Judgment Not Assigned</div>
+    </div>
+</div>
+{% endblock %}
+
 {% block content %}
     <style>
         table {
-        font-family: arial, sans-serif;
-        border-collapse: collapse;
-        width: 100%;
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+            height: 550px;
+            display: block;
+            overflow-x: auto;
+            overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        table::-webkit-scrollbar {
+            display: none;
         }
         
         td, th {
-        border: 1px solid #dddddd;
-        text-align: left;
-        padding: 8px;
+            border: 1px solid #dddddd;
+            text-align: left;
+            align-items: center;
+            vertical-align: middle;
+            align-items: center;
+            padding: 8px;
         }
         
         tr:nth-child(even) {
-        background-color: #dddddd;
+            background-color: #dddddd;
+        }
+
+        .green-dot {
+            height: 20px;
+            width: 20px;
+            background-color: green;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .empty-dot {
+            height: 20px;
+            width: 20px;
+            background-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .red-dot {
+            height: 20px;
+            width: 20px;
+            background-color: red;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .empty-dot::before {
+            content: "-";
+            height:20px;
+            width:20px;
+            font-size:20px;
+            display:flex;
+            flex-direction:row;
+            align-items:center;
+            justify-content:center;
+            font-weight:bold;
+            font-family:courier;
+            color: black;
         }
     </style>
 
@@ -51,8 +162,25 @@
             </tr>
             {% for row in rows %}
                 <tr>
-                    {% for elem in row %}
-                        <td>{{ elem }}</td>
+                    {% for elem in row|slice:"1:" %}
+                        <td>
+                            {% if forloop.counter0 == 1 %}
+                                <div id="div_score_{{ row.0 }}" style="float: left;">{{ elem }}</div>
+                                <div style="float: right;">
+                                    <button id="Judg_{{ row.0 }}" class="btn btn-primary btn-sm" onclick="calcAgreement(this)">Calc</button>
+                                </div>
+                            {% else %}
+                                {% if elem == 2 %}
+                                    <span class="green-dot"></span>
+                                {% elif elem == 1 %}
+                                    <span class="red-dot"></span>
+                                {% elif elem == 0 %}
+                                    <span class="empty-dot"></span>
+                                {% else %}
+                                    {{ elem }}
+                                {% endif %}
+                            {% endif %}
+                        </td>
                     {% endfor %}
                 </tr>
             {% endfor %}

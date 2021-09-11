@@ -38,7 +38,7 @@
             {% endif %}
 
             {% if user.is_authenticated %}
-                <span style="color:white;">{{user.username}}</span>
+                <span style="color:white; margin-left: auto;">{{user.username}}</span>
                 <li class="nav-item dropdown"><a class="nav-link link" href="{% url 'logout' %}"> Logout</a></li>
             {% else %}
                 <li class="nav-item dropdown"><a class="nav-link link" href="{% url 'login' %}">Login</a></li>
