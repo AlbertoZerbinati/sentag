@@ -128,21 +128,27 @@ export default {
           if(node.attrs['A'] !== "") { // if this node has supporters
             const supporters = node.attrs['A'].split(",")
             for(const supporter of supporters) {
-              // push a support edge
-              this.edgesDataSource.push([{
-                type:"insert",
-                data:{'from':nodes.filter(n => n.attrs['ID'] === supporter)[0].id,'to':node.id, 'type':"support"}
-              }])
+              const fromNode = nodes.filter(n => n.attrs['ID'] === supporter)[0].id
+              if (fromNode) {
+                // push a support edge
+                this.edgesDataSource.push([{
+                  type:"insert",
+                  data:{'from':fromNode,'to':node.id, 'type':"support"}
+                }])
+              }
             }
           }
           if(node.attrs['CON'] !== "") { // if this node attacks others
             const attacked_nodes = node.attrs['CON'].split(",")
             for(const attacked of attacked_nodes) {
-              // push an attack edge
-              this.edgesDataSource.push([{
-                type:"insert",
-                data:{'to':nodes.filter(n => n.attrs['ID'] === attacked)[0].id,'from':node.id, 'type':"attack"}
-              }])
+              const toNode = nodes.filter(n => n.attrs['ID'] === attacked)[0].id
+              if (toNode) {
+                // push an attack edge
+                this.edgesDataSource.push([{
+                  type:"insert",
+                  data:{'to':,'from':node.id, 'type':"attack"}
+                }])
+              }
             }
           }
         }
