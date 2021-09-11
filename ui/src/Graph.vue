@@ -193,6 +193,10 @@ export default {
         // ignore edges without an assigned type (the black ones)!!! 
       }
 
+      // ######################################
+      // TODO: manage the nested arguments !!!!
+      // ######################################
+
       // now that all the changes have been pushed into the TM,
       // PUT the token manager into the database, via an axios call
       function getCookie(name) {
