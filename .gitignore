@@ -1,8 +1,8 @@
-.vscode/*
-env/*
-guidelines/*
-*/__pycache__
-*/migrations
+.vscode
+env
+__pycache__/
+migrations/
 db.sqlite3
 var
+media
 static
