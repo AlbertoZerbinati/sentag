@@ -1,10 +1,11 @@
 <template>
-  <span 
-    v-if="token.type === 'token'" class="token"
+  <span
+    v-if="token.type === 'token' && token.text != '<br/>'" class="token"
     :id="'t' + token.start"
   >
-    {{ token.text }}
+  {{ token.text }}
   </span>
+ <br v-else />
 </template>
 
 <script>
