@@ -352,7 +352,10 @@ def completed_tagging(request, id):
             if isinstance(t, str):  # <tag>
                 words.append(t)
             elif 'text' in t:       # token
-                words.append(t['text'])
+                if t['text'] == '<br/>':
+                    words.append('\n')
+                else:
+                    words.append(t['text'])
             else:                   # token block
                 # append start-tag
                 label = t['label']
@@ -372,8 +375,10 @@ def completed_tagging(request, id):
                     s.insert(0,child)
 
         # TODO: incipit XML
+        #print(words)
         xml_string = ' '.join(words)
         xml_string = """<body>\n""" + xml_string + """\n</body>"""
+        print(xml_string)
         
         # validate xml
         schema_string = tagging.judgment.xsd.tags

@@ -12,7 +12,7 @@
             </a>
         </div>
         <div class="panel-block">
-          <div id="editor">
+          <div id="editor" style="white-space:pre-line">
             <component
               :is="t.type === 'token' ? 'Token' : 'TokenBlock'"
               :id="'t' + t.start"
