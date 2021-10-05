@@ -43,6 +43,7 @@ export const mutations = {
   },
   setCurrentBlock(state, payload) {
     state.currentBlock = payload;
+    // console.log({"current block: ": payload})
   },
   setDone(state, payload) {
     state.done = payload;
