@@ -14,7 +14,7 @@
         </a>
         <br>
       <span v-for="at in cl.attributes" :key="at.id">
-          <span class="tag supertiny"><i><strong :style="{ color: cl.color }">{{at}}</strong></i></span>
+          <span class="tag supertiny"><i><strong :style="{ color: cl.color }">{{at.name}}</strong></i></span>
       </span>
       </div>
     </div>

@@ -92,16 +92,38 @@ export default {
                 },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null
               );
             }
-            // costruisi la lista completa di nomi degli attributi
+
+            // for each attribute, check if it is constrained to some options (enumerations)...
             let attrs = []
             for(let i = 0; i < attributes.snapshotLength; i++) {
-              let attribute = attributes.snapshotItem(i); 
+              let attribute = attributes.snapshotItem(i);
+              let options = xmlDoc.evaluate(
+                './/xs:simpleType/xs:restriction/xs:enumeration',
+                attribute, 
+                function(prefix) { 
+                  if (prefix === 'xs') { 
+                    return 'http://www.w3.org/2001/XMLSchema';
+                  } else { 
+                    return null;
+                  }
+                },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null
+              );
+              let options_arr = []
+              for(let i = 0; i < options.snapshotLength; i++) {
+                let option = options.snapshotItem(i).attributes[0]['nodeValue'];
+                options_arr.push(option)
+              }
+              
+              // ... then push the attribute with its options
               let attr = attribute.getAttribute('name');
-              attrs.push(attr);
+              attrs.push({'name':attr,'options':options_arr});
             }
+
             // pusha la classe coi suoi attributi nello store
             this.addClass([name,attrs])
             element.setAttribute('name','CONSUMED')
+
+            console.log(attrs)
           }
           this.go = true; // now we can load the annotation page
         })

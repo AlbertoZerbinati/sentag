@@ -24,6 +24,7 @@
     "vue": "^3.0.0",
     "vue-d3-network": "^0.1.28",
     "vue-dag": "^0.1.8",
+    "vue-multiselect": "^3.0.0-alpha.2",
     "vuex": "^4.0.0-rc.1"
   },
   "devDependencies": {

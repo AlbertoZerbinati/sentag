@@ -361,8 +361,8 @@ def completed_tagging(request, id):
                 label = t['label']
                 start_tag = '<' + str(label)
                 for k,v in t['attrs'].items():
-                    if v != "":
-                        start_tag = start_tag + f' {k}="{v}"'
+                    if v['value'] != "":
+                        start_tag = start_tag + f' {k}="{v["value"]}"'
                 start_tag = start_tag + '>'
                 words.append(start_tag)
                 
@@ -378,7 +378,7 @@ def completed_tagging(request, id):
         #print(words)
         xml_string = ' '.join(words)
         xml_string = """<body>\n""" + xml_string + """\n</body>"""
-        print(xml_string)
+        # print(xml_string)
         
         # validate xml
         schema_string = tagging.judgment.xsd.tags
@@ -389,7 +389,7 @@ def completed_tagging(request, id):
             etree.fromstring(xml_string, parser)
         except etree.XMLSyntaxError as error:
             # if not valid return fail with error message
-            print(str(error))
+            # print(str(error))
             return Response(data={str(error)}, status=500)
 
         # else if valid then save in db WITH XML TEXT and return success

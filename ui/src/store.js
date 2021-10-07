@@ -30,9 +30,9 @@ export const mutations = {
     state.classes.push({
       id: lastIndex + 1,
       name: payload[0],
-      attributes: payload[1].filter(a => a !== "GRAPH"),
+      attributes: payload[1].filter(a => a.name !== "GRAPH"),
       color: niceColors[lastIndex % niceColors.length],
-      graph: payload[1].includes("GRAPH"),
+      graph: payload[1].some(a => a.name === "GRAPH"),
     });
     if (state.classes.length === 1) {
       state.currentClass = state.classes[0];
@@ -43,7 +43,7 @@ export const mutations = {
   },
   setCurrentBlock(state, payload) {
     state.currentBlock = payload;
-    // console.log({"current block: ": payload})
+    console.log({"current block: ": payload})
   },
   setDone(state, payload) {
     state.done = payload;

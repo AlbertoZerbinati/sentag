@@ -3,7 +3,7 @@
     <div class="panel-block">
       <classes-block/>
     </div>
-    <div class="panel-block">
+    <div class="panel-block" style="display: block; width=100%;">
       <attributes-block/>
     </div>
   </div>
