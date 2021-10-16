@@ -74,9 +74,9 @@ class TokenManager {
         for (const key of _class.attributes) {
           console.log(key)
           if (key.name === 'ID')
-            newTokenBlock.attrs[key.name] = {'value':_class.name + this.currentID.toString(),'options':[]};
+            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':_class.name + this.currentID.toString(),'options':[]};
           else 
-            newTokenBlock.attrs[key.name] = {'value':"", 'options':key.options};
+            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':"", 'options':key.options};
         }
         this.currentID += 1;
         // rimpiazzo ogni token selezionato col nuovo TOKEN-BLOCK (che li contiene)
@@ -119,9 +119,9 @@ class TokenManager {
         for (const key of _class.attributes) {
           console.log(key)
           if (key.name === 'ID')
-            newTokenBlock.attrs[key.name] = {'value':_class.name + this.currentID.toString(),'options':[]};
+            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':_class.name + this.currentID.toString(),'options':[]};
           else 
-            newTokenBlock.attrs[key.name] = {'value':"", 'options':key.options};
+            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':"", 'options':key.options};
         }
         this.currentID += 1;
         _tokens.tokens.splice(first_index, selectedTokens.length, newTokenBlock);

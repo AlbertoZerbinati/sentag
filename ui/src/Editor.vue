@@ -97,8 +97,11 @@ export default {
             let attrs = []
             for(let i = 0; i < attributes.snapshotLength; i++) {
               let attribute = attributes.snapshotItem(i);
+              let type = "mutual"; // the type of this attribute: string OR mutual OR multi
+
+              // -mutual- attribute options
               let options = xmlDoc.evaluate(
-                './/xs:simpleType/xs:restriction/xs:enumeration',
+                './xs:simpleType/xs:restriction/xs:enumeration',
                 attribute, 
                 function(prefix) { 
                   if (prefix === 'xs') { 
@@ -108,6 +111,27 @@ export default {
                   }
                 },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null
               );
+
+              // -multi- attribute
+              if(options.snapshotLength === 0) {
+                options = xmlDoc.evaluate(
+                  './xs:simpleType/xs:restriction/xs:simpleType/xs:list/xs:simpleType/xs:restriction/xs:enumeration',
+                  attribute, 
+                  function(prefix) { 
+                    if (prefix === 'xs') { 
+                      return 'http://www.w3.org/2001/XMLSchema';
+                    } else { 
+                      return null;
+                    }
+                  },XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null
+                );
+                if(options.snapshotLength !== 0) {
+                  type = "multi"
+                } else {
+                  type = "string"
+                }
+              }
+
               let options_arr = []
               for(let i = 0; i < options.snapshotLength; i++) {
                 let option = options.snapshotItem(i).attributes[0]['nodeValue'];
@@ -116,7 +140,7 @@ export default {
               
               // ... then push the attribute with its options
               let attr = attribute.getAttribute('name');
-              attrs.push({'name':attr,'options':options_arr});
+              attrs.push({'type':type,'name':attr,'options':options_arr});
             }
 
             // pusha la classe coi suoi attributi nello store

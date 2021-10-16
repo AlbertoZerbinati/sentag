@@ -13,8 +13,9 @@
             <strong>{{ cl.name }}</strong>
         </a>
         <br>
-      <span v-for="at in cl.attributes" :key="at.id">
-          <span class="tag supertiny"><i><strong :style="{ color: cl.color }">{{at.name}}</strong></i></span>
+      <span v-for="at in cl.attributes" :key="at.id"
+      :style="{ margin: '3px'}">
+          <span class="tag supertiny"><i><strong :style="{ color: '#0c66a1', margin: '3px'}">{{at.name}}</strong></i></span>
       </span>
       </div>
     </div>
