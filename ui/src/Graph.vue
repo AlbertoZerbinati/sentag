@@ -11,6 +11,7 @@
             </a>
             <strong style="position:absolute; left:180px; top:20px;">Graph {{tagging_title}}</strong>
         </div>
+
         <DxDiagram
           id="diagram"
           ref="diagram"
@@ -18,9 +19,11 @@
           :show-grid="false"
           :snap-to-grid="false"
           :page-color="'#F9F9F9'"
+          custom-shape-template="GraphNodeTemplate"
           @request-edit-operation="onRequestEditOperation"
           @selection-changed="onSelectionChanged"
           @item-dbl-click="onItemDblClick"
+          @item-click="onItemClick"
         >
           <DxNodes
             :data-source="nodesDataSource"
@@ -29,9 +32,10 @@
             :text-style-expr="itemTextStyleExpr"
             :style-expr="itemStyleExpr"
             :custom-data-expr="'attrs[ID][value]'"
+            :key-expr="'id'"
           >
             <DxAutoLayout
-              :type="'layered'"
+              :type="'tree'"
               :orientation="'horizontal'"
             />
           </DxNodes>
@@ -44,6 +48,20 @@
           <DxToolbox :visibility="'disabled'"/>
           <DxContextToolbox :enabled="false"/>
         </DxDiagram>
+
+        <DxPopup
+          v-model:visible="popupVisible"
+          :drag-enabled="true"
+          :close-on-outside-click="true"
+          :show-title="true"
+          :show-close-button="true"
+          :width="200"
+          :height="180"
+          container="#diagram"
+          :title="popupTitleText"
+        >
+          <p>{{ popupContentText }}</p>
+        </DxPopup>
 
         <div class="panel-block">
           <div class="field is-grouped is-pulled-left">
@@ -63,7 +81,19 @@
 </template>
 
 <script>
+          // :content-template="popupContent"
+
+
+        // <DxTooltip
+        //   v-model:visible="popupVisible"
+        //   :close-on-outside-click="false"
+        //   target="#node2"
+        // >
+        //   Tooltip content
+        // </DxTooltip>
 import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout, DxContextToolbox } from 'devextreme-vue/diagram';
+// import { DxTooltip } from 'devextreme-vue/tooltip';
+import { DxPopup } from 'devextreme-vue/popup';
 import ArrayStore from 'devextreme/data/array_store';
 import notify from 'devextreme/ui/notify';
 import axios from 'axios'
@@ -72,14 +102,36 @@ import { toast } from "bulma-toast"
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxContextToolbox
+    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxContextToolbox, DxPopup, //DxTooltip,
   },
   data() {
     return {
       tm: {},
       nodesDataSource: {},
       edgesDataSource: {},
+      popupVisible: false,
+      selectedNode: {},
     };
+  },
+  computed: {
+    popupTitleText: { 
+      get() {
+        console.log(this.selectedNode.dataItem)
+        if(! this.selectedNode.dataItem)
+          return "" 
+        else 
+          return this.selectedNode.dataItem.attrs['ID'].value
+      },
+    },   
+    popupContentText: { 
+      get() {
+        console.log(this.selectedNode.dataItem)
+        if(! this.selectedNode.dataItem)
+          return "" 
+        else 
+          return this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..." 
+      },
+    }
   },
   created() {
     // retrive this tagging's ID and Title
@@ -156,6 +208,9 @@ export default {
       .catch((err) => alert(err));
   },
   methods: {
+    print() {
+      console.log(this.selectedNode.dataItem.attrs['ID'].value)
+    },
     save() {
       // remove every old graph-related attribute
       for(var node of this.nodesDataSource._array) {
@@ -300,12 +355,23 @@ export default {
     onSelectionChanged({ items }) {
       console.log({'selected item':items[0]})
     },
+    onItemClick(obj) {
+      if(obj.item.itemType === "shape") {
+        this.selectedNode = obj.item
+        // this.popupContentText = this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..."
+      } else { 
+        this.selectedNode = {}
+        // this.popupContentText = ""
+      }
+    },
     onItemDblClick(obj) {
       // if a connector is double clicked, change its type
       
-      // not a connector
-      if(obj.item.itemType !== "connector")
-        return
+      // not a connector -> popup
+      if(obj.item.itemType === "shape") {
+          this.popupVisible = true
+          return
+      }
       
       // get connector type and set parameters to push
       let key;
@@ -327,6 +393,10 @@ export default {
           type: "update", 
           data: dataObj, 
           key: key }]);
+    },
+    showInfo(employee) {
+      this.currentEmployee = employee;
+      this.popupVisible = true;
     }
   }
 };
