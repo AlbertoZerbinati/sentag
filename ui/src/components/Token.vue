@@ -1,11 +1,12 @@
 <template>
   <span
-    v-if="token.type === 'token' && token.text != '<br/>'" class="token"
+    v-if="token.type === 'token' && token.text != '<br/>'"
+    class="token"
     :id="'t' + token.start"
   >
-  {{ token.text }}
+    {{ token.text }}
   </span>
- <br v-else />
+  <br v-else />
 </template>
 
 <script>
@@ -14,17 +15,17 @@ export default {
   props: {
     token: {
       type: Object,
-      required: true
-    }
-  }
-}
+      required: true,
+    },
+  },
+};
 </script>
 
 <style lang="scss">
-  .token {
-    font-size: large;
-    display: inline-block;
-    padding: 0.2rem;
-    line-height: 1.5;
-  }
+.token {
+  font-size: large;
+  display: inline-block;
+  padding: 0.2rem;
+  line-height: 1.5;
+}
 </style>

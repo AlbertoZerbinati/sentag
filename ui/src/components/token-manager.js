@@ -4,9 +4,9 @@ class TokenManager {
    * @param {Array} tokens
    * @param {TokenManager} oldTM
    */
-  constructor(tokens, oldTM) {    // manage the recreation from an old TM or with an array of tokens
-    if (arguments.length == 1) {  // new token manager
-      this.currentID = 0;         // univocal identifier
+  constructor(tokens, oldTM) { // manage the recreation from an old TM or with an array of tokens
+    if (arguments.length == 1) { // new token manager
+      this.currentID = 0; // univocal identifier
       this.tokens = tokens.map((t) => ({
         type: "token",
         start: t[0],
@@ -14,8 +14,7 @@ class TokenManager {
         text: t[2],
       }));
       this.initialTokens = this.tokens.slice(); // SHALLOW COPY
-    }
-    else { // in case an oldTM is available
+    } else { // in case an oldTM is available
       this.currentID = oldTM.currentID;
       this.tokens = oldTM.tokens
       this.initialTokens = oldTM.initialTokens;
@@ -58,7 +57,7 @@ class TokenManager {
         // prende start del primo token selezionato e trova l'indice a cui corrisponde tra i _tokens
         let first_token_start = selectedTokens[0].start;
         let first_index = _tokens.map(t => t.start).indexOf(first_token_start);
-        
+
         // costruisce nuovo TOKEN-BLOCK coi selectedTokens
         let newTokenBlock = {
           type: "token-block",
@@ -67,31 +66,39 @@ class TokenManager {
           tokens: selectedTokens,
           label: _class.name,
           id: this.currentID,
-          attrs:{},
+          attrs: {},
           graph: _class.graph,
           backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {
           console.log(key)
           if (key.name === 'ID')
-            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':[_class.name + this.currentID.toString()], 'options':[]};
-          else 
-            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':[""], 'options':key.options};
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [_class.name + this.currentID.toString()],
+              'options': []
+            };
+          else
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [""],
+              'options': key.options
+            };
         }
         this.currentID += 1;
         // rimpiazzo ogni token selezionato col nuovo TOKEN-BLOCK (che li contiene)
         _tokens.splice(first_index, selectedTokens.length, newTokenBlock);
         this.latestAddedToken = newTokenBlock;
       }
-    } 
+    }
     // selezione INTERO TOKEN-BLOCK, se e' token-block non interamente selezionato entrera' nel 4o elseif
     else if (_tokens.type === "token-block" && _tokens.start >= start && _tokens.tokens.at(-1).start <= end) {
       return _tokens;
-    } 
+    }
     // selezione TOKEN
     else if (_tokens.type === "token" && _tokens.start >= start && _tokens.start <= end) {
       return _tokens;
-    } 
+    }
     // scansione TOKEN dentro un TOKEN-BLOCK non interamente selezionato
     else if (Array.isArray(_tokens.tokens)) {
       // e' come al livello 0 ma applicato a _tokens.tokens
@@ -113,15 +120,23 @@ class TokenManager {
           label: _class.name,
           id: this.currentID,
           graph: _class.graph,
-          attrs:{},
+          attrs: {},
           backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {
           console.log(key)
           if (key.name === 'ID')
-            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':[_class.name + this.currentID.toString()], 'options':[]};
-          else 
-            newTokenBlock.attrs[key.name] = {'type':key.type, 'value':[""], 'options':key.options};
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [_class.name + this.currentID.toString()],
+              'options': []
+            };
+          else
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [""],
+              'options': key.options
+            };
         }
         this.currentID += 1;
         _tokens.tokens.splice(first_index, selectedTokens.length, newTokenBlock);
@@ -154,8 +169,8 @@ class TokenManager {
     if (Array.isArray(_tokens)) {
       for (let child of _tokens) {
         if (child.type === "token-block") { // per performance: verifica se sia 
-                                            // un blocco da rimuovere o se ne 
-                                            // contenga da rimuovere solo se e' un TOKEN-BLOCK
+          // un blocco da rimuovere o se ne 
+          // contenga da rimuovere solo se e' un TOKEN-BLOCK
           let selected = this.recursiveRemoveBlock(blockStart, blockEnd, child);
           if (selected !== null) {
             selectedBlock = selected;
@@ -178,12 +193,12 @@ class TokenManager {
         // ritorna null... verra' ignorato
         selectedBlock = null;
       }
-    } 
+    }
     // rimozione di questo TOKEN-BLOCK ad un certo livello innestato (>0) --> ritorna il BLOCK 
     // cosi' ai livelli richiamanti questo blocco puo' essere sostituito dai tokens interni se necessario
     else if (_tokens.type === "token-block" && _tokens.start === blockStart && _tokens.end === blockEnd) {
       return _tokens;
-    } 
+    }
     // se TOKEN-BLOCK non e' da rimuovere allora chiamata ricorsiva, come per LIVELLO 0 ma agendo sui .tokens
     else if (Array.isArray(_tokens.tokens)) {
       for (let child of _tokens.tokens) {

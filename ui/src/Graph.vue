@@ -1,15 +1,17 @@
 <template>
-  <div class="columns is-desktop" style="margin:1px">
+  <div class="columns is-desktop" style="margin: 1px">
     <div class="column">
       <div class="panel">
-        <div class="panel-heading" style="position:relative;">
-            <a class="button is-link" :href="/sentenza/ + tagging_id">
-              <span class="icon is-small">
-                <font-awesome-icon icon="angle-left" />
-              </span>
-              <span>Edit Tagging</span>
-            </a>
-            <strong style="position:absolute; left:180px; top:20px;">Graph {{tagging_title}}</strong>
+        <div class="panel-heading" style="position: relative">
+          <a class="button is-link" :href="/sentenza/ + tagging_id">
+            <span class="icon is-small">
+              <font-awesome-icon icon="angle-left" />
+            </span>
+            <span>Edit Tagging</span>
+          </a>
+          <strong style="position: absolute; left: 180px; top: 20px"
+            >Graph {{ tagging_title }}</strong
+          >
         </div>
 
         <DxDiagram
@@ -34,19 +36,13 @@
             :custom-data-expr="'attrs[ID][value][0]'"
             :key-expr="'id'"
           >
-            <DxAutoLayout
-              :type="'tree'"
-              :orientation="'horizontal'"
-            />
+            <DxAutoLayout :type="'tree'" :orientation="'horizontal'" />
           </DxNodes>
 
-          <DxEdges
-            :data-source="edgesDataSource"
-            :style-expr="linkStyleExpr"
-          />
+          <DxEdges :data-source="edgesDataSource" :style-expr="linkStyleExpr" />
 
-          <DxToolbox :visibility="'disabled'"/>
-          <DxContextToolbox :enabled="false"/>
+          <DxToolbox :visibility="'disabled'" />
+          <DxContextToolbox :enabled="false" />
         </DxDiagram>
 
         <DxPopup
@@ -81,28 +77,40 @@
 </template>
 
 <script>
-          // :content-template="popupContent"
+// :content-template="popupContent"
 
-
-        // <DxTooltip
-        //   v-model:visible="popupVisible"
-        //   :close-on-outside-click="false"
-        //   target="#node2"
-        // >
-        //   Tooltip content
-        // </DxTooltip>
-import { DxDiagram, DxNodes, DxEdges, DxToolbox, DxAutoLayout, DxContextToolbox } from 'devextreme-vue/diagram';
+// <DxTooltip
+//   v-model:visible="popupVisible"
+//   :close-on-outside-click="false"
+//   target="#node2"
+// >
+//   Tooltip content
+// </DxTooltip>
+import {
+  DxDiagram,
+  DxNodes,
+  DxEdges,
+  DxToolbox,
+  DxAutoLayout,
+  DxContextToolbox,
+} from "devextreme-vue/diagram";
 // import { DxTooltip } from 'devextreme-vue/tooltip';
-import { DxPopup } from 'devextreme-vue/popup';
-import ArrayStore from 'devextreme/data/array_store';
-import notify from 'devextreme/ui/notify';
-import axios from 'axios'
+import { DxPopup } from "devextreme-vue/popup";
+import ArrayStore from "devextreme/data/array_store";
+import notify from "devextreme/ui/notify";
+import axios from "axios";
 import TokenManager from "./components/token-manager";
-import { toast } from "bulma-toast"
+import { toast } from "bulma-toast";
 
 export default {
   components: {
-    DxDiagram, DxNodes, DxEdges,DxToolbox, DxAutoLayout, DxContextToolbox, DxPopup, //DxTooltip,
+    DxDiagram,
+    DxNodes,
+    DxEdges,
+    DxToolbox,
+    DxAutoLayout,
+    DxContextToolbox,
+    DxPopup, //DxTooltip,
   },
   data() {
     return {
@@ -114,92 +122,108 @@ export default {
     };
   },
   computed: {
-    popupTitleText: { 
+    popupTitleText: {
       get() {
-        console.log(this.selectedNode.dataItem)
-        if(! this.selectedNode.dataItem)
-          return "" 
-        else 
-          return this.selectedNode.dataItem.attrs['ID'].value
+        console.log(this.selectedNode.dataItem);
+        if (!this.selectedNode.dataItem) return "";
+        else return this.selectedNode.dataItem.attrs["ID"].value;
       },
-    },   
-    popupContentText: { 
+    },
+    popupContentText: {
       get() {
-        console.log(this.selectedNode.dataItem)
-        if(! this.selectedNode.dataItem)
-          return "" 
-        else 
-          return this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..." 
+        console.log(this.selectedNode.dataItem);
+        if (!this.selectedNode.dataItem) return "";
+        else
+          return (
+            this.selectedNode.dataItem.tokens
+              .slice(0, 15)
+              .map((t) => t.text)
+              .join(" ") + "..."
+          );
       },
-    }
+    },
   },
   created() {
     // retrive this tagging's ID and Title
-    this.tagging_id = document.querySelector("meta[name='id-tagging']").getAttribute('content')
-    this.tagging_title = document.querySelector("meta[name='title-tagging']").getAttribute('content')
+    this.tagging_id = document
+      .querySelector("meta[name='id-tagging']")
+      .getAttribute("content");
+    this.tagging_title = document
+      .querySelector("meta[name='title-tagging']")
+      .getAttribute("content");
 
     axios
       .get("/api/" + this.tagging_id)
-      .then(res => {
+      .then((res) => {
         // get the old token manager, if available
-        this.tm = res.data['token_manager']
-        if(this.tm === "") {
-          return
+        this.tm = res.data["token_manager"];
+        if (this.tm === "") {
+          return;
         }
 
-        this.tm = new TokenManager([],JSON.parse(JSON.parse(this.tm)))
+        this.tm = new TokenManager([], JSON.parse(JSON.parse(this.tm)));
 
         // flatten tm with the stack technique
         const stack = [...this.tm.tokens];
         const flattened_tm = [];
-        while(stack.length) {
+        while (stack.length) {
           const next = stack.pop();
-          if(next.type === "token-block" && Array.isArray(next.tokens)) {
+          if (next.type === "token-block" && Array.isArray(next.tokens)) {
             stack.push(...next.tokens);
             flattened_tm.push(next);
           }
         }
-        
+
         // get the graph's nodes
-        const nodes = flattened_tm.filter(token => token.graph)
-        
+        const nodes = flattened_tm.filter((token) => token.graph);
+
         // istantiate nodes datasource
         this.nodesDataSource = new ArrayStore({
-          key: 'id',
+          key: "id",
           data: nodes,
-        })
+        });
 
         // istantiate edges datasource (initially empty)
-        this.edgesDataSource =  new ArrayStore({
-          key: 'id',
+        this.edgesDataSource = new ArrayStore({
+          key: "id",
           data: [],
-        })
+        });
 
         // populate the edges datsource with correct type of edges, based on nodes' attributes
-        for(var node of nodes) {
-          if(node.attrs['A']['value'][0] !== "") { // if this node has supporters
-            const supporters = node.attrs['A']['value'][0].split(",")
-            for(const supporter of supporters) {
-              const fromNode = nodes.filter(n => n.attrs['ID']['value'][0] === supporter)[0].id
+        for (var node of nodes) {
+          if (node.attrs["A"]["value"][0] !== "") {
+            // if this node has supporters
+            const supporters = node.attrs["A"]["value"][0].split(",");
+            for (const supporter of supporters) {
+              const fromNode = nodes.filter(
+                (n) => n.attrs["ID"]["value"][0] === supporter
+              )[0].id;
               if (fromNode) {
                 // push a support edge
-                this.edgesDataSource.push([{
-                  type:"insert",
-                  data:{'from':fromNode,'to':node.id, 'type':"support"}
-                }])
+                this.edgesDataSource.push([
+                  {
+                    type: "insert",
+                    data: { from: fromNode, to: node.id, type: "support" },
+                  },
+                ]);
               }
             }
           }
-          if(node.attrs['CON']['value'][0] !== "") { // if this node attacks others
-            const attacked_nodes = node.attrs['CON']['value'][0].split(",")
-            for(const attacked of attacked_nodes) {
-              const toNode = nodes.filter(n => n.attrs['ID']['value'][0] === attacked)[0].id
+          if (node.attrs["CON"]["value"][0] !== "") {
+            // if this node attacks others
+            const attacked_nodes = node.attrs["CON"]["value"][0].split(",");
+            for (const attacked of attacked_nodes) {
+              const toNode = nodes.filter(
+                (n) => n.attrs["ID"]["value"][0] === attacked
+              )[0].id;
               if (toNode) {
                 // push an attack edge
-                this.edgesDataSource.push([{
-                  type:"insert",
-                  data:{'to':toNode,'from':node.id, 'type':"attack"}
-                }])
+                this.edgesDataSource.push([
+                  {
+                    type: "insert",
+                    data: { to: toNode, from: node.id, type: "attack" },
+                  },
+                ]);
               }
             }
           }
@@ -209,43 +233,59 @@ export default {
   },
   methods: {
     print() {
-      console.log(this.selectedNode.dataItem.attrs['ID'].value)
+      console.log(this.selectedNode.dataItem.attrs["ID"].value);
     },
     save() {
       // remove every old graph-related attribute
-      for(var node of this.nodesDataSource._array) {
-        node.attrs['A']['value'][0] = ""
-        node.attrs['CON']['value'][0] = ""
+      for (var node of this.nodesDataSource._array) {
+        node.attrs["A"]["value"][0] = "";
+        node.attrs["CON"]["value"][0] = "";
         // TODO: 'S' attribute??
       }
 
       // add new attrs based on existing connections
-      for(let connector of this.edgesDataSource._array) {
+      for (let connector of this.edgesDataSource._array) {
         // get the connector type
-        var connectorType = connector.type
+        var connectorType = connector.type;
 
         // get the start and end nodes
-        var fromNode = this.nodesDataSource._array.filter(item => item['id'] == connector.from)[0]
-        var toNode = this.nodesDataSource._array.filter(item => item['id'] == connector.to)[0]
+        var fromNode = this.nodesDataSource._array.filter(
+          (item) => item["id"] == connector.from
+        )[0];
+        var toNode = this.nodesDataSource._array.filter(
+          (item) => item["id"] == connector.to
+        )[0];
 
         // modify their attributes: 'A', 'CON'
         //    NOTE: this also pushes the changes into the tokenManger already
         //    TODO: 'S' attribute??
-        if(connectorType === "support") {  // support edge
-          if(toNode.attrs['A']['value'][0] !== "") { // if there already is a supporter, append the new one
-            toNode.attrs['A']['value'][0] = toNode.attrs['A']['value'][0] + "," + fromNode.attrs['ID']['value'][0]
-          } else { // else just set the supporter
-            toNode.attrs['A']['value'][0] = fromNode.attrs['ID']['value'][0]
+        if (connectorType === "support") {
+          // support edge
+          if (toNode.attrs["A"]["value"][0] !== "") {
+            // if there already is a supporter, append the new one
+            toNode.attrs["A"]["value"][0] =
+              toNode.attrs["A"]["value"][0] +
+              "," +
+              fromNode.attrs["ID"]["value"][0];
+          } else {
+            // else just set the supporter
+            toNode.attrs["A"]["value"][0] = fromNode.attrs["ID"]["value"][0];
           }
-        } else if(connectorType === "attack") {  // attack edge
-          if(fromNode.attrs['CON']['value'][0]!== "") { // if there already is an attacked, append the new one
-            fromNode.attrs['CON']['value'][0] = fromNode.attrs['CON']['value'][0] + "," + toNode.attrs['ID']['value'][0]
-          } else { // else just set the attacked
-            fromNode.attrs['CON']['value'][0] = toNode.attrs['ID']['value'][0]
+        } else if (connectorType === "attack") {
+          // attack edge
+          if (fromNode.attrs["CON"]["value"][0] !== "") {
+            // if there already is an attacked, append the new one
+            fromNode.attrs["CON"]["value"][0] =
+              fromNode.attrs["CON"]["value"][0] +
+              "," +
+              toNode.attrs["ID"]["value"][0];
+          } else {
+            // else just set the attacked
+            fromNode.attrs["CON"]["value"][0] = toNode.attrs["ID"]["value"][0];
           }
         }
 
-        // ignore edges without an assigned type (the black ones)!!! 
+        // ignore edges without an assigned type (the black ones)!!!
       }
 
       // ######################################
@@ -256,153 +296,147 @@ export default {
       // PUT the token manager into the database, via an axios call
       function getCookie(name) {
         let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-          const cookies = document.cookie.split(';');
+        if (document.cookie && document.cookie !== "") {
+          const cookies = document.cookie.split(";");
           for (let i = 0; i < cookies.length; i++) {
             const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-              cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            if (cookie.substring(0, name.length + 1) === name + "=") {
+              cookieValue = decodeURIComponent(
+                cookie.substring(name.length + 1)
+              );
               break;
             }
           }
         }
         return cookieValue;
       }
-      const csrftoken = getCookie('csrftoken'); 
+      const csrftoken = getCookie("csrftoken");
       const params = {
-        'tm': JSON.stringify(this.tm),
-        'cp': false, // set as not completed: the annotator will have to manually set it in the tagging page
-      } 
+        tm: JSON.stringify(this.tm),
+        cp: false, // set as not completed: the annotator will have to manually set it in the tagging page
+      };
       axios
-        .put(
-          "/api/update/" + this.tagging_id, 
-          params,
-          {  
-            headers: {
-              "X-CSRFToken": csrftoken,
-              "content-type": "application/json",
-          }}
-        )
+        .put("/api/update/" + this.tagging_id, params, {
+          headers: {
+            "X-CSRFToken": csrftoken,
+            "content-type": "application/json",
+          },
+        })
         .then(
           toast({
-            message:'Graph saved',
-            type:'is-success',
-            dismissible:'true',
-            pauseOnHover:'true',
-            duration:2000,
-            position:'bottom-right'
-          }),
+            message: "Graph saved",
+            type: "is-success",
+            dismissible: "true",
+            pauseOnHover: "true",
+            duration: 2000,
+            position: "bottom-right",
+          })
         )
         .catch((e) => {
           console.log(e);
         });
     },
     itemTypeExpr() {
-      return "ellipse"
+      return "ellipse";
     },
     itemTextStyleExpr() {
-      return { 'font-weight': 'bold', 'font-size': 15 };
+      return { "font-weight": "bold", "font-size": 15 };
     },
     itemStyleExpr(obj) {
-      let style = { 'stroke': obj.backgroundColor, 'stroke-width':4 };
+      let style = { stroke: obj.backgroundColor, "stroke-width": 4 };
       return style;
     },
     linkStyleExpr(obj) {
       // set edge color based on its type
-      if(obj.type === "attack")
-        return { 'stroke': '#EE5555' };
-      else if(obj.type === "support")
-        return { 'stroke': "#22DD66"}
-      
-      return {'stroke': "#000000"} // default for a newly created edge
+      if (obj.type === "attack") return { stroke: "#EE5555" };
+      else if (obj.type === "support") return { stroke: "#22DD66" };
+
+      return { stroke: "#000000" }; // default for a newly created edge
     },
     showToast(text) {
       // function for in-graph toast messages
       notify({
-        position: { at: 'top', my: 'top', of: '#diagram', offset: '0 4' },
+        position: { at: "top", my: "top", of: "#diagram", offset: "0 4" },
         message: text,
-        type: 'warning',
-        delayTime: 2000
+        type: "warning",
+        delayTime: 2000,
       });
     },
     onRequestEditOperation(e) {
       // manage the edit requests...
-      if(e.operation === 'addShape') {
+      if (e.operation === "addShape") {
         e.allowed = false;
-      }
-      else if(e.operation === 'deleteShape') {
+      } else if (e.operation === "deleteShape") {
         e.allowed = false;
-      }
-      else if(e.operation === 'resizeShape') {
-        if(e.args.newSize.width < 1 || e.args.newSize.height < 0.75) {
-          if(e.reason !== 'checkUIElementAvailability') {
-            this.showToast('The Tag size is too small.');
+      } else if (e.operation === "resizeShape") {
+        if (e.args.newSize.width < 1 || e.args.newSize.height < 0.75) {
+          if (e.reason !== "checkUIElementAvailability") {
+            this.showToast("The Tag size is too small.");
           }
           e.allowed = false;
         }
-      } 
-      else if(e.operation === 'beforeChangeShapeText') {
+      } else if (e.operation === "beforeChangeShapeText") {
         e.allowed = false;
-      }
-      else if(e.operation === 'beforeChangeConnectorText') {
+      } else if (e.operation === "beforeChangeConnectorText") {
         // do not allow having text in the connector: double click has another behaviour!!!
         e.allowed = false;
-      }
-      else if(e.operation === 'changeConnectorText') {
+      } else if (e.operation === "changeConnectorText") {
         e.allowed = false;
       }
     },
     onSelectionChanged({ items }) {
-      console.log({'selected item':items[0]})
+      console.log({ "selected item": items[0] });
     },
     onItemClick(obj) {
-      if(obj.item.itemType === "shape") {
-        this.selectedNode = obj.item
+      if (obj.item.itemType === "shape") {
+        this.selectedNode = obj.item;
         // this.popupContentText = this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..."
-      } else { 
-        this.selectedNode = {}
+      } else {
+        this.selectedNode = {};
         // this.popupContentText = ""
       }
     },
     onItemDblClick(obj) {
       // if a connector is double clicked, change its type
-      
+
       // not a connector -> popup
-      if(obj.item.itemType === "shape") {
-          this.popupVisible = true
-          return
+      if (obj.item.itemType === "shape") {
+        this.popupVisible = true;
+        return;
       }
-      
+
       // get connector type and set parameters to push
       let key;
       let dataObj;
-      if(obj.item.dataItem.type === "support") {
+      if (obj.item.dataItem.type === "support") {
         // console.log("support => attack")
-        key = obj.item.key
-        dataObj = obj.item.dataItem
-        dataObj.type = "attack"
-      } else { // default connector does not have any type!! -> on double click assing support type
+        key = obj.item.key;
+        dataObj = obj.item.dataItem;
+        dataObj.type = "attack";
+      } else {
+        // default connector does not have any type!! -> on double click assing support type
         // console.log("null or attack => support")
-        key = obj.item.key
-        dataObj = obj.item.dataItem
-        dataObj.type = "support"
+        key = obj.item.key;
+        dataObj = obj.item.dataItem;
+        dataObj.type = "support";
       }
 
       // push the change
-      this.edgesDataSource.push([{ 
-          type: "update", 
-          data: dataObj, 
-          key: key }]);
+      this.edgesDataSource.push([
+        {
+          type: "update",
+          data: dataObj,
+          key: key,
+        },
+      ]);
     },
     showInfo(employee) {
       this.currentEmployee = employee;
       this.popupVisible = true;
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
-  #diagram {
-  }
 </style>

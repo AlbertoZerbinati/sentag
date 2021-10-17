@@ -1,21 +1,29 @@
-import { createApp } from "vue";
+import {
+  createApp
+} from "vue";
 import Editor from "./Editor.vue";
 import Sidebar from "./Sidebar.vue";
 import Graph from "./Graph.vue";
 import "es6-promise/auto";
-import { createStore } from "vuex";
+import {
+  createStore
+} from "vuex";
 import store from "./store.js";
-import { library } from "@fortawesome/fontawesome-svg-core";
+import {
+  library
+} from "@fortawesome/fontawesome-svg-core";
 import {
   faCheck,
   faUndo,
   faAngleRight,
   faAngleLeft,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import {
+  FontAwesomeIcon
+} from "@fortawesome/vue-fontawesome";
 
 import 'devextreme/dist/css/dx.light.css';
-import 'devextreme/integration/jquery';  
+import 'devextreme/integration/jquery';
 
 
 library.add(faCheck);

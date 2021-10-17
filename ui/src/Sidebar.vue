@@ -1,10 +1,10 @@
 <template>
   <div class="panel">
     <div class="panel-block">
-      <classes-block/>
+      <classes-block />
     </div>
     <div class="panel-block" style="display: block; width=100%;">
-      <attributes-block/>
+      <attributes-block />
     </div>
   </div>
 </template>
@@ -19,6 +19,6 @@ export default {
   components: {
     ClassesBlock,
     AttributesBlock,
-  }
+  },
 };
 </script>
