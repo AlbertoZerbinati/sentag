@@ -361,10 +361,8 @@ def completed_tagging(request, id):
                 label = t['label']
                 start_tag = '<' + str(label)
                 for k,v in t['attrs'].items():
-                    if type(v['value']) == list: # -multi- attribute
+                    if v['value'][0] != "":
                         start_tag = start_tag + f' {k}="{" ".join(v["value"])}"'
-                    elif v['value'] != "":   # -string- or -mutual- attribute
-                        start_tag = start_tag + f' {k}="{v["value"]}"'
                 start_tag = start_tag + '>'
                 words.append(start_tag)
                 

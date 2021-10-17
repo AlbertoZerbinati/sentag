@@ -17,7 +17,7 @@
       />
     <span class="tag is-light is-info is-small"
     >
-      <span v-if="token.attrs['ID']"><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{ token.attrs['ID']['value'] }}</strong></span>
+      <span v-if="token.attrs['ID']"><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{ token.attrs['ID']['value'][0] }}</strong></span>
       <span v-if="!token.attrs['ID']"><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{ token.label }}</strong></span>
       
       <a class="tag delete is-small is-danger" 

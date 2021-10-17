@@ -4,7 +4,7 @@
     <strong v-if="Object.keys(currentBlock).length && Object.keys(currentBlock.attrs).length && currentBlock.attrs['ID']"
       :style="{color: currentBlock.backgroundColor }"      
     >
-      {{currentBlock.attrs['ID']['value']}}
+      {{currentBlock.attrs['ID']['value'][0]}}
     </strong>
     <strong v-else 
       :style="{color: currentBlock.backgroundColor }"
@@ -24,7 +24,7 @@
             <input 
               v-if="currentBlock.attrs[at]['type'] === 'string'"
               @keydown="onKeyUp"
-              v-model="currentBlock.attrs[at]['value']" 
+              v-model="currentBlock.attrs[at]['value'][0]" 
               class="input is-normal" 
               type="text" >
           </p>
@@ -35,7 +35,7 @@
               :searchable="false"
               :show-labels="false"
               :close-on-select="true"
-              v-model="currentBlock.attrs[at]['value']"
+              v-model="currentBlock.attrs[at]['value'][0]"
               style="width:100%;"
               />
           </p>
@@ -50,7 +50,7 @@
               v-model="currentBlock.attrs[at]['value']"
               style="overflow: hidden; max-width=100%; width=100%;"
               @change="onSelectionChanged"
-              value=""
+              value="[]"
             >
               <option 
                 v-for="opt in currentBlock.attrs[at]['options']"
@@ -68,7 +68,7 @@
         <div class="field">
           <p class="control">
             <input 
-              v-model="currentBlock.attrs[at]['value']" 
+              v-model="currentBlock.attrs[at]['value'][0]" 
               class="input is-normal"
               disabled
               title="You can only edit this through the Graph interface"
@@ -82,18 +82,6 @@
 </template>
 
 <script>
-            // <VueMultiselect 
-            //   v-if="currentBlock.attrs[at]['type'] === 'multi'"
-            //   :options="currentBlock.attrs[at]['options']"
-            //   v-model="currentBlock.attrs[at]['value']"
-            //   :multiple="true"
-            //   :searchable="false"
-            //   :show-labels="false"
-            //   :close-on-select="false"
-            //   style="width:100%;"
-            //   placeholder="Select options"
-            //   />
-
 import { mapState, mapMutations } from "vuex";
 import VueMultiselect from 'vue-multiselect'
 
@@ -153,6 +141,5 @@ export default {
 .stroke {
   font-size: 140%;
   text-shadow: 2px 2px 4px black;
-
 }
 </style>

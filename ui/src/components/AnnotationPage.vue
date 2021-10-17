@@ -298,7 +298,7 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 #editor {
   padding: 0.2rem;
   font-size: 1.2rem;

@@ -28,10 +28,10 @@
           <DxNodes
             :data-source="nodesDataSource"
             :type-expr="itemTypeExpr"
-            :text-expr="'attrs[ID][value]'"
+            :text-expr="'attrs[ID][value][0]'"
             :text-style-expr="itemTextStyleExpr"
             :style-expr="itemStyleExpr"
-            :custom-data-expr="'attrs[ID][value]'"
+            :custom-data-expr="'attrs[ID][value][0]'"
             :key-expr="'id'"
           >
             <DxAutoLayout
@@ -177,10 +177,10 @@ export default {
 
         // populate the edges datsource with correct type of edges, based on nodes' attributes
         for(var node of nodes) {
-          if(node.attrs['A']['value'] !== "") { // if this node has supporters
-            const supporters = node.attrs['A']['value'].split(",")
+          if(node.attrs['A']['value'][0] !== "") { // if this node has supporters
+            const supporters = node.attrs['A']['value'][0].split(",")
             for(const supporter of supporters) {
-              const fromNode = nodes.filter(n => n.attrs['ID']['value'] === supporter)[0].id
+              const fromNode = nodes.filter(n => n.attrs['ID']['value'][0] === supporter)[0].id
               if (fromNode) {
                 // push a support edge
                 this.edgesDataSource.push([{
@@ -190,10 +190,10 @@ export default {
               }
             }
           }
-          if(node.attrs['CON']['value'] !== "") { // if this node attacks others
-            const attacked_nodes = node.attrs['CON']['value'].split(",")
+          if(node.attrs['CON']['value'][0] !== "") { // if this node attacks others
+            const attacked_nodes = node.attrs['CON']['value'][0].split(",")
             for(const attacked of attacked_nodes) {
-              const toNode = nodes.filter(n => n.attrs['ID']['value'] === attacked)[0].id
+              const toNode = nodes.filter(n => n.attrs['ID']['value'][0] === attacked)[0].id
               if (toNode) {
                 // push an attack edge
                 this.edgesDataSource.push([{
@@ -214,8 +214,8 @@ export default {
     save() {
       // remove every old graph-related attribute
       for(var node of this.nodesDataSource._array) {
-        node.attrs['A']['value'] = ""
-        node.attrs['CON']['value'] = ""
+        node.attrs['A']['value'][0] = ""
+        node.attrs['CON']['value'][0] = ""
         // TODO: 'S' attribute??
       }
 
@@ -232,16 +232,16 @@ export default {
         //    NOTE: this also pushes the changes into the tokenManger already
         //    TODO: 'S' attribute??
         if(connectorType === "support") {  // support edge
-          if(toNode.attrs['A']['value'] !== "") { // if there already is a supporter, append the new one
-            toNode.attrs['A']['value'] = toNode.attrs['A']['value'] + "," + fromNode.attrs['ID']['value']
+          if(toNode.attrs['A']['value'][0] !== "") { // if there already is a supporter, append the new one
+            toNode.attrs['A']['value'][0] = toNode.attrs['A']['value'][0] + "," + fromNode.attrs['ID']['value'][0]
           } else { // else just set the supporter
-            toNode.attrs['A']['value'] = fromNode.attrs['ID']['value']
+            toNode.attrs['A']['value'][0] = fromNode.attrs['ID']['value'][0]
           }
         } else if(connectorType === "attack") {  // attack edge
-          if(fromNode.attrs['CON']['value'] !== "") { // if there already is an attacked, append the new one
-            fromNode.attrs['CON']['value'] = fromNode.attrs['CON']['value'] + "," + toNode.attrs['ID']['value']
+          if(fromNode.attrs['CON']['value'][0]!== "") { // if there already is an attacked, append the new one
+            fromNode.attrs['CON']['value'][0] = fromNode.attrs['CON']['value'][0] + "," + toNode.attrs['ID']['value'][0]
           } else { // else just set the attacked
-            fromNode.attrs['CON']['value'] = toNode.attrs['ID']['value']
+            fromNode.attrs['CON']['value'][0] = toNode.attrs['ID']['value'][0]
           }
         }
 
