@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-desktop" style="margin: 1px">
+  <div class="columns is-desktop" style="margin: 1px" >
     <div class="column">
       <div class="panel">
         <div class="panel-heading" style="position: relative">
@@ -23,9 +23,9 @@
           :page-color="'#F9F9F9'"
           custom-shape-template="GraphNodeTemplate"
           @request-edit-operation="onRequestEditOperation"
-          @selection-changed="onSelectionChanged"
           @item-dbl-click="onItemDblClick"
           @item-click="onItemClick"
+          @click="setPosition"
         >
           <DxNodes
             :data-source="nodesDataSource"
@@ -36,7 +36,7 @@
             :custom-data-expr="'attrs[ID][value][0]'"
             :key-expr="'id'"
           >
-            <DxAutoLayout :type="'tree'" :orientation="'horizontal'" />
+            <DxAutoLayout :type="'tree'" :orientation="'horizontal'"/>
           </DxNodes>
 
           <DxEdges :data-source="edgesDataSource" :style-expr="linkStyleExpr" />
@@ -47,7 +47,7 @@
 
         <DxPopup
           v-model:visible="popupVisible"
-          :drag-enabled="true"
+          :drag-enabled="false"
           :close-on-outside-click="true"
           :show-title="true"
           :show-close-button="true"
@@ -55,7 +55,7 @@
           :height="180"
           container="#diagram"
           :title="popupTitleText"
-        >
+          ><DxPosition my="left top" :of="target" />
           <p>{{ popupContentText }}</p>
         </DxPopup>
 
@@ -86,6 +86,8 @@
 // >
 //   Tooltip content
 // </DxTooltip>
+          // <!-- @item-click="onItemClick" -->
+
 import {
   DxDiagram,
   DxNodes,
@@ -95,7 +97,7 @@ import {
   DxContextToolbox,
 } from "devextreme-vue/diagram";
 // import { DxTooltip } from 'devextreme-vue/tooltip';
-import { DxPopup } from "devextreme-vue/popup";
+import { DxPopup, DxPosition } from "devextreme-vue/popup";
 import ArrayStore from "devextreme/data/array_store";
 import notify from "devextreme/ui/notify";
 import axios from "axios";
@@ -110,7 +112,8 @@ export default {
     DxToolbox,
     DxAutoLayout,
     DxContextToolbox,
-    DxPopup, //DxTooltip,
+    DxPopup,
+    DxPosition, //DxTooltip,
   },
   data() {
     return {
@@ -119,19 +122,18 @@ export default {
       edgesDataSource: {},
       popupVisible: false,
       selectedNode: {},
+      target: ""
     };
   },
   computed: {
     popupTitleText: {
       get() {
-        console.log(this.selectedNode.dataItem);
         if (!this.selectedNode.dataItem) return "";
-        else return this.selectedNode.dataItem.attrs["ID"].value;
+        else return this.selectedNode.dataItem.attrs["ID"].value[0];
       },
     },
     popupContentText: {
       get() {
-        console.log(this.selectedNode.dataItem);
         if (!this.selectedNode.dataItem) return "";
         else
           return (
@@ -289,7 +291,7 @@ export default {
       }
 
       // ######################################
-      // TODO: manage the nested arguments !!!!
+      // TODO: manage the nested arguments ????
       // ######################################
 
       // now that all the changes have been pushed into the TM,
@@ -384,10 +386,12 @@ export default {
         e.allowed = false;
       }
     },
-    onSelectionChanged({ items }) {
-      console.log({ "selected item": items[0] });
-    },
+    // onSelectionChanged({ items }) {
+    //   console.log({ "selected item": items[0] });
+    //   console.log(this.selectedNode)
+    // },
     onItemClick(obj) {
+      // console.log({ "item click": obj});
       if (obj.item.itemType === "shape") {
         this.selectedNode = obj.item;
         // this.popupContentText = this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..."
@@ -398,7 +402,6 @@ export default {
     },
     onItemDblClick(obj) {
       // if a connector is double clicked, change its type
-
       // not a connector -> popup
       if (obj.item.itemType === "shape") {
         this.popupVisible = true;
@@ -430,9 +433,8 @@ export default {
         },
       ]);
     },
-    showInfo(employee) {
-      this.currentEmployee = employee;
-      this.popupVisible = true;
+    setPosition: function (event) {
+      this.target = event;
     },
   },
 };
