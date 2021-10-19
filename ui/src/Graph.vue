@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-desktop" style="margin: 1px" >
+  <div class="columns is-desktop" style="margin: 1px">
     <div class="column">
       <div class="panel">
         <div class="panel-heading" style="position: relative">
@@ -36,7 +36,7 @@
             :custom-data-expr="'attrs[ID][value][0]'"
             :key-expr="'id'"
           >
-            <DxAutoLayout :type="'tree'" :orientation="'horizontal'"/>
+            <DxAutoLayout :type="'tree'" :orientation="'horizontal'" />
           </DxNodes>
 
           <DxEdges :data-source="edgesDataSource" :style-expr="linkStyleExpr" />
@@ -77,7 +77,7 @@
 </template>
 
 <script>
-// :content-template="popupContent"
+// <a @click="print">print</a>
 
 // <DxTooltip
 //   v-model:visible="popupVisible"
@@ -86,7 +86,8 @@
 // >
 //   Tooltip content
 // </DxTooltip>
-          // <!-- @item-click="onItemClick" -->
+
+// <!-- @item-click="onItemClick" -->
 
 import {
   DxDiagram,
@@ -122,7 +123,7 @@ export default {
       edgesDataSource: {},
       popupVisible: false,
       selectedNode: {},
-      target: ""
+      target: "",
     };
   },
   computed: {
@@ -134,14 +135,25 @@ export default {
     },
     popupContentText: {
       get() {
+        // if not initialized
         if (!this.selectedNode.dataItem) return "";
-        else
-          return (
-            this.selectedNode.dataItem.tokens
-              .slice(0, 15)
-              .map((t) => t.text)
-              .join(" ") + "..."
-          );
+        // if initialized
+        else {
+          // use stack unfolding of token structure to build the text
+          let ret = "";
+          let stack = this.selectedNode.dataItem.tokens.slice();
+          // console.log({'initial stack':JSON.parse(JSON.stringify(stack))})
+          while (stack.length !== 0 && ret.length < 100) {
+            const token = stack.shift();
+            if (token.type === "token-block") {
+              stack = token.tokens.slice().concat(stack);
+            } else {
+              // type = 'token'
+              ret += " " + token["text"];
+            }
+          }
+          return ret.length >= 100 ? ret + "..." : ret; // eventual '...' if text is too big
+        }
       },
     },
   },
@@ -235,7 +247,7 @@ export default {
   },
   methods: {
     print() {
-      console.log(this.selectedNode.dataItem.attrs["ID"].value);
+      console.log(this.popupContentText);
     },
     save() {
       // remove every old graph-related attribute
