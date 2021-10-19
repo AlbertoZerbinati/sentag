@@ -153,6 +153,6 @@ export default {
 }
 .stroke {
   font-size: 140%;
-  text-shadow: 2px 2px 4px black;
+  text-shadow: 1.8px 1.8px 1.2px black;
 }
 </style>

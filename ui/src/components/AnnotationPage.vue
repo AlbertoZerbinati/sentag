@@ -6,12 +6,22 @@
           <strong>Tag {{ title }}</strong>
           <a
             class="button is-link"
-            style="position: absolute; right: 16px; top: 8px"
-            :href="/graph/ + tagging_id"
+            style="position: absolute; right: 220px; top: 8px"
+            :href="'/graph/rel/' + tagging_id"
           >
-            <span>Edit Graph</span>
+            <span>Relations Graph</span>
             <span class="icon is-small">
               <font-awesome-icon icon="angle-right" />
+            </span>
+          </a>
+          <a
+            class="button is-link"
+            style="position: absolute; right: 16px; top: 8px"
+            :href="'/graph/arg/' + tagging_id"
+          >
+            <span>Arguments Graph</span>
+            <span class="icon is-small">
+              <font-awesome-icon icon="angle-double-right" />
             </span>
           </a>
         </div>

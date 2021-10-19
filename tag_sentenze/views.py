@@ -127,7 +127,11 @@ def graph(request, id):
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
-        print("---->", context['taggings'].id)
+        if 'arg' in request.get_full_path():
+            context['type'] = 'arg'
+        else:
+            context['type'] = 'rel'
+
         return render(request, 'tag_sentenze/graph.html', context=context)
     # taggatori has access only to their set of sentenze
     elif sentenza in user_taggings:
@@ -136,6 +140,11 @@ def graph(request, id):
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
         }
+        if 'arg' in request.get_full_path():
+            context['type'] = 'arg'
+        else:
+            context['type'] = 'rel'
+            
         return render(request, 'tag_sentenze/graph.html', context=context)
     else:
         print('Taggatori access with no permission')

@@ -17,6 +17,7 @@ import {
   faUndo,
   faAngleRight,
   faAngleLeft,
+  faAngleDoubleRight
 } from "@fortawesome/free-solid-svg-icons";
 import {
   FontAwesomeIcon
@@ -30,6 +31,7 @@ library.add(faCheck);
 library.add(faUndo);
 library.add(faAngleLeft);
 library.add(faAngleRight);
+library.add(faAngleDoubleRight);
 
 const editor = createApp(Editor);
 const sidebar = createApp(Sidebar);
