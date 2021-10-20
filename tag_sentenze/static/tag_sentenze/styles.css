@@ -106,3 +106,8 @@
 .check-remove:checked {
     background-color: gray;
 }
+
+#dropdown-menu-right {
+    right: 0;
+    left: auto;
+}

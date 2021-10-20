@@ -7,7 +7,6 @@
       :show-grid="false"
       :snap-to-grid="false"
       :page-color="'#F9F9F9'"
-      custom-shape-template="GraphNodeTemplate"
       @request-edit-operation="onRequestEditOperation"
       @item-dbl-click="onItemDblClick"
       @item-click="onItemClick"
@@ -106,9 +105,9 @@ export default {
     },
     popupContentText: {
       get() {
-        // if not initialized
+        // if no node selected
         if (!this.selectedNode.dataItem) return "";
-        // if initialized
+        // else if one selected
         else {
           // use stack unfolding of token structure to build the text
           let ret = "";

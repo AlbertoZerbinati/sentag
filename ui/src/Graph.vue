@@ -15,7 +15,7 @@
             >Arguments Graph {{ tagging_title }}</strong
           >
           <strong style="position: absolute; left: 180px; top: 20px" v-else
-            >Relations Graph {{ tagging_title }}</strong
+            >Relations Graph {{ tagging_title }} [NOT YET IMPLEMENTED]</strong
           >
         </div>
 
@@ -25,7 +25,7 @@
         <div class="panel-block">
           <div class="field is-grouped is-pulled-left">
             <p class="control">
-              <button class="button is-link" @click="save">
+              <button class="button is-link" @click="save" :disabled="graph_type == 'rel'">
                 <span class="icon is-small">
                   <font-awesome-icon icon="check" />
                 </span>
