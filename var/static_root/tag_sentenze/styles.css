@@ -2,44 +2,115 @@
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: x-large;
-    color: darkgray;
+    margin-left: 10px;
+    color: white;
 }
 
-.title {
-    text-align: center;
-    user-select: none;
-    margin-bottom: 15px;
+#imglogo {
+    max-height: 3rem;
+    margin-right: 8px;
 }
 
 .top-buffer {
-    margin-top: 6px;
-    margin-bottom: 6px;
-}
-
-.navbar {
-    height: 65px;
-    user-select: none;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .sticky-top {
-    top: 6px;
+    position: sticky;
+    top: 10px;
+    bottom: 0px;
+    /* display: block; */
 }
 
-.highlight { 
-    background-color: lightblue; 
+.link {
+    color: rgb(184, 184, 184);
+    /* width:130px; */
 }
 
-#visualizer_area dummy_tag {
-    background-color: lightblue;
+.link:hover {
+    color: white
 }
 
-/* #sentenza {
-    white-space: pre-wrap;
-} */
+.add-button {
+    background-color: white;
+    border: 2px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 10px;
+    padding: 1px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+}
 
-#visualizer_area {
-    height: fit-content;
-    border: 0px;
-    overflow: hidden;
-    resize: none; 
+.add-sentenza-button {
+    background-color: white;
+    /* Green */
+    border: 2px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 10px;
+    padding: 1px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+}
+
+.remove-button {
+    background-color: white;
+    /* Green */
+    border: 2px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 10px;
+    padding: 1px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+}
+
+.remove-sentenza-button {
+    background-color: white;
+    /* Green */
+    border: 2px solid rgb(48, 48, 48);
+    color: black;
+    border-radius: 10px;
+    padding: 1px 4px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;
+}
+
+.check-add {
+    width: 0.8em;
+    height: 0.8em;
+    background-color: white;
+    border-radius: 50%;
+    vertical-align: middle;
+    border: 1px solid rgb(56, 56, 56);
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.check-add:checked {
+    background-color: gray;
+}
+
+.check-remove {
+    width: 0.8em;
+    height: 0.8em;
+    background-color: white;
+    border-radius: 50%;
+    vertical-align: middle;
+    border: 1px solid rgb(56, 56, 56);
+    -webkit-appearance: none;
+    outline: none;
+    cursor: pointer;
+}
+
+.check-remove:checked {
+    background-color: gray;
 }

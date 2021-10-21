@@ -163,8 +163,6 @@ export default {
           // pusha la classe coi suoi attributi nello store
           this.addClass([name, attrs]);
           element.setAttribute("name", "CONSUMED");
-
-          console.log(attrs);
         }
         this.go = true; // now we can load the annotation page
       })

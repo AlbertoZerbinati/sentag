@@ -30,7 +30,7 @@
             <a class="btn btn-secondary" role="button" href="/admin">Admin Page</a>
             {% endif %}
             {% endif %}
-            
+
             {% if user.is_authenticated %}
             {% if user.is_staff or request.user|is_editor%}
             <!--<a class="nav-link link " style="margin-right: auto;" href="{% url 'users:editor_page' %}">Editor Page</a>-->
@@ -103,7 +103,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 </body>
 

@@ -1,6 +1,9 @@
 <template>
   <div id="column">
     <div class="is-multiline">
+      <div class="attribute-title stroke">
+        <strong> XSD classes </strong>
+      </div>
       <div class="tags is-medium">
         <div class="column" v-for="cl in classes" :key="cl.id">
           <a
@@ -77,5 +80,16 @@ export default {
 }
 .field-label {
   margin-right: 5px;
+}
+.attribute-title {
+  width: 100%;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+.stroke > strong {
+  font-size: 130%;
+  text-shadow: 0.6px 0.6px 0.8px #0c66a1;
+  color: #0c66a1;
 }
 </style>

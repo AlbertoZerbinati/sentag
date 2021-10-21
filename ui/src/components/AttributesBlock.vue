@@ -11,9 +11,13 @@
       >
         {{ currentBlock.attrs["ID"]["value"][0] }}
       </strong>
-      <strong v-else :style="{ color: currentBlock.backgroundColor }">
+      <strong
+        v-else-if="Object.keys(currentBlock).length"
+        :style="{ color: currentBlock.backgroundColor }"
+      >
         {{ currentBlock.label }}
       </strong>
+      <strong v-else> Select a token... </strong>
     </div>
 
     <div
@@ -127,12 +131,6 @@ export default {
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
 
 <style lang="css" scoped>
-.attribute-title {
-  width: 100%;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  text-align: center;
-}
 #column {
   height: 400px;
   overflow-y: auto;
@@ -151,8 +149,15 @@ export default {
 .field-label {
   margin-right: 5px;
 }
-.stroke {
-  font-size: 140%;
-  text-shadow: 1.8px 1.8px 1.2px black;
+.attribute-title {
+  width: 100%;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+.stroke > strong {
+  font-size: 130%;
+  text-shadow: 0.6px 0.6px 0.8px #0c66a1;
+  color: #0c66a1;
 }
 </style>
