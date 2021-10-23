@@ -49,7 +49,7 @@
 And finally we have complete access to all functionalities!
 
 ## Paper
-**Voting with Random Classifiers (VORACE): Theoretical and Experimental Analysis**
+**SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
 * [SenTag: a Web-based Tool for Semantic Annotation of Textual Documents]()
 
 ### How to cite
