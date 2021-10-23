@@ -15,7 +15,7 @@
             >Arguments Graph {{ tagging_title }}</strong
           >
           <strong style="position: absolute; left: 180px; top: 20px" v-else
-            >Relations Graph {{ tagging_title }} [NOT YET IMPLEMENTED]</strong
+            >Relations Graph {{ tagging_title }}</strong
           >
         </div>
 
@@ -25,7 +25,7 @@
         <div class="panel-block">
           <div class="field is-grouped is-pulled-left">
             <p class="control">
-              <button class="button is-link" @click="save" :disabled="graph_type == 'rel'">
+              <button class="button is-link" @click="save">
                 <span class="icon is-small">
                   <font-awesome-icon icon="check" />
                 </span>
@@ -40,6 +40,7 @@
 </template>
 
 <script>
+// :disabled="graph_type == 'rel'"
 import ArgumentsGraph from "./components/ArgumentsGraph.vue";
 import RelationsGraph from "./components/RelationsGraph.vue";
 
@@ -70,7 +71,9 @@ export default {
   },
   methods: {
     save() {
-      this.$refs.arggraph.save(); // use $refs to invoke a child-component's method
+      // use $refs to invoke a child-component's method
+      if (this.graph_type === "arg") this.$refs.arggraph.save();
+      else if (this.graph_type === "rel") this.$refs.relgraph.save();
     },
   },
 };

@@ -68,6 +68,7 @@ class TokenManager {
           id: this.currentID,
           attrs: {},
           graph: _class.graph,
+          relations: _class.relations,
           backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {
@@ -120,6 +121,7 @@ class TokenManager {
           label: _class.name,
           id: this.currentID,
           graph: _class.graph,
+          relations: _class.relations,
           attrs: {},
           backgroundColor: _class.color,
         }
