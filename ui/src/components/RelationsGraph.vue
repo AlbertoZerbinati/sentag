@@ -22,7 +22,7 @@
         :custom-data-expr="'attrs[ID][value][0]'"
         :key-expr="'id'"
       >
-        <DxAutoLayout :type="'tree'" :orientation="'vertical'" />
+        <DxAutoLayout :orientation="'vertical'" />
       </DxNodes>
 
       <DxEdges :data-source="edgesDataSource" />
@@ -176,10 +176,15 @@ export default {
         });
 
         // populate the edges datasoruce, based on nodes' attributes
-        for (var node of nodes) {
+        for (let node of nodes) {
           console.log(node);
           // for each node, check if there exist another node with the label of one of its attributes
-          for (var attrs_label of Object.keys(node.attrs)) {
+          for (let attrs_label of Object.keys(node.attrs)) {
+            if (!node.attrs[attrs_label]["value"].length) continue;
+
+            // console.log(
+            //   attrs_label + node.attrs[attrs_label]["value"][0].split(",")
+            // );
             // console.log(attrs_label)
             if (
               nodes
@@ -191,23 +196,29 @@ export default {
               if (
                 nodes
                   .map((n) => n.attrs["ID"])
-                  .filter((id) => node.attrs[attrs_label]["value"].includes(id))
+                  .filter((id) =>
+                    node.attrs[attrs_label]["value"][0].split(",").includes(id)
+                  )
               ) {
                 // here we are sure there exist a connection between two nodes:
                 // the pointed one is 'node', the other one has ID =  node.attrs[attrs_label]["value"][0]
-                let fromNode = nodes.filter(
-                  (n) =>
-                    n.attrs["ID"]["value"][0] ===
-                    node.attrs[attrs_label]["value"][0]
-                )[0];
-                if (fromNode) {
-                  // so we create the edge and push it
-                  this.edgesDataSource.push([
-                    {
-                      type: "insert",
-                      data: { from: fromNode.id, to: node.id },
-                    },
-                  ]);
+
+                // we then cycle over every fromNode:
+                for (let from_id of node.attrs[attrs_label]["value"][0].split(
+                  ","
+                )) {
+                  let fromNode = nodes.filter(
+                    (n) => n.attrs["ID"]["value"][0] === from_id
+                  )[0];
+                  if (fromNode) {
+                    // so we create the edge and push it
+                    this.edgesDataSource.push([
+                      {
+                        type: "insert",
+                        data: { from: fromNode.id, to: node.id },
+                      },
+                    ]);
+                  }
                 }
               }
             }
@@ -223,56 +234,46 @@ export default {
     save() {
       console.log("saving...");
 
-      // remove every old graph-related attribute
-      for (var node of this.nodesDataSource._array) {
-        node.attrs["A"]["value"][0] = "";
-        node.attrs["CON"]["value"][0] = "";
-        // TODO: 'S' attribute??
+      // remove every old relations-graph related attribute
+      for (let node of this.nodesDataSource._array) {
+        for (var node2 of this.nodesDataSource._array) {
+          if (node2.attrs[node.label.toUpperCase()])
+            node2.attrs[node.label.toUpperCase()]["value"][0] = "";
+        }
       }
 
       // add new attrs based on existing connections
       for (let connector of this.edgesDataSource._array) {
-        // get the connector type
-        var connectorType = connector.type;
-
         // get the start and end nodes
         var fromNode = this.nodesDataSource._array.filter(
-          (item) => item["id"] == connector.from
+          (item) => item["id"] === connector.from
         )[0];
         var toNode = this.nodesDataSource._array.filter(
-          (item) => item["id"] == connector.to
+          (item) => item["id"] === connector.to
         )[0];
 
-        // modify their attributes: 'A', 'CON'
+        // modify the toNode attribute labelled as fromNode
         //    NOTE: this also pushes the changes into the tokenManger already
-        //    TODO: 'S' attribute??
-        if (connectorType === "support") {
-          // support edge
-          if (toNode.attrs["A"]["value"][0] !== "") {
-            // if there already is a supporter, append the new one
-            toNode.attrs["A"]["value"][0] =
-              toNode.attrs["A"]["value"][0] +
-              "," +
-              fromNode.attrs["ID"]["value"][0];
-          } else {
-            // else just set the supporter
-            toNode.attrs["A"]["value"][0] = fromNode.attrs["ID"]["value"][0];
-          }
-        } else if (connectorType === "attack") {
-          // attack edge
-          if (fromNode.attrs["CON"]["value"][0] !== "") {
-            // if there already is an attacked, append the new one
-            fromNode.attrs["CON"]["value"][0] =
-              fromNode.attrs["CON"]["value"][0] +
-              "," +
-              toNode.attrs["ID"]["value"][0];
-          } else {
-            // else just set the attacked
-            fromNode.attrs["CON"]["value"][0] = toNode.attrs["ID"]["value"][0];
-          }
+        if (toNode.attrs[fromNode.label.toUpperCase()]["value"][0] !== "") {
+          // if there already is relation from that fromNode class, check if it is not a 'mutual' attr
+          if (toNode.attrs[fromNode.label.toUpperCase()]["type"] === "multi")
+            toNode.attrs[fromNode.label.toUpperCase()]["value"] = toNode.attrs[
+              fromNode.label.toUpperCase()
+            ]["value"].concat([fromNode.attrs["ID"]["value"][0]]);
+          else if (
+            toNode.attrs[fromNode.label.toUpperCase()]["type"] === "string"
+          )
+            toNode.attrs[fromNode.label.toUpperCase()]["value"][0] += ",";
+          fromNode.attrs["ID"]["value"][0];
+        } else {
+          // else just set the relation
+          toNode.attrs[fromNode.label.toUpperCase()]["value"][0] =
+            fromNode.attrs["ID"]["value"][0];
         }
+      }
 
-        // ignore edges without an assigned type (the black ones)!!!
+      for (let node of this.nodesDataSource._array) {
+        console.log(node);
       }
 
       // ######################################
