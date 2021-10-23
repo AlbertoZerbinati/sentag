@@ -47,3 +47,16 @@
     ```
 
 And finally we have complete access to all functionalities!
+
+## Paper
+**Voting with Random Classifiers (VORACE): Theoretical and Experimental Analysis**
+* [SenTag: a Web-based Tool for Semantic Annotation of Textual Documents]()
+
+### How to cite
+```
+@article{sentag2021,
+  author = {Loreggia, Andrea and Mosco, Simone and Zerbinati, Alberto},
+  journal = {AAAI 2022 - Demonstration Track},
+  title = {SenTag: a Web-based Tool for Semantic Annotation of Textual Documents},
+}
+```
