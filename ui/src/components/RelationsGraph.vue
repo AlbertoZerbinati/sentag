@@ -194,6 +194,7 @@ export default {
               console.log(attrs_label);
               // if there's one, than check if there must be an edge between the two
               if (
+                node.attrs[attrs_label]["value"][0] !== null &&
                 nodes
                   .map((n) => n.attrs["ID"])
                   .filter((id) =>
@@ -204,20 +205,39 @@ export default {
                 // the pointed one is 'node', the other one has ID =  node.attrs[attrs_label]["value"][0]
 
                 // we then cycle over every fromNode:
-                for (let from_id of node.attrs[attrs_label]["value"][0].split(
-                  ","
-                )) {
-                  let fromNode = nodes.filter(
-                    (n) => n.attrs["ID"]["value"][0] === from_id
-                  )[0];
-                  if (fromNode) {
-                    // so we create the edge and push it
-                    this.edgesDataSource.push([
-                      {
-                        type: "insert",
-                        data: { from: fromNode.id, to: node.id },
-                      },
-                    ]);
+                // not multi attr
+                if (node.attrs[attrs_label]["type"] !== "multi") {
+                  for (let from_id of node.attrs[attrs_label]["value"][0].split(
+                    ","
+                  )) {
+                    let fromNode = nodes.filter(
+                      (n) => n.attrs["ID"]["value"][0] === from_id
+                    )[0];
+                    if (fromNode) {
+                      // so we create the edge and push it
+                      this.edgesDataSource.push([
+                        {
+                          type: "insert",
+                          data: { from: fromNode.id, to: node.id },
+                        },
+                      ]);
+                    }
+                  }
+                } else {
+                  // multi attr
+                  for (let from_id of node.attrs[attrs_label]["value"]) {
+                    let fromNode = nodes.filter(
+                      (n) => n.attrs["ID"]["value"][0] === from_id
+                    )[0];
+                    if (fromNode) {
+                      // so we create the edge and push it
+                      this.edgesDataSource.push([
+                        {
+                          type: "insert",
+                          data: { from: fromNode.id, to: node.id },
+                        },
+                      ]);
+                    }
                   }
                 }
               }
@@ -238,7 +258,12 @@ export default {
       for (let node of this.nodesDataSource._array) {
         for (var node2 of this.nodesDataSource._array) {
           if (node2.attrs[node.label.toUpperCase()])
-            node2.attrs[node.label.toUpperCase()]["value"][0] = "";
+            if (node2.attrs[node.label.toUpperCase()]["type"] !== "multi") {
+              // not multi attr
+              node2.attrs[node.label.toUpperCase()]["value"][0] = "";
+            } else {
+              node2.attrs[node.label.toUpperCase()]["value"] = [];
+            }
         }
       }
 
