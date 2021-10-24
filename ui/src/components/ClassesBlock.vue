@@ -24,9 +24,9 @@
             :key="at.id"
             :style="{ margin: '3px' }"
           >
-            <span class="tag supertiny"
+            <span class="tag tiny"
               ><i
-                ><strong :style="{ color: '#0c66a1', margin: '3px' }">{{
+                ><strong :style="{ color: '#0c66a1' }">{{
                   at.name
                 }}</strong></i
               ></span
@@ -70,20 +70,27 @@ export default {
   font-size: 14px;
 }
 .column {
-  height: 80px;
+  min-height: 80px;
+  top: 0px;
+  padding-top: 0px;
 }
-.tag {
+.tiny {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+.normal {
   padding-right: 11px;
   padding-left: 11px;
-  margin-right: 4px;
-  margin-bottom: 0px;
+  margin-right: 0px;
+  margin-bottom: 2px;
+  top: 0px;
 }
 .field-label {
   margin-right: 5px;
 }
 .attribute-title {
   width: 100%;
-  margin-top: 15px;
+  margin-top: 30px;
   margin-bottom: 15px;
   text-align: center;
 }
