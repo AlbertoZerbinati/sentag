@@ -47,3 +47,17 @@
     ```
 
 And finally we have complete access to all functionalities!
+
+## Paper
+**SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
+* A. Loreggia, S. Mosco, and A. Zerbinati. "[SenTag: a Web-based Tool for Semantic Annotation of Textual Documents]()" To appear in Proceedings of the AAAI Conference on Artificial Intelligence
+### How to cite
+```
+@article{sentag2021,
+  author = {Loreggia, Andrea and Mosco, Simone and Zerbinati, Alberto},
+  journal = {AAAI 2022 - Demonstration Track},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  year={2022},
+  title = {SenTag: a Web-based Tool for Semantic Annotation of Textual Documents}
+}
+```
