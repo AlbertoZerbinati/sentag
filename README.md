@@ -50,7 +50,7 @@ And finally we have complete access to all functionalities!
 
 ## Paper
 **SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
-* A. Loreggia, S. Mosco, and A. Zerbinati. *"SenTag: a Web-based Tool for Semantic Annotation of Textual Documents"* - To appear in Proceedings of the AAAI Conference on Artificial Intelligence
+* A. Loreggia, S. Mosco, and A. Zerbinati. *"SenTag: a Web-based Tool for Semantic Annotation of Textual Documents"* - To appear in Proceedings of the 36th AAAI Conference on Artificial Intelligence 2022 - Demonstration Track 
 
 * Video about the demo presented at AAAI 2022 - Demonstration Track 
 
