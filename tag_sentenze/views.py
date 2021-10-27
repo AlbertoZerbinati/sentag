@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from lxml import etree
 from .serializers import TaggingSerializer
 from rest_framework.response import Response
@@ -7,7 +8,7 @@ import json
 from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from .models import Judgment, Schema
-from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm
+from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, ParseXMLForm
 from users.models import Tagging, Profile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -51,6 +52,8 @@ def new_sentenza(request):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
+        form = AddJudgmentModelForm()
+
         if request.method == 'POST':
             # Create a form instance and populate it with data from the request
             form = AddJudgmentModelForm(request.POST, request.FILES)
@@ -64,7 +67,6 @@ def new_sentenza(request):
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index'))
 
-        form = AddJudgmentModelForm()
         context = {
             'form': form,
         }
@@ -144,7 +146,7 @@ def graph(request, id):
             context['type'] = 'arg'
         else:
             context['type'] = 'rel'
-            
+
         return render(request, 'tag_sentenze/graph.html', context=context)
     else:
         print('Taggatori access with no permission')
@@ -156,6 +158,7 @@ def new_schema(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = AddSchemaForm()
         print("Admin/Editor access")
         if request.method == 'POST':
             # Create a form instance for the schema and add data
@@ -167,7 +170,6 @@ def new_schema(request):
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index'))
 
-        form = AddSchemaForm()
         context = {
             'form': form,
         }
@@ -184,6 +186,7 @@ def add_multiple_judgments(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = AddSchemaJudgmentsForm()
         print("Admin/Editor access")
         if request.method == 'POST':
             # Get all the file uploaded
@@ -210,7 +213,6 @@ def add_multiple_judgments(request):
                 return HttpResponseRedirect(reverse('tag_sentenze:index'))
 
         # add the CoicheField with the schemas
-        form = AddSchemaJudgmentsForm()
         context = {
             'form': form,
         }
@@ -303,6 +305,78 @@ def list_taggings(request):
     else:
         print('Taggatore access')
         return redirect('/sentenze')
+
+
+@login_required
+def parse_xml(request):
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+
+        form = ParseXMLForm()
+
+        if request.method == 'POST':
+            # Create a form instance and populate it with data from the request
+            form = ParseXMLForm(request.POST, request.FILES)
+            # Check if the form input is valid:
+            if form.is_valid():
+                # we have an xml file and either an xsd file or a Schema
+                # build xml string from file
+                xml_string = ""
+                f = request.FILES["xml_file"]
+                for chunk in f.chunks():
+                    xml_string += chunk.decode("utf-8")
+
+                # build xsd string
+                xsd_text = ""
+                # case 1: xml file + xsd file
+                if "xsd_file" in request.FILES.keys():
+                    # print("xsd_file")
+                    f = request.FILES["xsd_file"]
+                    for chunk in f.chunks():
+                        xsd_text += chunk.decode("utf-8")
+                # case 2: xml file + Schema
+                else:
+                    # print("schema")
+                    id_xsd_schema = form.data['schema']
+                    xsd_text = Schema.objects.get(id=id_xsd_schema).tags
+
+                # validate xml-xsd
+                schema_root = etree.XML(xsd_text.encode('ascii'))
+                xmlschema = etree.XMLSchema(schema_root)
+                parser = etree.XMLParser(schema=xmlschema)
+                try:
+                    etree.fromstring(xml_string, parser)
+                except etree.XMLSyntaxError as error:
+                    # if not valid raise error message
+                    print("error:")
+                    from django import forms
+                    form.add_error(None, forms.ValidationError(
+                        "XML text didn't pass validation with respect to the XSD"))
+                    form.add_error(None, forms.ValidationError(
+                        str(error)))
+                    context = {
+                        'form': form,
+                    }
+                    return render(request, 'tag_sentenze/parse_xml.html', context=context)
+            
+            # now we have xml and xsd texts and they are validated!
+            # we need to save them somehow in the database
+
+            # save the form into the DB
+            # form.save()
+            # # assign a tagging object to all editors and admins
+            # auto_assignment(form.instance.id)
+
+            # redirect home
+            return HttpResponseRedirect(reverse('tag_sentenze:index'))
+
+        context = {
+            'form': form,
+        }
+        return render(request, 'tag_sentenze/parse_xml.html', context=context)
+    else:
+        return redirect('/sentenze/')
 
 
 # APIs

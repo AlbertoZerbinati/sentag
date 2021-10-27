@@ -20,10 +20,10 @@ import json
 
 @login_required
 def register(request):
-
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = UserRegisterForm()
         if request.method == 'POST':
             form = UserRegisterForm(request.POST)
             if form.is_valid():
@@ -33,8 +33,6 @@ def register(request):
                 taggatori = Group.objects.get(name='Taggatori')
                 taggatori.user_set.add(User.objects.get(username=username))
                 return redirect('/')
-        else:
-            form = UserRegisterForm()
 
         return render(request, 'users/register.html', context={'form': form})
 

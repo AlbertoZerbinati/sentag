@@ -30,7 +30,7 @@
             <a class="btn btn-secondary" role="button" href="/admin">Admin Page</a>
             {% endif %}
             {% endif %}
-            
+
             {% if user.is_authenticated %}
             {% if user.is_staff or request.user|is_editor%}
             <!--<a class="nav-link link " style="margin-right: auto;" href="{% url 'users:editor_page' %}">Editor Page</a>-->
@@ -54,6 +54,9 @@
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Add Judgment</a>
                     <a class="dropdown-item" href="{% url 'tag_sentenze:multiple-judgment' %}"> <i class="bi-card-text"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Add Judgments</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'tag_sentenze:parse-xml' %}"> <i class="bi-card-text"
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Parse XML</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{% url 'users:home-judgment-schema' %}"> <i class="bi-bezier2"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Associate Judgments - Schemas</a>

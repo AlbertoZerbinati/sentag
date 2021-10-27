@@ -19,4 +19,6 @@ urlpatterns = [
     path("taggings/", views.list_taggings, name="list-taggings"),
     path("graph/arg/<int:id>", views.graph, name="graph-arg"),
     path("graph/rel/<int:id>", views.graph, name="graph-rel"),
+    path("parse_xml", views.parse_xml, name="parse-xml"),
+
 ]
