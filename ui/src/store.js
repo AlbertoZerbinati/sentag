@@ -23,6 +23,9 @@ export const mutations = {
   setInputText(state, payload) {
     state.inputText = payload;
   },
+  setXMLText(state, payload) {
+    state.XMLText = payload;
+  },
   addClass(state, payload) {
     let lastIndex = state.classes.reduce((p, c) => {
       return c.id > p ? c.id : p;
@@ -61,6 +64,7 @@ export default {
     return {
       classes: [],
       inputText: "",
+      XMLText: "",
       currentClass: {},
       currentBlock: {},
       done: false,

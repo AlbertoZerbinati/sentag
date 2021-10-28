@@ -99,6 +99,7 @@ export default {
   computed: {
     ...mapState([
       "inputText",
+      "XMLText",
       "classes",
       "annotations",
       "currentClass",
@@ -123,6 +124,17 @@ export default {
     },
   },
   created() {
+    this.tagging_id = document
+      .querySelector("meta[name='id-tagging']")
+      .getAttribute("content");
+
+    // also discover wether I must parse the xml metadati
+    this.htbp = document
+      .querySelector("meta[name='must-parse']")
+      .getAttribute("content");
+
+    console.log(this.htbp);
+
     if (this.oldtm.length) {
       this.tm = new TokenManager([], JSON.parse(JSON.parse(this.oldtm))); // note: double json parsing is needed
     } else {
@@ -132,10 +144,7 @@ export default {
     document.addEventListener("mouseup", this.selectTokens);
     window.onbeforeunload = () => (this.unsavedWork ? true : null); // exit confirmation if there is unsaved work
 
-    (this.tagging_id = document
-      .querySelector("meta[name='id-tagging']")
-      .getAttribute("content")),
-      (this.switchState = this.done);
+    this.switchState = this.done;
   },
   beforeUnmount() {
     document.removeEventListener("mouseup", this.selectTokens);
@@ -143,6 +152,42 @@ export default {
   methods: {
     ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
     tokenizeCurrentSentence() {
+      // function used for parsing xml input
+      let parseNode = (xmlNode, last) => {
+        // base case is just text, no tags
+        if (xmlNode.nodeName == "#text") {
+          // console.log("just text");
+          return;
+        }
+
+        console.log("\n\nlast", last);
+
+        // otherwise the is a node
+        console.log("node:");
+        console.log(xmlNode);
+
+        // find the indexes of start and end of the node's text and add the token-block:
+        this.tm.addNewBlock(
+          last,
+          last + xmlNode.textContent.length - 1,
+          this.currentClass
+        );
+
+        // let attrs = {};
+        // if (xmlNode.attributes)
+        //   for (let attribute of xmlNode.attributes) console.log(attribute);
+        // console.log(attrs);
+
+        // recursion
+        let length = 0;
+        for (let node of xmlNode.childNodes) {
+          // console.log(node);
+          parseNode(node, last + length);
+          length += node.textContent.length;
+        }
+      };
+
+      // tokenize the input text
       let words = this.inputText.split(" ");
       let tokens = [];
       let last_index = 0;
@@ -162,7 +207,25 @@ export default {
         last_index = end;
       }
 
-      this.tm = new TokenManager(tokens); // istanzia token manager coi tokens
+      // if this judgment does not have to be parsed
+      // istanzia token manager coi tokens
+      if (this.htbp == "False") {
+        this.tm = new TokenManager(tokens);
+      }
+      // otherwise parse the xml
+      else {
+        this.tm = new TokenManager(tokens); // istanzia token manager coi tokens
+        console.log("now I have to build the appropriate TM");
+        let xml = this.XMLText;
+        console.log(xml);
+
+        let parser = new DOMParser();
+        let xmlDoc = parser.parseFromString(xml, "text/xml");
+        console.log(xmlDoc);
+
+        last_index = 0;
+        for (let node of xmlDoc.childNodes) parseNode(node, last_index);
+      }
     },
     selectTokens() {
       let selection = document.getSelection();

@@ -97,7 +97,7 @@ class TokenManager {
       return _tokens;
     }
     // selezione TOKEN
-    else if (_tokens.type === "token" && _tokens.start >= start && _tokens.start <= end) {
+    else if (_tokens.type === "token" && _tokens.start+_tokens.text.length >= start && _tokens.start <= end) {
       return _tokens;
     }
     // scansione TOKEN dentro un TOKEN-BLOCK non interamente selezionato

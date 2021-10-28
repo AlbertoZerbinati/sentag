@@ -25,20 +25,13 @@ export default {
     AnnotationPage,
   },
   methods: {
-    ...mapMutations(["setInputText", "addClass", "setDone"]),
+    ...mapMutations(["setInputText", "setXMLText", "addClass", "setDone"]),
   },
   created() {
     // ottengo il tagging ID dai metadati
     const tagging_id = document
       .querySelector("meta[name='id-tagging']")
       .getAttribute("content");
-
-    // also discover wether I must parse the xml metadati
-    const htbp = document
-      .querySelector("meta[name='must-parse']")
-      .getAttribute("content");
-    
-    console.log(htbp)
 
     // axios GET
     axios
@@ -47,6 +40,8 @@ export default {
         // la risposta contiene:
         // 1) le parole della sentenza
         this.setInputText(res.data["initial_text"]);
+        // 1.1) le parole xml
+        this.setXMLText(res.data["xml_text"])
         // 2) il titolo della sentenza
         this.title = res.data["name"];
         // 3) il vecchio token manager
