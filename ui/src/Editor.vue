@@ -33,6 +33,13 @@ export default {
       .querySelector("meta[name='id-tagging']")
       .getAttribute("content");
 
+    // also discover wether I must parse the xml metadati
+    const htbp = document
+      .querySelector("meta[name='must-parse']")
+      .getAttribute("content");
+    
+    console.log(htbp)
+
     // axios GET
     axios
       .get("/api/" + tagging_id)

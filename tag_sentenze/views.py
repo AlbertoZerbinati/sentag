@@ -12,6 +12,7 @@ from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, 
 from users.models import Tagging, Profile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django import forms
 
 
 @login_required
@@ -77,7 +78,7 @@ def new_sentenza(request):
 
 
 @login_required
-def tag_sentenza(request, id):
+def tag_sentenza(request, id, htbp=-1):
     try:
         # sentenza = Judgment.objects.get(pk=id)
         sentenza = Tagging.objects.get(id=id).judgment
@@ -93,7 +94,8 @@ def tag_sentenza(request, id):
         print("Admin/Editor access")
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
+            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
+            'must_parse': htbp > -1
         }
         print("---->", context['taggings'].id)
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
@@ -102,7 +104,8 @@ def tag_sentenza(request, id):
         print('Taggatore access with permission')
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
+            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
+            'must_parse': htbp > -1
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
@@ -251,7 +254,7 @@ def add_multiple_schemas(request):
 # automatic assignment of a new uploaded judgment to all editors and admins
 
 
-def auto_assignment(judgment_id):
+def auto_assignment(judgment_id, current_user_id=-1, xml_string=""):
     admins = list(User.objects.filter(groups__name='Admins'))
     editors = list(User.objects.filter(groups__name='Editors'))
     both_users = admins + editors
@@ -260,13 +263,23 @@ def auto_assignment(judgment_id):
     # list with all id of editors and admins users
     id_list = [user.id for user in both_users]
 
+    ret = -1
     # create the new tagging
     for user_id in id_list:
-        new_tagging = Tagging.objects.create(
-            profile=Profile.objects.get(pk=user_id),
-            judgment=Judgment.objects.get(id=judgment_id),
-        )
-        new_tagging.save()
+        if user_id == current_user_id:
+            new_tagging = Tagging.objects.create(
+                profile=Profile.objects.get(pk=user_id),
+                judgment=Judgment.objects.get(id=judgment_id),
+                xml_text=xml_string,
+            )
+            ret = new_tagging.id
+        else:
+            new_tagging = Tagging.objects.create(
+                profile=Profile.objects.get(pk=user_id),
+                judgment=Judgment.objects.get(id=judgment_id),
+            )
+
+    return ret
 
 
 @login_required
@@ -320,37 +333,41 @@ def parse_xml(request):
             form = ParseXMLForm(request.POST, request.FILES)
             # Check if the form input is valid:
             if form.is_valid():
+                new_schema = False
+
                 # we have an xml file and either an xsd file or a Schema
                 # build xml string from file
-                xml_string = ""
+                xml_string = b""
                 f = request.FILES["xml_file"]
                 for chunk in f.chunks():
-                    xml_string += chunk.decode("utf-8")
+                    xml_string += chunk
 
                 # build xsd string
                 xsd_text = ""
+
                 # case 1: xml file + xsd file
                 if "xsd_file" in request.FILES.keys():
                     # print("xsd_file")
                     f = request.FILES["xsd_file"]
                     for chunk in f.chunks():
                         xsd_text += chunk.decode("utf-8")
+
+                    new_schema = True
                 # case 2: xml file + Schema
                 else:
                     # print("schema")
                     id_xsd_schema = form.data['schema']
-                    xsd_text = Schema.objects.get(id=id_xsd_schema).tags
+                    schema = Schema.objects.get(id=id_xsd_schema)
+                    xsd_text = schema.tags.encode("ascii")
 
                 # validate xml-xsd
-                schema_root = etree.XML(xsd_text.encode('ascii'))
+                schema_root = etree.XML(xsd_text)
                 xmlschema = etree.XMLSchema(schema_root)
                 parser = etree.XMLParser(schema=xmlschema)
                 try:
                     etree.fromstring(xml_string, parser)
                 except etree.XMLSyntaxError as error:
                     # if not valid raise error message
-                    print("error:")
-                    from django import forms
                     form.add_error(None, forms.ValidationError(
                         "XML text didn't pass validation with respect to the XSD"))
                     form.add_error(None, forms.ValidationError(
@@ -359,23 +376,36 @@ def parse_xml(request):
                         'form': form,
                     }
                     return render(request, 'tag_sentenze/parse_xml.html', context=context)
-            
-            # now we have xml and xsd texts and they are validated!
-            # we need to save them somehow in the database
 
-            # save the form into the DB
-            # form.save()
-            # # assign a tagging object to all editors and admins
-            # auto_assignment(form.instance.id)
+                # now we have xml and xsd texts and they are validated!
+                # we need to save them somehow in the database
 
-            # redirect home
-            return HttpResponseRedirect(reverse('tag_sentenze:index'))
+                # if there is a new schema to upload
+                if new_schema:
+                    # we create it
+                    schema = Schema(schema_file=request.FILES["xsd_file"])
+                    schema.save()
 
+                # also we need to save the judgment
+                tree = etree.fromstring(xml_string)
+                notags = etree.tostring(
+                    tree, encoding='utf8', method='text').decode("utf-8")
+                notags = notags.strip().replace("\n", "\n <br/> ")
+                judgment = Judgment.objects.create(
+                    judgment_file=request.FILES["xml_file"], initial_text=notags, xsd=schema)
+                # assign a tagging object to all editors and admins
+                tagging_id = auto_assignment(
+                    judgment.id, request.user.id, xml_string.decode("utf-8"))
+
+                # and then load the tagging interface
+                return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
+
+        # either schema not valid or GET request -> re-display form
         context = {
             'form': form,
         }
         return render(request, 'tag_sentenze/parse_xml.html', context=context)
-    else:
+    else:  # no permission
         return redirect('/sentenze/')
 
 
