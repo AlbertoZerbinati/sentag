@@ -133,8 +133,6 @@ export default {
       .querySelector("meta[name='must-parse']")
       .getAttribute("content");
 
-    console.log(this.htbp);
-
     if (this.oldtm.length) {
       this.tm = new TokenManager([], JSON.parse(JSON.parse(this.oldtm))); // note: double json parsing is needed
     } else {
@@ -153,36 +151,64 @@ export default {
     ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
     tokenizeCurrentSentence() {
       // function used for parsing xml input
-      let parseNode = (xmlNode, last) => {
+      let parseNode = (xmlNode, last_index_token) => {
         // base case is just text, no tags
         if (xmlNode.nodeName == "#text") {
           // console.log("just text");
           return;
         }
 
-        console.log("\n\nlast", last);
+        // console.log("\n\nlast", last_index_token);
 
         // otherwise the is a node
-        console.log("node:");
-        console.log(xmlNode);
+        // console.log("node:");
+        // console.log(xmlNode);
 
-        // find the indexes of start and end of the node's text and add the token-block:
-        this.tm.addNewBlock(
-          last,
-          last + xmlNode.textContent.length - 1,
-          this.currentClass
-        );
+        // apart for the initial tag (<body>) we need to add the block into the TM
+        if (xmlNode.nodeName != "body") {
+          // var currentClass = this.classes.filter(cl => cl.name === xmlNode.nodeName && cl.id >= last_id_class)[0]
+          let currentClasses = this.classes.filter(
+            (cl) => cl.name === xmlNode.nodeName
+          );
 
-        // let attrs = {};
-        // if (xmlNode.attributes)
-        //   for (let attribute of xmlNode.attributes) console.log(attribute);
-        // console.log(attrs);
+          // we might have more than one class with that name, the correct one can be obtained by looking at the attributes
+          let attrs = []; // array of {attr_name : "attr_value"} objects
+          if (xmlNode.attributes) {
+            for (let attribute of xmlNode.attributes) {
+              let attr = {};
+              let attribute_name = attribute.name.toString();
+              attr[attribute_name] = xmlNode.getAttribute(attribute.name);
+              attrs.push(attr);
+            }
+          }
+          // if (attrs.length)
+          //   console.log(attrs);
+
+          // now with the attributes we try to find the correct class
+          // otherwise there is no right one, they are equivalent and so we will choose the first one [0]
+          currentClasses = currentClasses.filter((cl) =>
+            attrs.every((at) =>
+              cl.attributes
+                .map((attr) => attr.name)
+                .includes(Object.keys(at)[0])
+            )
+          );
+          // console.log(currentClasses[0])
+
+          // set the indexes of start and end of the node's text and add the token-block
+          this.tm.addNewBlock(
+            last_index_token,
+            last_index_token + xmlNode.textContent.length - 1,
+            currentClasses[0],
+            attrs
+          );
+        }
 
         // recursion
         let length = 0;
         for (let node of xmlNode.childNodes) {
           // console.log(node);
-          parseNode(node, last + length);
+          parseNode(node, last_index_token + length);
           length += node.textContent.length;
         }
       };
@@ -217,14 +243,21 @@ export default {
         this.tm = new TokenManager(tokens); // istanzia token manager coi tokens
         console.log("now I have to build the appropriate TM");
         let xml = this.XMLText;
-        console.log(xml);
+        // account for the " <br/> " non displayed chars
+        xml = xml.replaceAll("\n", "\naaaaa");
+        // console.log(xml);
+
+        // console.log(this.classes);
 
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(xml, "text/xml");
-        console.log(xmlDoc);
+        // console.log(xmlDoc);
 
-        last_index = 0;
-        for (let node of xmlDoc.childNodes) parseNode(node, last_index);
+        // add the blocks
+        for (let node of xmlDoc.childNodes) parseNode(node, 0);
+
+        // and save
+        // this.done = true;
       }
     },
     selectTokens() {
