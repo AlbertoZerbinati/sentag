@@ -149,29 +149,26 @@ export default {
   },
   methods: {
     ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
+
     tokenizeCurrentSentence() {
       // function used for parsing xml input
       let parseNode = (xmlNode, last_index_token) => {
         // base case is just text, no tags
         if (xmlNode.nodeName == "#text") {
-          // console.log("just text");
           return;
         }
 
-        // console.log("\n\nlast", last_index_token);
-
         // otherwise the is a node
-        // console.log("node:");
-        // console.log(xmlNode);
-
-        // apart for the initial tag (<body>) we need to add the block into the TM
-        if (xmlNode.nodeName != "body") {
-          // var currentClass = this.classes.filter(cl => cl.name === xmlNode.nodeName && cl.id >= last_id_class)[0]
+        // apart for the initial tag (<body>) and the <br/> 's we need to add the block into the TM
+        if (xmlNode.nodeName != "body" && xmlNode.nodeName != "br") {
+          // retrieve all classes with current name from the store
           let currentClasses = this.classes.filter(
             (cl) => cl.name === xmlNode.nodeName
           );
 
           // we might have more than one class with that name, the correct one can be obtained by looking at the attributes
+
+          // build the attributes array:
           let attrs = []; // array of {attr_name : "attr_value"} objects
           if (xmlNode.attributes) {
             for (let attribute of xmlNode.attributes) {
@@ -181,11 +178,8 @@ export default {
               attrs.push(attr);
             }
           }
-          // if (attrs.length)
-          //   console.log(attrs);
-
           // now with the attributes we try to find the correct class
-          // otherwise there is no right one, they are equivalent and so we will choose the first one [0]
+          // otherwise there is no right one, they are equivalent... and so we will choose the first one [0]
           currentClasses = currentClasses.filter((cl) =>
             attrs.every((at) =>
               cl.attributes
@@ -193,35 +187,60 @@ export default {
                 .includes(Object.keys(at)[0])
             )
           );
-          // console.log(currentClasses[0])
 
-          // set the indexes of start and end of the node's text and add the token-block
+          // logging some infos for indices
+          // console.log(xmlNode.textContent.replace(/\s+/g, " ").trimEnd());
+          // console.log(xmlNode.textContent.replace(/\s+/g, " ").trimEnd().length);
+          // console.log(xmlNode.textContent.replace(/\s+/g, " ").trimEnd().split(" ").at(-1).length);
+          // console.log(xmlNode.textContent.trimEnd().split(" ").at(-1));
+          // console.log(xmlNode.textContent.trimEnd().split(" ").at(-1));
+
+          // console.log(
+          //   "adding from ",
+          //   last_index_token,
+          //   " to ",
+          //   last_index_token +
+          //     xmlNode.textContent.replace(/\s+/g, " ").trimEnd().length -
+          //     xmlNode.textContent.trimEnd().split(" ").at(-1).length
+          // );
+
+          // set the indices of start and end and the current class and add the token-block into the token manager
           this.tm.addNewBlock(
             last_index_token,
-            last_index_token + xmlNode.textContent.length - 1,
+            last_index_token +
+              xmlNode.textContent.replace(/\s+/g, " ").trimEnd().length -
+              xmlNode.textContent
+                .replace(/\s+/g, " ")
+                .trimEnd()
+                .split(" ")
+                .at(-1).length,
             currentClasses[0],
             attrs
           );
         }
 
-        // recursion
-        let length = 0;
+        // recursion over cihldren
+        let len = 0;
         for (let node of xmlNode.childNodes) {
-          // console.log(node);
-          parseNode(node, last_index_token + length);
-          length += node.textContent.length;
+          parseNode(node, last_index_token + len);
+          len += node.textContent.replace(/\s+/g, " ").trimStart().length;
+          if (node.nodeName == "br") {
+            len += 6;
+          }
         }
       };
 
-      // tokenize the input text
-      let words = this.inputText.split(" ");
+      // tokenize the input text (always trim the multiple spaces)
+      let text = this.inputText.replace(/\s+/g, " ");
+
+      let words = text.split(" ");
       let tokens = [];
       let last_index = 0;
 
       for (let i = 0; i < words.length; i += 1) {
         let token = [];
 
-        let start = this.inputText.indexOf(words[i], last_index);
+        let start = text.indexOf(words[i], last_index);
         let end = start + words[i].length;
 
         token.push(start);
@@ -233,31 +252,27 @@ export default {
         last_index = end;
       }
 
-      // if this judgment does not have to be parsed
       // istanzia token manager coi tokens
-      if (this.htbp == "False") {
-        this.tm = new TokenManager(tokens);
-      }
-      // otherwise parse the xml
-      else {
-        this.tm = new TokenManager(tokens); // istanzia token manager coi tokens
-        console.log("now I have to build the appropriate TM");
-        let xml = this.XMLText;
-        // account for the " <br/> " non displayed chars
-        xml = xml.replaceAll("\n", "\naaaaa");
-        // console.log(xml);
+      this.tm = new TokenManager(tokens);
 
-        // console.log(this.classes);
+      // if this judgment has to be parsed -> parse it recursively
+      if (this.htbp == "True") {
+        this.tm = new TokenManager(tokens); // istanzia token manager coi tokens
+        // console.log("now I have to build the appropriate TM");
+        let xml = this.XMLText;
+        // account for the "\n <br/> " non displayed chars, also deal with multiple spaces
+        xml = xml.replaceAll("\n", " <br/> ");
+        xml = xml.replace(/\s+/g, " ");
+        // console.log(xml);
 
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(xml, "text/xml");
-        // console.log(xmlDoc);
 
-        // add the blocks
+        // add the blocks recursively
         for (let node of xmlDoc.childNodes) parseNode(node, 0);
 
-        // and save
-        // this.done = true;
+        // and save as completed into database
+        this.done = true;
       }
     },
     selectTokens() {
@@ -271,14 +286,14 @@ export default {
         return;
       }
 
-      // else get indexes
+      // else get indices
       let startIdx, endIdx;
       startIdx = parseInt(
         selection.anchorNode.parentElement.id.replace("t", "")
       );
       endIdx = parseInt(selection.focusNode.parentElement.id.replace("t", ""));
 
-      // if valid indexes then add the new block, of type currentClass
+      // if valid indices then add the new block, of type currentClass
       if (!isNaN(startIdx) && !isNaN(endIdx)) {
         let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
         if (cb) {
@@ -288,6 +303,8 @@ export default {
         this.done = false;
       }
       selection.empty();
+
+      // console.log(startIdx, endIdx);
     },
     onRemoveBlock(data) {
       this.tm.removeBlock(data.start, data.end);

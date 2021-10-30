@@ -45,7 +45,7 @@ class Judgment(models.Model):
         # initialize initial_text on every save(), mantaining coherence
         if not self.initial_text:  # for managing deletion...
             self.initial_text = self.judgment_file.read().decode(
-                'utf-8').replace("\n", "\n <br/> ")
+                'utf-8').replace("\n", " <br/> ")
         if not self.name:  # only on first save eventually automatically assign a name
             self.name = self.judgment_file.name
 

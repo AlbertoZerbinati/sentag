@@ -390,7 +390,8 @@ def parse_xml(request):
                 tree = etree.fromstring(xml_string)
                 notags = etree.tostring(
                     tree, encoding='utf8', method='text').decode("utf-8")
-                notags = notags.strip().replace("\n", "\n <br/> ")
+                notags = notags.strip().replace("\n", " <br/> ")
+                # print(notags)
                 judgment = Judgment.objects.create(
                     judgment_file=request.FILES["xml_file"], initial_text=notags, xsd=schema)
                 # assign a tagging object to all editors and admins
@@ -506,8 +507,10 @@ def completed_tagging(request, id):
 
         # TODO: incipit XML
         # print(words)
-        xml_string = ' '.join(words)
-        xml_string = """<body>\n""" + xml_string + """\n</body>"""
+        xml_string = ''.join([w + (' ' if w.startswith("</") or not w.startswith("<") else '') for w in words])
+        # xml_string = xml_string.replace("> ", ">")
+        # xml_string = xml_string.replace(" <", "<")
+        xml_string = """<body>""" + xml_string + """</body>"""
         # print(xml_string)
 
         # validate xml
