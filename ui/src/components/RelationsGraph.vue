@@ -74,6 +74,7 @@ import notify from "devextreme/ui/notify";
 import axios from "axios";
 import TokenManager from "./token-manager";
 import { toast } from "bulma-toast";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   components: {
@@ -97,6 +98,7 @@ export default {
     };
   },
   computed: {
+    ...mapState(["unsavedWork"]),
     popupTitleText: {
       get() {
         if (!this.selectedNode.dataItem) return "";
@@ -141,6 +143,11 @@ export default {
       .querySelector("meta[name='title-tagging']")
       .getAttribute("content");
 
+    // exit confirmation if there is unsaved work
+    this.setUnsavedWork(false);
+    window.onbeforeunload = () => (this.unsavedWork ? true : null);
+
+    // build the initial graph from token manager
     axios
       .get("/api/" + this.tagging_id)
       .then((res) => {
@@ -252,11 +259,12 @@ export default {
       .catch((err) => alert(err));
   },
   methods: {
+    ...mapMutations(["setUnsavedWork"]),
     print() {
       console.log(this.popupContentText);
     },
     save() {
-      console.log("saving...");
+      // console.log("saving...");
 
       // remove every old relations-graph related attribute
       for (let node of this.nodesDataSource._array) {
@@ -347,7 +355,8 @@ export default {
             pauseOnHover: "true",
             duration: 2000,
             position: "bottom-right",
-          })
+          }),
+          this.setUnsavedWork(false) // no more need to ask for confirmation before exiting
         )
         .catch((e) => {
           console.log(e);
@@ -395,6 +404,8 @@ export default {
         e.allowed = false;
       } else if (e.operation === "changeConnectorText") {
         e.allowed = false;
+      } else {
+        this.setUnsavedWork(true); // some modifications have occurred -> need to save before exiting
       }
     },
     // onSelectionChanged({ items }) {
