@@ -15,10 +15,9 @@
       <DxNodes
         :data-source="nodesDataSource"
         :type-expr="itemTypeExpr"
-        :text-expr="'attrs[ID][value][0]'"
+        :text-expr="itemTextExpr"
         :text-style-expr="itemTextStyleExpr"
         :style-expr="itemStyleExpr"
-        :custom-data-expr="'attrs[ID][value][0]'"
         :key-expr="'id'"
       >
         <DxAutoLayout :type="'tree'" :orientation="'horizontal'" />
@@ -36,8 +35,8 @@
       :close-on-outside-click="true"
       :show-title="true"
       :show-close-button="true"
-      :width="200"
-      :height="180"
+      :width="250"
+      :height="200"
       container="#diagram"
       :title="popupTitleText"
       ><DxPosition my="left top" :of="target" />
@@ -100,7 +99,12 @@ export default {
     popupTitleText: {
       get() {
         if (!this.selectedNode.dataItem) return "";
-        else return this.selectedNode.dataItem.attrs["ID"].value[0];
+        else
+          return (
+            this.selectedNode.dataItem.label.toUpperCase() +
+            " - " +
+            this.selectedNode.dataItem.attrs["ID"].value[0]
+          );
       },
     },
     popupContentText: {
@@ -175,9 +179,9 @@ export default {
 
         // populate the edges datsource with correct type of edges, based on nodes' attributes
         for (var node of nodes) {
-          if (node.attrs["A"]["value"][0] !== "") {
+          if (node.attrs["PRO"]["value"][0] !== "") {
             // if this node has supporters
-            const supporters = node.attrs["A"]["value"][0].split(",");
+            const supporters = node.attrs["PRO"]["value"][0].split(",");
             for (const supporter of supporters) {
               const fromNode = nodes.filter(
                 (n) => n.attrs["ID"]["value"][0] === supporter
@@ -224,7 +228,7 @@ export default {
 
       // remove every old graph-related attribute
       for (var node of this.nodesDataSource._array) {
-        node.attrs["A"]["value"][0] = "";
+        node.attrs["PRO"]["value"][0] = "";
         node.attrs["CON"]["value"][0] = "";
         // TODO: 'S' attribute??
       }
@@ -247,15 +251,15 @@ export default {
         //    TODO: 'S' attribute??
         if (connectorType === "support") {
           // support edge
-          if (toNode.attrs["A"]["value"][0] !== "") {
+          if (toNode.attrs["PRO"]["value"][0] !== "") {
             // if there already is a supporter, append the new one
-            toNode.attrs["A"]["value"][0] =
-              toNode.attrs["A"]["value"][0] +
+            toNode.attrs["PRO"]["value"][0] =
+              toNode.attrs["PRO"]["value"][0] +
               "," +
               fromNode.attrs["ID"]["value"][0];
           } else {
             // else just set the supporter
-            toNode.attrs["A"]["value"][0] = fromNode.attrs["ID"]["value"][0];
+            toNode.attrs["PRO"]["value"][0] = fromNode.attrs["ID"]["value"][0];
           }
         } else if (connectorType === "attack") {
           // attack edge
@@ -324,6 +328,9 @@ export default {
     },
     itemTypeExpr() {
       return "ellipse";
+    },
+    itemTextExpr(item) {
+      return item.label.toUpperCase() + " - " + item.attrs["ID"]["value"][0];
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };

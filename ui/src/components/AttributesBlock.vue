@@ -29,7 +29,7 @@
             ><strong class="tag">{{ at }}</strong></label
           >
         </div>
-        <div class="field-body" v-if="at !== 'A' && at !== 'CON'">
+        <div class="field-body" v-if="at !== 'PRO' && at !== 'CON'">
           <div class="field">
             <p class="control">
               <input
@@ -76,7 +76,7 @@
             </div>
           </div>
         </div>
-        <div class="field-body" v-if="at === 'A' || at === 'CON'">
+        <div class="field-body" v-if="at === 'PRO' || at === 'CON'">
           <div class="field">
             <p class="control">
               <input

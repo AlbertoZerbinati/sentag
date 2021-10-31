@@ -16,10 +16,9 @@
       <DxNodes
         :data-source="nodesDataSource"
         :type-expr="itemTypeExpr"
-        :text-expr="'attrs[ID][value][0]'"
+        :text-expr="itemTextExpr"
         :text-style-expr="itemTextStyleExpr"
         :style-expr="itemStyleExpr"
-        :custom-data-expr="'attrs[ID][value][0]'"
         :key-expr="'id'"
       >
         <DxAutoLayout :orientation="'vertical'" />
@@ -101,7 +100,12 @@ export default {
     popupTitleText: {
       get() {
         if (!this.selectedNode.dataItem) return "";
-        else return this.selectedNode.dataItem.attrs["ID"].value[0];
+        else
+          return (
+            this.selectedNode.dataItem.label.toUpperCase() +
+            " - " +
+            this.selectedNode.dataItem.attrs["ID"].value[0]
+          );
       },
     },
     popupContentText: {
@@ -351,6 +355,9 @@ export default {
     },
     itemTypeExpr() {
       return "rectangle";
+    },
+    itemTextExpr(item) {
+      return item.label.toUpperCase() + " - " + item.attrs["ID"]["value"][0];
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };
