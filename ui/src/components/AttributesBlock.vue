@@ -80,7 +80,7 @@
           <div class="field">
             <p class="control">
               <input
-                v-model="currentBlock.attrs[at]['value'][0]"
+                v-bind:value="currentBlock.attrs[at]['value'].join(' | ')"
                 class="input is-normal"
                 disabled
                 title="You can only edit this through the Graph interface"

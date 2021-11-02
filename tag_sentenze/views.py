@@ -511,26 +511,33 @@ def completed_tagging(request, id):
         # add spaces where needed in the words list
         spaced_words = []
         for v, w in zip(words[:], words[1:]):
+            # \n
             if v == "\n" or w == "\n":
                 spaced_words.append(v)
-            elif not "<" in v and not "<" in w:  # word word
+            # word word
+            elif not "<" in v and not "<" in w:
                 spaced_words.append(v+" ")
-            elif v.startswith("<") and not v.startswith("</") and not "<" in w:  # <> word
+            # <> word
+            elif v.startswith("<") and not v.startswith("</") and not "<" in w:
                 spaced_words.append(v)
-            elif v.startswith("</") and not "<" in w:  # </> word
+            # </> word
+            elif v.startswith("</") and not "<" in w:
                 spaced_words.append(v+" ")
-            elif w.startswith("<") and not w.startswith("</") and not "<" in v:  # word <>
+            # word <>
+            elif w.startswith("<") and not w.startswith("</") and not "<" in v:
                 spaced_words.append(v+" ")
-            elif w.startswith("</") and not "<" in v:  # word </>
+            # word </>
+            elif w.startswith("</") and not "<" in v:
                 spaced_words.append(v)
-            elif v.startswith("<") and not v.startswith("</") and w.startswith("<") and not w.startswith("</"):  # <> <>
+            # <> <>
+            elif v.startswith("<") and not v.startswith("</") and w.startswith("<") and not w.startswith("</"):
                 spaced_words.append(v)
-            elif v.startswith("</") and w.startswith("</"):  # </> </>
+            # </> </>
+            elif v.startswith("</") and w.startswith("</"):
                 spaced_words.append(v)
-            elif v.startswith("</") and w.startswith("<") and not w.startswith("</"):  # </> </>
+            # </> </>
+            elif v.startswith("</") and w.startswith("<") and not w.startswith("</"):
                 spaced_words.append(v+" ")
-
-        # TODO: address \n
 
         xml_string = "".join(spaced_words)
         xml_string = """<body>\n""" + xml_string + """\n</body>"""

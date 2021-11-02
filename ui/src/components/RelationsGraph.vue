@@ -208,7 +208,7 @@ export default {
                 // not multi attr
                 if (node.attrs[attrs_label]["type"] !== "multi") {
                   for (let from_id of node.attrs[attrs_label]["value"][0].split(
-                    ","
+                    " | "
                   )) {
                     let fromNode = nodes.filter(
                       (n) => n.attrs["ID"]["value"][0] === from_id
@@ -280,16 +280,17 @@ export default {
         // modify the toNode attribute labelled as fromNode
         //    NOTE: this also pushes the changes into the tokenManger already
         if (toNode.attrs[fromNode.label.toUpperCase()]["value"][0] !== "") {
-          // if there already is relation from that fromNode class, check if it is not a 'mutual' attr
+          // if there already is relation from that fromNode class, check if it is a 'mutual' attr
           if (toNode.attrs[fromNode.label.toUpperCase()]["type"] === "multi")
             toNode.attrs[fromNode.label.toUpperCase()]["value"] = toNode.attrs[
               fromNode.label.toUpperCase()
             ]["value"].concat([fromNode.attrs["ID"]["value"][0]]);
           else if (
             toNode.attrs[fromNode.label.toUpperCase()]["type"] === "string"
-          )
-            toNode.attrs[fromNode.label.toUpperCase()]["value"][0] += ",";
-          fromNode.attrs["ID"]["value"][0];
+          ) {
+            toNode.attrs[fromNode.label.toUpperCase()]["value"][0] +=
+              " | " + fromNode.attrs["ID"]["value"][0];
+          }
         } else {
           // else just set the relation
           toNode.attrs[fromNode.label.toUpperCase()]["value"][0] =
