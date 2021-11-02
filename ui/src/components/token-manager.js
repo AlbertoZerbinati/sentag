@@ -79,6 +79,9 @@ class TokenManager {
               'value': [attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name]],
               'options': key.options
             };
+            if(key.type === "multi") {
+              newTokenBlock.attrs[key.name]['value'] = attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name].split(" ")
+            }
           } else if (key.name === 'ID') {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,

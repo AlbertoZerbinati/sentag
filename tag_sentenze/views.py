@@ -538,6 +538,7 @@ def completed_tagging(request, id):
             # </> </>
             elif v.startswith("</") and w.startswith("<") and not w.startswith("</"):
                 spaced_words.append(v+" ")
+        spaced_words.append(words[-1])
 
         xml_string = "".join(spaced_words)
         xml_string = """<body>\n""" + xml_string + """\n</body>"""

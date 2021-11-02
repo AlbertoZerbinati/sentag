@@ -207,7 +207,7 @@ export default {
           //   " to ",
           //   last_index_token +
           //     xmlNode.textContent.replace(/\s+/g, " ").trimEnd().length -
-          //     xmlNode.textContent.trimEnd().split(" ").at(-1).length
+          //     xmlNode.textContent.replace(/\s+/g, " ").trimEnd().split(" ").at(-1).length
           // );
 
           if (currentClasses[0]) {
@@ -233,18 +233,19 @@ export default {
           parseNode(node, last_index_token + len);
           if (node.nodeName == "br") {
             if (last_index_token > 0 || len > 0) len += 6;
+            // console.log("br",len)
             // } else if (node.nodeName == "body") {
             //   console.log("a");
-          } else {
-            console.log(node.textContent);
-            len += node.textContent.replace(/\s+/g, " ").trimStart().length;
+          } else if (node.textContent.trim().length){
+            // console.log(node.textContent);
+            len += node.textContent.replace(/\s+/g, " ").length;
           }
         }
       };
 
       // tokenize the input text (always trim the multiple spaces)
       let text = this.inputText.trim().replace(/\s+/g, " ");
-      console.log(text);
+      // console.log(text);
 
       let words = text.split(" ");
       let tokens = [];
@@ -279,7 +280,7 @@ export default {
 
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(xml, "text/xml");
-        console.log(xmlDoc.root);
+        // console.log(xmlDoc.root);
 
         // add the blocks recursively
         for (let node of xmlDoc.childNodes) parseNode(node, 0);
@@ -317,7 +318,7 @@ export default {
       }
       selection.empty();
 
-      // console.log(startIdx, endIdx);
+      console.log(startIdx, endIdx);
     },
     onRemoveBlock(data) {
       this.tm.removeBlock(data.start, data.end);
