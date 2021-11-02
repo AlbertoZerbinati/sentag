@@ -177,7 +177,7 @@ export default {
         for (var node of nodes) {
           if (node.attrs["A"]["value"][0] !== "") {
             // if this node has supporters
-            const supporters = node.attrs["A"]["value"][0].split(",");
+            const supporters = node.attrs["A"]["value"];
             for (const supporter of supporters) {
               const fromNode = nodes.filter(
                 (n) => n.attrs["ID"]["value"][0] === supporter
@@ -195,7 +195,7 @@ export default {
           }
           if (node.attrs["CON"]["value"][0] !== "") {
             // if this node attacks others
-            const attacked_nodes = node.attrs["CON"]["value"][0].split(",");
+            const attacked_nodes = node.attrs["CON"]["value"];
             for (const attacked of attacked_nodes) {
               const toNode = nodes.filter(
                 (n) => n.attrs["ID"]["value"][0] === attacked
@@ -224,8 +224,8 @@ export default {
 
       // remove every old graph-related attribute
       for (var node of this.nodesDataSource._array) {
-        node.attrs["A"]["value"][0] = "";
-        node.attrs["CON"]["value"][0] = "";
+        node.attrs["A"]["value"] = [""];
+        node.attrs["CON"]["value"] = [""];
         // TODO: 'S' attribute??
       }
 
@@ -249,10 +249,7 @@ export default {
           // support edge
           if (toNode.attrs["A"]["value"][0] !== "") {
             // if there already is a supporter, append the new one
-            toNode.attrs["A"]["value"][0] =
-              toNode.attrs["A"]["value"][0] +
-              "," +
-              fromNode.attrs["ID"]["value"][0];
+            toNode.attrs["A"]["value"].push(fromNode.attrs["ID"]["value"][0]);
           } else {
             // else just set the supporter
             toNode.attrs["A"]["value"][0] = fromNode.attrs["ID"]["value"][0];
@@ -261,10 +258,7 @@ export default {
           // attack edge
           if (fromNode.attrs["CON"]["value"][0] !== "") {
             // if there already is an attacked, append the new one
-            fromNode.attrs["CON"]["value"][0] =
-              fromNode.attrs["CON"]["value"][0] +
-              "," +
-              toNode.attrs["ID"]["value"][0];
+            fromNode.attrs["CON"]["value"].push(toNode.attrs["ID"]["value"][0]);
           } else {
             // else just set the attacked
             fromNode.attrs["CON"]["value"][0] = toNode.attrs["ID"]["value"][0];

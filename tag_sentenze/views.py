@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from lxml import etree
 from .serializers import TaggingSerializer
 from rest_framework.response import Response
@@ -7,10 +8,11 @@ import json
 from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from .models import Judgment, Schema
-from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm
+from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, ParseXMLForm
 from users.models import Tagging, Profile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django import forms
 
 
 @login_required
@@ -51,6 +53,8 @@ def new_sentenza(request):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         print("Admin/Editor access")
+        form = AddJudgmentModelForm()
+
         if request.method == 'POST':
             # Create a form instance and populate it with data from the request
             form = AddJudgmentModelForm(request.POST, request.FILES)
@@ -64,7 +68,6 @@ def new_sentenza(request):
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index'))
 
-        form = AddJudgmentModelForm()
         context = {
             'form': form,
         }
@@ -75,7 +78,7 @@ def new_sentenza(request):
 
 
 @login_required
-def tag_sentenza(request, id):
+def tag_sentenza(request, id, htbp=-1):
     try:
         # sentenza = Judgment.objects.get(pk=id)
         sentenza = Tagging.objects.get(id=id).judgment
@@ -91,7 +94,8 @@ def tag_sentenza(request, id):
         print("Admin/Editor access")
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
+            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
+            'must_parse': htbp > -1
         }
         print("---->", context['taggings'].id)
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
@@ -100,7 +104,8 @@ def tag_sentenza(request, id):
         print('Taggatore access with permission')
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
+            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
+            'must_parse': htbp > -1
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
@@ -144,7 +149,7 @@ def graph(request, id):
             context['type'] = 'arg'
         else:
             context['type'] = 'rel'
-            
+
         return render(request, 'tag_sentenze/graph.html', context=context)
     else:
         print('Taggatori access with no permission')
@@ -156,6 +161,7 @@ def new_schema(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = AddSchemaForm()
         print("Admin/Editor access")
         if request.method == 'POST':
             # Create a form instance for the schema and add data
@@ -167,7 +173,6 @@ def new_schema(request):
                 # redirect home
                 return HttpResponseRedirect(reverse('tag_sentenze:index'))
 
-        form = AddSchemaForm()
         context = {
             'form': form,
         }
@@ -184,6 +189,7 @@ def add_multiple_judgments(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = AddSchemaJudgmentsForm()
         print("Admin/Editor access")
         if request.method == 'POST':
             # Get all the file uploaded
@@ -210,7 +216,6 @@ def add_multiple_judgments(request):
                 return HttpResponseRedirect(reverse('tag_sentenze:index'))
 
         # add the CoicheField with the schemas
-        form = AddSchemaJudgmentsForm()
         context = {
             'form': form,
         }
@@ -249,7 +254,7 @@ def add_multiple_schemas(request):
 # automatic assignment of a new uploaded judgment to all editors and admins
 
 
-def auto_assignment(judgment_id):
+def auto_assignment(judgment_id, current_user_id=-1, xml_string=""):
     admins = list(User.objects.filter(groups__name='Admins'))
     editors = list(User.objects.filter(groups__name='Editors'))
     both_users = admins + editors
@@ -258,13 +263,23 @@ def auto_assignment(judgment_id):
     # list with all id of editors and admins users
     id_list = [user.id for user in both_users]
 
+    ret = -1
     # create the new tagging
     for user_id in id_list:
-        new_tagging = Tagging.objects.create(
-            profile=Profile.objects.get(pk=user_id),
-            judgment=Judgment.objects.get(id=judgment_id),
-        )
-        new_tagging.save()
+        if user_id == current_user_id:
+            new_tagging = Tagging.objects.create(
+                profile=Profile.objects.get(pk=user_id),
+                judgment=Judgment.objects.get(id=judgment_id),
+                xml_text=xml_string,
+            )
+            ret = new_tagging.id
+        else:
+            new_tagging = Tagging.objects.create(
+                profile=Profile.objects.get(pk=user_id),
+                judgment=Judgment.objects.get(id=judgment_id),
+            )
+
+    return ret
 
 
 @login_required
@@ -303,6 +318,96 @@ def list_taggings(request):
     else:
         print('Taggatore access')
         return redirect('/sentenze')
+
+
+@login_required
+def parse_xml(request):
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+
+        form = ParseXMLForm()
+
+        if request.method == 'POST':
+            # Create a form instance and populate it with data from the request
+            form = ParseXMLForm(request.POST, request.FILES)
+            # Check if the form input is valid:
+            if form.is_valid():
+                new_schema = False
+
+                # we have an xml file and either an xsd file or a Schema
+                # build xml string from file
+                xml_string = b""
+                f = request.FILES["xml_file"]
+                for chunk in f.chunks():
+                    xml_string += chunk
+
+                # build xsd string
+                xsd_text = ""
+
+                # case 1: xml file + xsd file
+                if "xsd_file" in request.FILES.keys():
+                    # print("xsd_file")
+                    f = request.FILES["xsd_file"]
+                    for chunk in f.chunks():
+                        xsd_text += chunk.decode("utf-8")
+
+                    new_schema = True
+                # case 2: xml file + Schema
+                else:
+                    # print("schema")
+                    id_xsd_schema = form.data['schema']
+                    schema = Schema.objects.get(id=id_xsd_schema)
+                    xsd_text = schema.tags.encode("ascii")
+
+                # validate xml-xsd
+                schema_root = etree.XML(xsd_text)
+                xmlschema = etree.XMLSchema(schema_root)
+                parser = etree.XMLParser(schema=xmlschema)
+                try:
+                    etree.fromstring(xml_string, parser)
+                except etree.XMLSyntaxError as error:
+                    # if not valid raise error message
+                    form.add_error(None, forms.ValidationError(
+                        "XML text didn't pass validation with respect to the XSD"))
+                    form.add_error(None, forms.ValidationError(
+                        str(error)))
+                    context = {
+                        'form': form,
+                    }
+                    return render(request, 'tag_sentenze/parse_xml.html', context=context)
+
+                # now we have xml and xsd texts and they are validated!
+                # we need to save them somehow in the database
+
+                # if there is a new schema to upload
+                if new_schema:
+                    # we create it
+                    schema = Schema(schema_file=request.FILES["xsd_file"])
+                    schema.save()
+
+                # also we need to save the judgment
+                tree = etree.fromstring(xml_string)
+                notags = etree.tostring(
+                    tree, encoding='utf8', method='text').decode("utf-8")
+                notags = notags.strip().replace("\n", " <br/> ")
+                # print(notags)
+                judgment = Judgment.objects.create(
+                    judgment_file=request.FILES["xml_file"], initial_text=notags, xsd=schema)
+                # assign a tagging object to all editors and admins
+                tagging_id = auto_assignment(
+                    judgment.id, request.user.id, xml_string.decode("utf-8"))
+
+                # and then load the tagging interface
+                return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
+
+        # either schema not valid or GET request -> re-display form
+        context = {
+            'form': form,
+        }
+        return render(request, 'tag_sentenze/parse_xml.html', context=context)
+    else:  # no permission
+        return redirect('/sentenze/')
 
 
 # APIs
@@ -402,9 +507,41 @@ def completed_tagging(request, id):
 
         # TODO: incipit XML
         # print(words)
-        xml_string = ' '.join(words)
+
+        # add spaces where needed in the words list
+        spaced_words = []
+        for v, w in zip(words[:], words[1:]):
+            # \n
+            if v == "\n" or w == "\n":
+                spaced_words.append(v)
+            # word word
+            elif not "<" in v and not "<" in w:
+                spaced_words.append(v+" ")
+            # <> word
+            elif v.startswith("<") and not v.startswith("</") and not "<" in w:
+                spaced_words.append(v)
+            # </> word
+            elif v.startswith("</") and not "<" in w:
+                spaced_words.append(v+" ")
+            # word <>
+            elif w.startswith("<") and not w.startswith("</") and not "<" in v:
+                spaced_words.append(v+" ")
+            # word </>
+            elif w.startswith("</") and not "<" in v:
+                spaced_words.append(v)
+            # <> <>
+            elif v.startswith("<") and not v.startswith("</") and w.startswith("<") and not w.startswith("</"):
+                spaced_words.append(v)
+            # </> </>
+            elif v.startswith("</") and w.startswith("</"):
+                spaced_words.append(v)
+            # </> </>
+            elif v.startswith("</") and w.startswith("<") and not w.startswith("</"):
+                spaced_words.append(v+" ")
+
+        xml_string = "".join(spaced_words)
         xml_string = """<body>\n""" + xml_string + """\n</body>"""
-        # print(xml_string)
+        print(xml_string)
 
         # validate xml
         schema_string = tagging.judgment.xsd.tags

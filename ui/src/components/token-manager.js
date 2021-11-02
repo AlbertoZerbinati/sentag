@@ -28,19 +28,20 @@ class TokenManager {
    *
    * @param {Number} start 'start' value of the token forming the start of the token block
    * @param {Number} end 'start' value of the token forming the end of the token block
-   * @param {Number} _class the id of the class to highlight
+   * @param {Number} _class the class to highlight
+   * @param {Number} attrs array of attributes to set for the block that is going to be added
    * 
    * @returns {Object} the added token or null if indexes were invalid
    */
-  addNewBlock(_start, _end, _class) {
+  addNewBlock(_start, _end, _class, attrs = null) {
     let start = _end < _start ? _end : _start;
     let end = _end > _start ? _end : _start;
 
-    this.recursiveAddNewBlock(start, end, _class, this.tokens);
+    this.recursiveAddNewBlock(start, end, _class, this.tokens, attrs);
 
     return this.latestAddedToken;
   }
-  recursiveAddNewBlock(start, end, _class, _tokens) {
+  recursiveAddNewBlock(start, end, _class, _tokens, attrs) {
     let selectedTokens = null;
 
     // livello 0: ci entra solo e sempre per _tokens=this.tokens
@@ -48,7 +49,7 @@ class TokenManager {
       selectedTokens = []
       // pusha tutti i TOKEN e TOKEN-BLOCK di livello 0 selezionati in selectedTokens con chiamate ricorsive sui figli
       for (let child of _tokens) {
-        let selected = this.recursiveAddNewBlock(start, end, _class, child);
+        let selected = this.recursiveAddNewBlock(start, end, _class, child, attrs);
         if (selected !== null)
           selectedTokens.push(selected);
       }
@@ -68,22 +69,29 @@ class TokenManager {
           id: this.currentID,
           attrs: {},
           graph: _class.graph,
+          relations: _class.relations,
           backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {
-          console.log(key)
-          if (key.name === 'ID')
+          if (attrs && attrs.map(a => Object.keys(a)[0]).includes(key.name)) {
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name]],
+              'options': key.options
+            };
+          } else if (key.name === 'ID') {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
               'value': [_class.name + this.currentID.toString()],
               'options': []
             };
-          else
+          } else {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
               'value': [""],
               'options': key.options
             };
+          }
         }
         this.currentID += 1;
         // rimpiazzo ogni token selezionato col nuovo TOKEN-BLOCK (che li contiene)
@@ -96,7 +104,7 @@ class TokenManager {
       return _tokens;
     }
     // selezione TOKEN
-    else if (_tokens.type === "token" && _tokens.start >= start && _tokens.start <= end) {
+    else if (_tokens.type === "token" && _tokens.start + _tokens.text.length >= start && _tokens.start <= end) {
       return _tokens;
     }
     // scansione TOKEN dentro un TOKEN-BLOCK non interamente selezionato
@@ -104,7 +112,7 @@ class TokenManager {
       // e' come al livello 0 ma applicato a _tokens.tokens
       selectedTokens = []
       for (let child of _tokens.tokens) {
-        let selected = this.recursiveAddNewBlock(start, end, _class, child);
+        let selected = this.recursiveAddNewBlock(start, end, _class, child, attrs);
         if (selected !== null)
           selectedTokens.push(selected);
       }
@@ -120,12 +128,18 @@ class TokenManager {
           label: _class.name,
           id: this.currentID,
           graph: _class.graph,
+          relations: _class.relations,
           attrs: {},
           backgroundColor: _class.color,
         }
         for (const key of _class.attributes) {
-          console.log(key)
-          if (key.name === 'ID')
+          if (attrs && attrs.map(a => Object.keys(a)[0]).includes(key.name)) {
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name]],
+              'options': key.options
+            };
+          } else if (key.name === 'ID')
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
               'value': [_class.name + this.currentID.toString()],

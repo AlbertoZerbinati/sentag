@@ -23,6 +23,9 @@ export const mutations = {
   setInputText(state, payload) {
     state.inputText = payload;
   },
+  setXMLText(state, payload) {
+    state.XMLText = payload;
+  },
   addClass(state, payload) {
     let lastIndex = state.classes.reduce((p, c) => {
       return c.id > p ? c.id : p;
@@ -30,9 +33,10 @@ export const mutations = {
     state.classes.push({
       id: lastIndex + 1,
       name: payload[0],
-      attributes: payload[1].filter(a => a.name !== "GRAPH"),
+      attributes: payload[1].filter(a => a.name !== "ARGUMENT" && a.name !== "RELATIONS"),
       color: niceColors[lastIndex % niceColors.length],
-      graph: payload[1].some(a => a.name === "GRAPH"),
+      graph: payload[1].some(a => a.name === "ARGUMENT"),
+      relations: payload[1].some(a => a.name === "RELATIONS"),
     });
     if (state.classes.length === 1) {
       state.currentClass = state.classes[0];
@@ -60,6 +64,7 @@ export default {
     return {
       classes: [],
       inputText: "",
+      XMLText: "",
       currentClass: {},
       currentBlock: {},
       done: false,

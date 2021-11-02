@@ -17,7 +17,7 @@
     <!-- save as meta information the id of the Tagging row. It will be used by Vue to access the correct API -->
     <meta name="id-tagging" content="{{ taggings.id }}">
     <meta name="title-tagging" content="{{ taggings.judgment.name }}">
-
+    <meta name="must-parse" content="{{ must_parse }}">
 
 </head>
 
@@ -57,6 +57,9 @@
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Add Judgment</a>
                     <a class="dropdown-item" href="{% url 'tag_sentenze:multiple-judgment' %}"> <i class="bi-card-text"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Add Judgments</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="{% url 'tag_sentenze:parse-xml' %}"> <i class="bi-bar-chart-steps"
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Parse XML</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{% url 'users:home-judgment-schema' %}"> <i class="bi-bezier2"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Associate Judgments - Schemas</a>

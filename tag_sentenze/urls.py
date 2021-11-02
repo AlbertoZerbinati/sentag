@@ -11,7 +11,8 @@ urlpatterns = [
     path("new_schema", views.new_schema, name="new-schema"),
     path("add_multiple_judgment", views.add_multiple_judgments, name="multiple-judgment"),
     path("add_multiple_schema", views.add_multiple_schemas, name="multiple-schemas"),
-    path("sentenza/<int:id>/", views.tag_sentenza, name="tag-sentenza"),
+    path("sentenza/<int:id>/<int:htbp>", views.tag_sentenza, name="tag-sentenza"),
+    path("sentenza/<int:id>", views.tag_sentenza, name="tag-sentenza"),
     path("api/<int:id>", views.tagging_detail, name="api-get"),
     path("api/update/<int:id>", views.update_tagging, name="api-update"),
     path("api/completed/<int:id>", views.completed_tagging, name="api-compeleted"),
@@ -19,4 +20,6 @@ urlpatterns = [
     path("taggings/", views.list_taggings, name="list-taggings"),
     path("graph/arg/<int:id>", views.graph, name="graph-arg"),
     path("graph/rel/<int:id>", views.graph, name="graph-rel"),
+    path("parse_xml", views.parse_xml, name="parse-xml"),
+
 ]

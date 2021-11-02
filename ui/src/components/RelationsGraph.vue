@@ -22,10 +22,10 @@
         :custom-data-expr="'attrs[ID][value][0]'"
         :key-expr="'id'"
       >
-        <DxAutoLayout :type="'tree'" :orientation="'horizontal'" />
+        <DxAutoLayout :orientation="'vertical'" />
       </DxNodes>
 
-      <DxEdges :data-source="edgesDataSource" :style-expr="linkStyleExpr" />
+      <DxEdges :data-source="edgesDataSource" />
 
       <DxToolbox :visibility="'disabled'" />
       <DxContextToolbox :enabled="false" />
@@ -160,7 +160,8 @@ export default {
         }
 
         // get the graph's nodes
-        const nodes = flattened_tm.filter((token) => token.graph);
+        const nodes = flattened_tm.filter((token) => token.relations);
+        // console.log(nodes)
 
         // istantiate nodes datasource
         this.nodesDataSource = new ArrayStore({
@@ -174,41 +175,71 @@ export default {
           data: [],
         });
 
-        // populate the edges datsource with correct type of edges, based on nodes' attributes
-        for (var node of nodes) {
-          if (node.attrs["A"]["value"][0] !== "") {
-            // if this node has supporters
-            const supporters = node.attrs["A"]["value"][0].split(",");
-            for (const supporter of supporters) {
-              const fromNode = nodes.filter(
-                (n) => n.attrs["ID"]["value"][0] === supporter
-              )[0].id;
-              if (fromNode) {
-                // push a support edge
-                this.edgesDataSource.push([
-                  {
-                    type: "insert",
-                    data: { from: fromNode, to: node.id, type: "support" },
-                  },
-                ]);
-              }
-            }
-          }
-          if (node.attrs["CON"]["value"][0] !== "") {
-            // if this node attacks others
-            const attacked_nodes = node.attrs["CON"]["value"][0].split(",");
-            for (const attacked of attacked_nodes) {
-              const toNode = nodes.filter(
-                (n) => n.attrs["ID"]["value"][0] === attacked
-              )[0].id;
-              if (toNode) {
-                // push an attack edge
-                this.edgesDataSource.push([
-                  {
-                    type: "insert",
-                    data: { to: toNode, from: node.id, type: "attack" },
-                  },
-                ]);
+        // populate the edges datasoruce, based on nodes' attributes
+        for (let node of nodes) {
+          console.log(node);
+          // for each node, check if there exist another node with the label of one of its attributes
+          for (let attrs_label of Object.keys(node.attrs)) {
+            if (!node.attrs[attrs_label]["value"].length) continue;
+
+            // console.log(
+            //   attrs_label + node.attrs[attrs_label]["value"][0].split(",")
+            // );
+            // console.log(attrs_label)
+            if (
+              nodes
+                .map((node) => node.label.toUpperCase())
+                .includes(attrs_label)
+            ) {
+              console.log(attrs_label);
+              // if there's one, than check if there must be an edge between the two
+              if (
+                node.attrs[attrs_label]["value"][0] !== null &&
+                nodes
+                  .map((n) => n.attrs["ID"])
+                  .filter((id) =>
+                    node.attrs[attrs_label]["value"][0].split(",").includes(id)
+                  )
+              ) {
+                // here we are sure there exist a connection between two nodes:
+                // the pointed one is 'node', the other one has ID =  node.attrs[attrs_label]["value"][0]
+
+                // we then cycle over every fromNode:
+                // not multi attr
+                if (node.attrs[attrs_label]["type"] !== "multi") {
+                  for (let from_id of node.attrs[attrs_label]["value"][0].split(
+                    " | "
+                  )) {
+                    let fromNode = nodes.filter(
+                      (n) => n.attrs["ID"]["value"][0] === from_id
+                    )[0];
+                    if (fromNode) {
+                      // so we create the edge and push it
+                      this.edgesDataSource.push([
+                        {
+                          type: "insert",
+                          data: { from: fromNode.id, to: node.id },
+                        },
+                      ]);
+                    }
+                  }
+                } else {
+                  // multi attr
+                  for (let from_id of node.attrs[attrs_label]["value"]) {
+                    let fromNode = nodes.filter(
+                      (n) => n.attrs["ID"]["value"][0] === from_id
+                    )[0];
+                    if (fromNode) {
+                      // so we create the edge and push it
+                      this.edgesDataSource.push([
+                        {
+                          type: "insert",
+                          data: { from: fromNode.id, to: node.id },
+                        },
+                      ]);
+                    }
+                  }
+                }
               }
             }
           }
@@ -223,56 +254,52 @@ export default {
     save() {
       console.log("saving...");
 
-      // remove every old graph-related attribute
-      for (var node of this.nodesDataSource._array) {
-        node.attrs["A"]["value"][0] = "";
-        node.attrs["CON"]["value"][0] = "";
-        // TODO: 'S' attribute??
+      // remove every old relations-graph related attribute
+      for (let node of this.nodesDataSource._array) {
+        for (var node2 of this.nodesDataSource._array) {
+          if (node2.attrs[node.label.toUpperCase()])
+            if (node2.attrs[node.label.toUpperCase()]["type"] !== "multi") {
+              // not multi attr
+              node2.attrs[node.label.toUpperCase()]["value"][0] = "";
+            } else {
+              node2.attrs[node.label.toUpperCase()]["value"] = [];
+            }
+        }
       }
 
       // add new attrs based on existing connections
       for (let connector of this.edgesDataSource._array) {
-        // get the connector type
-        var connectorType = connector.type;
-
         // get the start and end nodes
         var fromNode = this.nodesDataSource._array.filter(
-          (item) => item["id"] == connector.from
+          (item) => item["id"] === connector.from
         )[0];
         var toNode = this.nodesDataSource._array.filter(
-          (item) => item["id"] == connector.to
+          (item) => item["id"] === connector.to
         )[0];
 
-        // modify their attributes: 'A', 'CON'
+        // modify the toNode attribute labelled as fromNode
         //    NOTE: this also pushes the changes into the tokenManger already
-        //    TODO: 'S' attribute??
-        if (connectorType === "support") {
-          // support edge
-          if (toNode.attrs["A"]["value"][0] !== "") {
-            // if there already is a supporter, append the new one
-            toNode.attrs["A"]["value"][0] =
-              toNode.attrs["A"]["value"][0] +
-              "," +
-              fromNode.attrs["ID"]["value"][0];
-          } else {
-            // else just set the supporter
-            toNode.attrs["A"]["value"][0] = fromNode.attrs["ID"]["value"][0];
+        if (toNode.attrs[fromNode.label.toUpperCase()]["value"][0] !== "") {
+          // if there already is relation from that fromNode class, check if it is a 'mutual' attr
+          if (toNode.attrs[fromNode.label.toUpperCase()]["type"] === "multi")
+            toNode.attrs[fromNode.label.toUpperCase()]["value"] = toNode.attrs[
+              fromNode.label.toUpperCase()
+            ]["value"].concat([fromNode.attrs["ID"]["value"][0]]);
+          else if (
+            toNode.attrs[fromNode.label.toUpperCase()]["type"] === "string"
+          ) {
+            toNode.attrs[fromNode.label.toUpperCase()]["value"][0] +=
+              " | " + fromNode.attrs["ID"]["value"][0];
           }
-        } else if (connectorType === "attack") {
-          // attack edge
-          if (fromNode.attrs["CON"]["value"][0] !== "") {
-            // if there already is an attacked, append the new one
-            fromNode.attrs["CON"]["value"][0] =
-              fromNode.attrs["CON"]["value"][0] +
-              "," +
-              toNode.attrs["ID"]["value"][0];
-          } else {
-            // else just set the attacked
-            fromNode.attrs["CON"]["value"][0] = toNode.attrs["ID"]["value"][0];
-          }
+        } else {
+          // else just set the relation
+          toNode.attrs[fromNode.label.toUpperCase()]["value"][0] =
+            fromNode.attrs["ID"]["value"][0];
         }
+      }
 
-        // ignore edges without an assigned type (the black ones)!!!
+      for (let node of this.nodesDataSource._array) {
+        console.log(node);
       }
 
       // ######################################
@@ -333,13 +360,6 @@ export default {
       let style = { stroke: obj.backgroundColor, "stroke-width": 4 };
       return style;
     },
-    linkStyleExpr(obj) {
-      // set edge color based on its type
-      if (obj.type === "attack") return { stroke: "#EE5555" };
-      else if (obj.type === "support") return { stroke: "#22DD66" };
-
-      return { stroke: "#000000" }; // default for a newly created edge
-    },
     showToast(text) {
       // function for in-graph toast messages
       notify({
@@ -377,46 +397,12 @@ export default {
     // },
     onItemClick(obj) {
       // console.log({ "item click": obj});
-      if (obj.item.itemType === "shape") {
-        this.selectedNode = obj.item;
-        // this.popupContentText = this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..."
-      } else {
-        this.selectedNode = {};
-        // this.popupContentText = ""
-      }
+      if (obj.item.itemType === "shape") this.selectedNode = obj.item;
+      else this.selectedNode = {};
     },
     onItemDblClick(obj) {
-      // if a connector is double clicked, change its type
       // not a connector -> popup
-      if (obj.item.itemType === "shape") {
-        this.popupVisible = true;
-        return;
-      }
-
-      // get connector type and set parameters to push
-      let key;
-      let dataObj;
-      if (obj.item.dataItem.type === "support") {
-        // console.log("support => attack")
-        key = obj.item.key;
-        dataObj = obj.item.dataItem;
-        dataObj.type = "attack";
-      } else {
-        // default connector does not have any type!! -> on double click assing support type
-        // console.log("null or attack => support")
-        key = obj.item.key;
-        dataObj = obj.item.dataItem;
-        dataObj.type = "support";
-      }
-
-      // push the change
-      this.edgesDataSource.push([
-        {
-          type: "update",
-          data: dataObj,
-          key: key,
-        },
-      ]);
+      if (obj.item.itemType === "shape") this.popupVisible = true;
     },
     setPosition: function (event) {
       this.target = event;

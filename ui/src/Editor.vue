@@ -25,7 +25,7 @@ export default {
     AnnotationPage,
   },
   methods: {
-    ...mapMutations(["setInputText", "addClass", "setDone"]),
+    ...mapMutations(["setInputText", "setXMLText", "addClass", "setDone"]),
   },
   created() {
     // ottengo il tagging ID dai metadati
@@ -40,6 +40,8 @@ export default {
         // la risposta contiene:
         // 1) le parole della sentenza
         this.setInputText(res.data["initial_text"]);
+        // 1.1) le parole xml
+        this.setXMLText(res.data["xml_text"])
         // 2) il titolo della sentenza
         this.title = res.data["name"];
         // 3) il vecchio token manager
@@ -164,7 +166,7 @@ export default {
           this.addClass([name, attrs]);
           element.setAttribute("name", "CONSUMED");
 
-          console.log(attrs);
+          // console.log(attrs);
         }
         this.go = true; // now we can load the annotation page
       })
