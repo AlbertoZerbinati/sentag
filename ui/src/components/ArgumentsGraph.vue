@@ -15,10 +15,9 @@
       <DxNodes
         :data-source="nodesDataSource"
         :type-expr="itemTypeExpr"
-        :text-expr="'attrs[ID][value][0]'"
+        :text-expr="itemTextExpr"
         :text-style-expr="itemTextStyleExpr"
         :style-expr="itemStyleExpr"
-        :custom-data-expr="'attrs[ID][value][0]'"
         :key-expr="'id'"
       >
         <DxAutoLayout :type="'tree'" :orientation="'horizontal'" />
@@ -36,8 +35,8 @@
       :close-on-outside-click="true"
       :show-title="true"
       :show-close-button="true"
-      :width="200"
-      :height="180"
+      :width="250"
+      :height="200"
       container="#diagram"
       :title="popupTitleText"
       ><DxPosition my="left top" :of="target" />
@@ -74,6 +73,7 @@ import notify from "devextreme/ui/notify";
 import axios from "axios";
 import TokenManager from "./token-manager";
 import { toast } from "bulma-toast";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   components: {
@@ -97,10 +97,16 @@ export default {
     };
   },
   computed: {
+    ...mapState(["unsavedWork"]),
     popupTitleText: {
       get() {
         if (!this.selectedNode.dataItem) return "";
-        else return this.selectedNode.dataItem.attrs["ID"].value[0];
+        else
+          return (
+            this.selectedNode.dataItem.label.toUpperCase() +
+            " - " +
+            this.selectedNode.dataItem.attrs["ID"].value[0]
+          );
       },
     },
     popupContentText: {
@@ -136,6 +142,11 @@ export default {
       .querySelector("meta[name='title-tagging']")
       .getAttribute("content");
 
+    // exit confirmation if there is unsaved work
+    this.setUnsavedWork(false);
+    window.onbeforeunload = () => (this.unsavedWork ? true : null);
+
+    // build the initial graph from token manager
     axios
       .get("/api/" + this.tagging_id)
       .then((res) => {
@@ -175,9 +186,9 @@ export default {
 
         // populate the edges datsource with correct type of edges, based on nodes' attributes
         for (var node of nodes) {
-          if (node.attrs["A"]["value"][0] !== "") {
+          if (node.attrs["PRO"]["value"][0] !== "") {
             // if this node has supporters
-            const supporters = node.attrs["A"]["value"];
+            const supporters = node.attrs["PRO"]["value"];
             for (const supporter of supporters) {
               const fromNode = nodes.filter(
                 (n) => n.attrs["ID"]["value"][0] === supporter
@@ -216,15 +227,16 @@ export default {
       .catch((err) => alert(err));
   },
   methods: {
+    ...mapMutations(["setUnsavedWork"]),
     print() {
       console.log(this.popupContentText);
     },
     save() {
-      console.log("saving...");
+      // console.log("saving...");
 
       // remove every old graph-related attribute
       for (var node of this.nodesDataSource._array) {
-        node.attrs["A"]["value"] = [""];
+        node.attrs["PRO"]["value"] = [""];
         node.attrs["CON"]["value"] = [""];
         // TODO: 'S' attribute??
       }
@@ -247,12 +259,12 @@ export default {
         //    TODO: 'S' attribute??
         if (connectorType === "support") {
           // support edge
-          if (toNode.attrs["A"]["value"][0] !== "") {
+          if (toNode.attrs["PRO"]["value"][0] !== "") {
             // if there already is a supporter, append the new one
-            toNode.attrs["A"]["value"].push(fromNode.attrs["ID"]["value"][0]);
+            toNode.attrs["PRO"]["value"].push(fromNode.attrs["ID"]["value"][0]);
           } else {
             // else just set the supporter
-            toNode.attrs["A"]["value"][0] = fromNode.attrs["ID"]["value"][0];
+            toNode.attrs["PRO"]["value"][0] = fromNode.attrs["ID"]["value"][0];
           }
         } else if (connectorType === "attack") {
           // attack edge
@@ -310,7 +322,8 @@ export default {
             pauseOnHover: "true",
             duration: 2000,
             position: "bottom-right",
-          })
+          }),
+          this.setUnsavedWork(false) // no more need to ask for confirmation before exiting
         )
         .catch((e) => {
           console.log(e);
@@ -318,6 +331,9 @@ export default {
     },
     itemTypeExpr() {
       return "ellipse";
+    },
+    itemTextExpr(item) {
+      return item.label.toUpperCase() + " - " + item.attrs["ID"]["value"][0];
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };
@@ -362,6 +378,8 @@ export default {
         e.allowed = false;
       } else if (e.operation === "changeConnectorText") {
         e.allowed = false;
+      } else {
+        this.setUnsavedWork(true); // some modifications have occurred -> need to save before exiting
       }
     },
     // onSelectionChanged({ items }) {
