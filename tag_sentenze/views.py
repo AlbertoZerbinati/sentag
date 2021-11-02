@@ -507,11 +507,34 @@ def completed_tagging(request, id):
 
         # TODO: incipit XML
         # print(words)
-        xml_string = ''.join([w + (' ' if w.startswith("</") or not w.startswith("<") else '') for w in words])
-        # xml_string = xml_string.replace("> ", ">")
-        # xml_string = xml_string.replace(" <", "<")
-        xml_string = """<body>""" + xml_string + """</body>"""
-        # print(xml_string)
+
+        # add spaces where needed in the words list
+        spaced_words = []
+        for v, w in zip(words[:], words[1:]):
+            if v == "\n" or w == "\n":
+                spaced_words.append(v)
+            elif not "<" in v and not "<" in w:  # word word
+                spaced_words.append(v+" ")
+            elif v.startswith("<") and not v.startswith("</") and not "<" in w:  # <> word
+                spaced_words.append(v)
+            elif v.startswith("</") and not "<" in w:  # </> word
+                spaced_words.append(v+" ")
+            elif w.startswith("<") and not w.startswith("</") and not "<" in v:  # word <>
+                spaced_words.append(v+" ")
+            elif w.startswith("</") and not "<" in v:  # word </>
+                spaced_words.append(v)
+            elif v.startswith("<") and not v.startswith("</") and w.startswith("<") and not w.startswith("</"):  # <> <>
+                spaced_words.append(v)
+            elif v.startswith("</") and w.startswith("</"):  # </> </>
+                spaced_words.append(v)
+            elif v.startswith("</") and w.startswith("<") and not w.startswith("</"):  # </> </>
+                spaced_words.append(v+" ")
+
+        # TODO: address \n
+
+        xml_string = "".join(spaced_words)
+        xml_string = """<body>\n""" + xml_string + """\n</body>"""
+        print(xml_string)
 
         # validate xml
         schema_string = tagging.judgment.xsd.tags
