@@ -15,7 +15,7 @@
       :isCurrent="t.id === currentBlock.id"
       @remove-block="removeBlock"
     />
-    <span class="tag is-light is-info is-small">
+    <span class="tag is-light is-info is-small label">
       <span v-if="token.attrs['ID']"
         ><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{
           token.attrs["ID"]["value"][0]
@@ -81,10 +81,14 @@ export default {
 
 <style lang="scss">
 mark {
-  padding: 0.3rem;
+  padding-right: 0.4rem;
+  padding-left: 0.2rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.29rem;
   position: relative;
   border-radius: 8px;
   cursor: pointer;
+  margin-right: 2px;
 
   &::after {
     content: var(--tag);
@@ -98,5 +102,8 @@ mark {
 }
 .current {
   border: 2.2px solid orange;
+}
+.label {
+  // top: 2px;
 }
 </style>

@@ -1,6 +1,9 @@
 <template>
   <div id="column">
     <div class="is-multiline">
+      <div class="attribute-title stroke">
+        <strong> XSD classes </strong>
+      </div>
       <div class="tags is-medium">
         <div class="column" v-for="cl in classes" :key="cl.id">
           <a
@@ -21,9 +24,9 @@
             :key="at.id"
             :style="{ margin: '3px' }"
           >
-            <span class="tag supertiny"
+            <span class="tag tiny"
               ><i
-                ><strong :style="{ color: '#0c66a1', margin: '3px' }">{{
+                ><strong :style="{ color: '#0c66a1' }">{{
                   at.name
                 }}</strong></i
               ></span
@@ -67,15 +70,33 @@ export default {
   font-size: 14px;
 }
 .column {
-  height: 80px;
+  min-height: 80px;
+  top: 0px;
+  padding-top: 0px;
 }
-.tag {
+.tiny {
+  padding-left: 3px;
+  padding-right: 3px;
+}
+.normal {
   padding-right: 11px;
   padding-left: 11px;
-  margin-right: 4px;
-  margin-bottom: 0px;
+  margin-right: 0px;
+  margin-bottom: 2px;
+  top: 0px;
 }
 .field-label {
   margin-right: 5px;
+}
+.attribute-title {
+  width: 100%;
+  margin-top: 20px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+.stroke > strong {
+  font-size: 130%;
+  text-shadow: 0.6px 0.6px 0.8px #0c66a1;
+  color: #0c66a1;
 }
 </style>

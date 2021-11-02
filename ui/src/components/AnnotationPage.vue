@@ -453,7 +453,7 @@ export default {
 <style lang="scss" scoped>
 #editor {
   padding: 0.2rem;
-  font-size: 1.2rem;
+    font-size: 1.1rem;
 }
 .right {
   margin-left: 100px;

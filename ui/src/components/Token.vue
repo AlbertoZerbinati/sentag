@@ -23,9 +23,9 @@ export default {
 
 <style lang="scss">
 .token {
-  font-size: large;
+  font-size: medium;
   display: inline-block;
-  padding: 0.2rem;
-  line-height: 1.5;
+  margin-right: 5px;
+  line-height: normal;
 }
 </style>
