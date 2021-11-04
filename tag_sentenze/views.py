@@ -13,7 +13,8 @@ from users.models import Tagging, Profile
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django import forms
-
+import re
+from io import StringIO
 
 @login_required
 def index(request):
@@ -360,22 +361,22 @@ def parse_xml(request):
                     schema = Schema.objects.get(id=id_xsd_schema)
                     xsd_text = schema.tags.encode("ascii")
 
-                # validate xml-xsd
-                schema_root = etree.XML(xsd_text)
-                xmlschema = etree.XMLSchema(schema_root)
-                parser = etree.XMLParser(schema=xmlschema)
-                try:
-                    etree.fromstring(xml_string, parser)
-                except etree.XMLSyntaxError as error:
-                    # if not valid raise error message
-                    form.add_error(None, forms.ValidationError(
-                        "XML text didn't pass validation with respect to the XSD"))
-                    form.add_error(None, forms.ValidationError(
-                        str(error)))
-                    context = {
-                        'form': form,
-                    }
-                    return render(request, 'tag_sentenze/parse_xml.html', context=context)
+                # DO NOT validate xml-xsd... ACCEPT ALSO INVALID ONES
+                # schema_root = etree.XML(xsd_text)
+                # xmlschema = etree.XMLSchema(schema_root)
+                # parser = etree.XMLParser(schema=xmlschema)
+                # try:
+                #     etree.fromstring(xml_string, parser)
+                # except etree.XMLSyntaxError as error:
+                #     # if not valid raise error message
+                #     form.add_error(None, forms.ValidationError(
+                #         "XML text didn't pass validation with respect to the XSD"))
+                #     form.add_error(None, forms.ValidationError(
+                #         str(error)))
+                #     context = {
+                #         'form': form,
+                #     }
+                #     return render(request, 'tag_sentenze/parse_xml.html', context=context)
 
                 # now we have xml and xsd texts and they are validated!
                 # we need to save them somehow in the database
@@ -386,10 +387,11 @@ def parse_xml(request):
                     schema = Schema(schema_file=request.FILES["xsd_file"])
                     schema.save()
 
-                # also we need to save the judgment
-                tree = etree.fromstring(xml_string)
-                notags = etree.tostring(
-                    tree, encoding='utf8', method='text').decode("utf-8")
+                # also we need to save the judgment (with original text)
+                # tree = etree.fromstring(xml_string)
+                # notags = etree.tostring(
+                #     tree, encoding='utf8', method='text').decode("utf-8")
+                notags = re.sub('<.*?>','',xml_string.decode("utf-8"))
                 notags = notags.strip().replace("\n", " <br/> ")
                 # print(notags)
                 judgment = Judgment.objects.create(
@@ -541,19 +543,19 @@ def completed_tagging(request, id):
         spaced_words.append(words[-1])
 
         xml_string = "".join(spaced_words)
-        xml_string = """<body>\n""" + xml_string + """\n</body>"""
-        print(xml_string)
+        xml_string = """<sentag>\n""" + xml_string + """\n</sentag>"""
+        # print(xml_string)
 
         # validate xml
         schema_string = tagging.judgment.xsd.tags
         schema_root = etree.XML(schema_string.encode('ascii'))
         xmlschema = etree.XMLSchema(schema_root)
-        parser = etree.XMLParser(schema=xmlschema)
+        # parser = etree.XMLParser(schema=xmlschema)
         try:
-            etree.fromstring(xml_string, parser)
-        except etree.XMLSyntaxError as error:
+            xmlschema.assertValid(etree.parse(StringIO(xml_string)))
+        except etree.DocumentInvalid as error:
             # if not valid return fail with error message
-            # print(str(error))
+            print(str(error))
             return Response(data={str(error)}, status=500)
 
         # else if valid then save in db WITH XML TEXT and return success

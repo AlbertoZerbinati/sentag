@@ -36,8 +36,8 @@
       :close-on-outside-click="true"
       :show-title="true"
       :show-close-button="true"
-      :width="200"
-      :height="180"
+      :width="250"
+      :height="200"
       container="#diagram"
       :title="popupTitleText"
       ><DxPosition my="left top" :of="target" />
