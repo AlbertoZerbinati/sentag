@@ -35,7 +35,7 @@ def list_sentenze(request):
             'sentenze': Tagging.objects.filter(profile=profile)
         }
         return render(request, 'tag_sentenze/list_sentenze.html', context=context)
-    # taggatori has access only to their set of sentenze, so they will see a list of this set
+    # taggers has access only to their set of sentenze, so they will see a list of this set
     else:
         # sentenze_user = current_user.profile.taggings.all()
         sentenze_user = Tagging.objects.filter(profile=profile)
@@ -74,7 +74,7 @@ def new_sentenza(request):
         }
         return render(request, 'tag_sentenze/new_sentenza.html', context=context)
     else:
-        print('Taggatore access')
+        print('Tagger access')
         return redirect('/sentenze/')
 
 
@@ -100,9 +100,9 @@ def tag_sentenza(request, id, htbp=-1):
         }
         print("---->", context['taggings'].id)
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
-    # taggatori has access only to their set of sentenze
+    # taggers has access only to their set of sentenze
     elif sentenza in user_taggings:
-        print('Taggatore access with permission')
+        print('Tagger access with permission')
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
@@ -110,7 +110,7 @@ def tag_sentenza(request, id, htbp=-1):
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
-        print('Taggatori access with no permission')
+        print('Taggers access with no permission')
         return redirect('/sentenze/')
 
 
@@ -139,9 +139,9 @@ def graph(request, id):
             context['type'] = 'rel'
 
         return render(request, 'tag_sentenze/graph.html', context=context)
-    # taggatori has access only to their set of sentenze
+    # taggers has access only to their set of sentenze
     elif sentenza in user_taggings:
-        print('Taggatore access with permission')
+        print('Tagger access with permission')
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
@@ -153,7 +153,7 @@ def graph(request, id):
 
         return render(request, 'tag_sentenze/graph.html', context=context)
     else:
-        print('Taggatori access with no permission')
+        print('Taggers access with no permission')
         return redirect('/sentenze/')
 
 
@@ -179,7 +179,7 @@ def new_schema(request):
         }
         return render(request, 'tag_sentenze/new_schema.html', context=context)
     else:
-        print('Taggatore access')
+        print('Tagger access')
         return redirect('/sentenze/')
 
 # upload multiplo
@@ -223,7 +223,7 @@ def add_multiple_judgments(request):
 
         return render(request, 'tag_sentenze/add_multiple_judgment.html', context=context)
     else:
-        print('Taggatore access')
+        print('Tagger access')
         return redirect('/sentenze/')
 
 
@@ -249,7 +249,7 @@ def add_multiple_schemas(request):
 
         return render(request, 'tag_sentenze/add_multiple_schema.html')
     else:
-        print('Taggatore access')
+        print('Tagger access')
         return redirect('/sentenze/')
 
 # automatic assignment of a new uploaded judgment to all editors and admins
@@ -315,9 +315,9 @@ def list_taggings(request):
             'taggings': taggings
         }
         return render(request, 'tag_sentenze/list_taggings.html', context=context)
-    # taggatori don't
+    # taggers don't
     else:
-        print('Taggatore access')
+        print('Tagger access')
         return redirect('/sentenze')
 
 

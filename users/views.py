@@ -29,9 +29,9 @@ def register(request):
             if form.is_valid():
                 form.save()
                 username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggatori Group
-                taggatori = Group.objects.get(name='Taggatori')
-                taggatori.user_set.add(User.objects.get(username=username))
+                # Add by default the new user to the Taggers Group
+                taggers = Group.objects.get(name='Taggers')
+                taggers.user_set.add(User.objects.get(username=username))
                 return redirect('/')
 
         return render(request, 'users/register.html', context={'form': form})
@@ -46,8 +46,8 @@ def editor_page(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        # get all users from Taggatori group
-        taggers = User.objects.filter(groups__name='Taggatori').all()
+        # get all users from Taggers group
+        taggers = User.objects.filter(groups__name='Taggers').all()
         print(taggers)
 
         context = {
@@ -65,8 +65,8 @@ def home_permission(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        # get all users from Taggatori group
-        taggers = User.objects.filter(groups__name='Taggatori').all()
+        # get all users from Taggers group
+        taggers = User.objects.filter(groups__name='Taggers').all()
         print(taggers)
 
         context = {
@@ -98,7 +98,7 @@ def user_permission(request, id):
     context = {
         'permission': permission_list,
         'selected_user': user,
-        'lista_users': User.objects.filter(groups__name='Taggatori').all(),
+        'lista_users': User.objects.filter(groups__name='Taggers').all(),
         'sentenze': all_sentenze
     }
 
@@ -237,7 +237,7 @@ def home_judgment_schema(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        # get all users from Taggatori group
+        # get all users from Taggers group
         schemas = Schema.objects.all()
         print(schemas)
 
@@ -557,7 +557,7 @@ def agreement_post(request, id):
 def agreement_page(request):
 
     # Create table in template with judgments as rows and users as columns
-    users = User.objects.filter(groups__name='Taggatori').all()
+    users = User.objects.filter(groups__name='Taggers').all()
     judgments = Judgment.objects.all()
 
     rows = []

@@ -29,16 +29,18 @@
     python manage.py createsuperuser
     ```
 
+    - Create default Groups (namely Admins, Editors, Taggers) and assign the superuser to them
+    ```
+    python manage.py createdefaultgroups <name_superuser>
+    ```
+
     - Start the development server:
     ```
     python manage.py runserver
     ```
     
 
-2. Create Groups from the Admin-Page
-    * Now visit [http://localhost:8000](http://localhost:8000). Log into the website as admin user. Access to the Admin-Page and add Admins and Editors Groups (through the UI), with appropriate permissions. Remember to add your user to both these newly created groups.
-
-3. Open another terminal and start the server for the UI
+2. Open another terminal and start the server for the UI
 
     ```
     cd ui
@@ -46,7 +48,7 @@
     yarn serve
     ```
 
-And finally we have complete access to all functionalities!
+Now visit [http://localhost:8000](http://localhost:8000) and log in with your credentials for complete access to all functionalities!
 
 ## Paper
 **SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
