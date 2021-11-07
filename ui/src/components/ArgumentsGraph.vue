@@ -20,10 +20,14 @@
         :style-expr="itemStyleExpr"
         :key-expr="'id'"
       >
-        <DxAutoLayout :type="'tree'" :orientation="'horizontal'" />
+        <DxAutoLayout :type="'layered'" :orientation="'horizontal'" />
       </DxNodes>
 
-      <DxEdges :data-source="edgesDataSource" :style-expr="linkStyleExpr" />
+      <DxEdges
+        :data-source="edgesDataSource"
+        :text-expr="edgeTextExpr"
+        :style-expr="edgeStyleExpr"
+      />
 
       <DxToolbox :visibility="'disabled'" />
       <DxContextToolbox :enabled="false" />
@@ -186,37 +190,37 @@ export default {
 
         // populate the edges datsource with correct type of edges, based on nodes' attributes
         for (var node of nodes) {
-          if (node.attrs["PRO"]["value"][0] !== "") {
-            // if this node has supporters
-            const supporters = node.attrs["PRO"]["value"];
-            for (const supporter of supporters) {
-              const fromNode = nodes.filter(
-                (n) => n.attrs["ID"]["value"][0] === supporter
-              )[0].id;
-              if (fromNode) {
+          if (node.attrs["PRO"] && node.attrs["PRO"]["value"][0] !== "") {
+            // if this node supportes others
+            const supported = node.attrs["PRO"]["value"];
+            for (const sup of supported) {
+              const toNode = nodes.filter(
+                (n) => n.attrs["ID"]["value"][0] === sup
+              )[0];
+              if (toNode) {
                 // push a support edge
                 this.edgesDataSource.push([
                   {
                     type: "insert",
-                    data: { from: fromNode, to: node.id, type: "support" },
+                    data: { from: node.id, to: toNode.id, type: "support" },
                   },
                 ]);
               }
             }
           }
-          if (node.attrs["CON"]["value"][0] !== "") {
+          if (node.attrs["CON"] && node.attrs["CON"]["value"][0] !== "") {
             // if this node attacks others
             const attacked_nodes = node.attrs["CON"]["value"];
             for (const attacked of attacked_nodes) {
               const toNode = nodes.filter(
                 (n) => n.attrs["ID"]["value"][0] === attacked
-              )[0].id;
+              )[0];
               if (toNode) {
                 // push an attack edge
                 this.edgesDataSource.push([
                   {
                     type: "insert",
-                    data: { to: toNode, from: node.id, type: "attack" },
+                    data: { from: node.id, to: toNode.id, type: "attack" },
                   },
                 ]);
               }
@@ -236,8 +240,8 @@ export default {
 
       // remove every old graph-related attribute
       for (var node of this.nodesDataSource._array) {
-        node.attrs["PRO"]["value"] = [""];
-        node.attrs["CON"]["value"] = [""];
+        if (node.attrs["PRO"]) node.attrs["PRO"]["value"] = [""];
+        if (node.attrs["CON"]) node.attrs["CON"]["value"] = [""];
         // TODO: 'S' attribute??
       }
 
@@ -254,27 +258,62 @@ export default {
           (item) => item["id"] == connector.to
         )[0];
 
-        // modify their attributes: 'A', 'CON'
+        // modify their attributes: 'PRO', 'CON'
         //    NOTE: this also pushes the changes into the tokenManger already
         //    TODO: 'S' attribute??
         if (connectorType === "support") {
           // support edge
-          if (toNode.attrs["PRO"]["value"][0] !== "") {
-            // if there already is a supporter, append the new one
-            toNode.attrs["PRO"]["value"].push(fromNode.attrs["ID"]["value"][0]);
+          if (fromNode.attrs["PRO"]) {
+            if (fromNode.attrs["PRO"]["value"][0] !== "") {
+              // if there already is a supporter, append the new one
+              fromNode.attrs["PRO"]["value"].push(
+                toNode.attrs["ID"]["value"][0]
+              );
+            } else {
+              // else just set the supporter
+              fromNode.attrs["PRO"]["value"][0] =
+                toNode.attrs["ID"]["value"][0];
+            }
           } else {
-            // else just set the supporter
-            toNode.attrs["PRO"]["value"][0] = fromNode.attrs["ID"]["value"][0];
+            this.showToast(
+              "PRO connection from " +
+                fromNode.attrs["ID"]["value"][0] +
+                " to " +
+                toNode.attrs["ID"]["value"][0] +
+                " not allowed!"
+            );
           }
         } else if (connectorType === "attack") {
           // attack edge
-          if (fromNode.attrs["CON"]["value"][0] !== "") {
-            // if there already is an attacked, append the new one
-            fromNode.attrs["CON"]["value"].push(toNode.attrs["ID"]["value"][0]);
+          if (fromNode.attrs["CON"]) {
+            if (fromNode.attrs["CON"]["value"][0] !== "") {
+              // if there already is an attacked, append the new one
+              fromNode.attrs["CON"]["value"].push(
+                toNode.attrs["ID"]["value"][0]
+              );
+            } else {
+              // else just set the attacked
+              fromNode.attrs["CON"]["value"][0] =
+                toNode.attrs["ID"]["value"][0];
+            }
           } else {
-            // else just set the attacked
-            fromNode.attrs["CON"]["value"][0] = toNode.attrs["ID"]["value"][0];
+            this.showToast(
+              "CON connection from " +
+                fromNode.attrs["ID"]["value"][0] +
+                " to " +
+                toNode.attrs["ID"]["value"][0] +
+                " not allowed!"
+            );
           }
+        } else {
+          // no-type edge
+          this.showToast(
+            "Please select a relation type from " +
+              fromNode.attrs["ID"]["value"][0] +
+              " to " +
+              toNode.attrs["ID"]["value"][0] +
+              " !"
+          );
         }
 
         // ignore edges without an assigned type (the black ones)!!!
@@ -342,12 +381,17 @@ export default {
       let style = { stroke: obj.backgroundColor, "stroke-width": 4 };
       return style;
     },
-    linkStyleExpr(obj) {
+    edgeStyleExpr(obj) {
       // set edge color based on its type
       if (obj.type === "attack") return { stroke: "#EE5555" };
       else if (obj.type === "support") return { stroke: "#22DD66" };
 
       return { stroke: "#000000" }; // default for a newly created edge
+    },
+    edgeTextExpr(obj) {
+      if (obj.type === "attack") return "CON";
+      else if (obj.type === "support") return "PRO";
+      return "double click to change the relation type";
     },
     showToast(text) {
       // function for in-graph toast messages
@@ -355,7 +399,7 @@ export default {
         position: { at: "top", my: "top", of: "#diagram", offset: "0 4" },
         message: text,
         type: "warning",
-        delayTime: 2000,
+        delayTime: 2500,
       });
     },
     onRequestEditOperation(e) {

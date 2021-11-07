@@ -31,7 +31,7 @@
 
     - Create default Groups (namely Admins, Editors, Taggers) and assign the superuser to them
     ```
-    python manage.py createdefaultgroups <name_superuser>
+    python manage.py createdefaultgroups <superuser_name>
     ```
 
     - Start the development server:
@@ -48,7 +48,7 @@
     yarn serve
     ```
 
-Now visit [http://localhost:8000](http://localhost:8000) and log in with your credentials for complete access to all functionalities!
+Now visit [http://127.0.0.1:8000](http://127.0.0.1:8000) and log in with your credentials for complete access to all functionalities!
 
 ## Paper
 **SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**

@@ -24,7 +24,7 @@
         <DxAutoLayout :orientation="'vertical'" />
       </DxNodes>
 
-      <DxEdges :data-source="edgesDataSource" />
+      <DxEdges :data-source="edgesDataSource" :text-expr="edgeTextExpr" />
 
       <DxToolbox :visibility="'disabled'" />
       <DxContextToolbox :enabled="false" />
@@ -190,35 +190,42 @@ export default {
         for (let node of nodes) {
           console.log(node);
           // for each node, check if there exist another node with the label of one of its attributes
-          for (let attrs_label of Object.keys(node.attrs)) {
-            if (!node.attrs[attrs_label]["value"].length) continue;
+          for (let attr_label of Object.keys(node.attrs)) {
+            if (!attr_label.includes("_")) continue; // not an label of interest
+            if (!node.attrs[attr_label]["value"].length) continue;
+
+            let target_label = attr_label.split("_")[1]; // extract the true label
 
             // console.log(
-            //   attrs_label + node.attrs[attrs_label]["value"][0].split(",")
+            //   attr_label + node.attrs[attr_label]["value"][0].split(",")
             // );
-            // console.log(attrs_label)
+            // console.log(attr_label)
             if (
               nodes
                 .map((node) => node.label.toUpperCase())
-                .includes(attrs_label)
+                .includes(target_label)
             ) {
-              console.log(attrs_label);
+              console.log(attr_label);
               // if there's one, than check if there must be an edge between the two
               if (
-                node.attrs[attrs_label]["value"][0] !== null &&
+                node.attrs[attr_label]["value"][0] !== null &&
                 nodes
                   .map((n) => n.attrs["ID"])
-                  .filter((id) =>
-                    node.attrs[attrs_label]["value"][0].split(",").includes(id)
+                  .filter(
+                    (id) =>
+                      node.attrs[attr_label]["value"][0]
+                        .split(" | ") // string attr
+                        .includes(id) ||
+                      node.attrs[attr_label]["value"][0].includes(id) // multi attr
                   )
               ) {
                 // here we are sure there exist a connection between two nodes:
-                // the pointed one is 'node', the other one has ID =  node.attrs[attrs_label]["value"][0]
+                // the pointed one is 'node', the other one has ID in node.attrs[attr_label]["value"]
 
                 // we then cycle over every fromNode:
                 // not multi attr
-                if (node.attrs[attrs_label]["type"] !== "multi") {
-                  for (let from_id of node.attrs[attrs_label]["value"][0].split(
+                if (node.attrs[attr_label]["type"] !== "multi") {
+                  for (let from_id of node.attrs[attr_label]["value"][0].split(
                     " | "
                   )) {
                     let fromNode = nodes.filter(
@@ -236,7 +243,7 @@ export default {
                   }
                 } else {
                   // multi attr
-                  for (let from_id of node.attrs[attrs_label]["value"]) {
+                  for (let from_id of node.attrs[attr_label]["value"]) {
                     let fromNode = nodes.filter(
                       (n) => n.attrs["ID"]["value"][0] === from_id
                     )[0];
@@ -269,12 +276,20 @@ export default {
       // remove every old relations-graph related attribute
       for (let node of this.nodesDataSource._array) {
         for (var node2 of this.nodesDataSource._array) {
-          if (node2.attrs[node.label.toUpperCase()])
-            if (node2.attrs[node.label.toUpperCase()]["type"] !== "multi") {
+          let trueLabel = null;
+          // build the true label name (containing "_")
+          for (let label of Object.keys(node2.attrs)) {
+            if (label.includes(node.label.toUpperCase())) {
+              trueLabel = label;
+              break;
+            }
+          }
+          if (trueLabel)
+            if (node2.attrs[trueLabel]["type"] !== "multi") {
               // not multi attr
-              node2.attrs[node.label.toUpperCase()]["value"][0] = "";
+              node2.attrs[trueLabel]["value"][0] = "";
             } else {
-              node2.attrs[node.label.toUpperCase()]["value"] = [];
+              node2.attrs[trueLabel]["value"] = [];
             }
         }
       }
@@ -289,24 +304,38 @@ export default {
           (item) => item["id"] === connector.to
         )[0];
 
+        let trueLabel = null;
+        // build the true label name (containing "_")
+        for (let label of Object.keys(toNode.attrs)) {
+          if (label.includes(fromNode.label.toUpperCase())) {
+            trueLabel = label;
+            break;
+          }
+        }
         // modify the toNode attribute labelled as fromNode
         //    NOTE: this also pushes the changes into the tokenManger already
-        if (toNode.attrs[fromNode.label.toUpperCase()]["value"][0] !== "") {
+        if (trueLabel && toNode.attrs[trueLabel]["value"][0] !== "") {
           // if there already is relation from that fromNode class, check if it is a 'mutual' attr
-          if (toNode.attrs[fromNode.label.toUpperCase()]["type"] === "multi")
-            toNode.attrs[fromNode.label.toUpperCase()]["value"] = toNode.attrs[
-              fromNode.label.toUpperCase()
-            ]["value"].concat([fromNode.attrs["ID"]["value"][0]]);
-          else if (
-            toNode.attrs[fromNode.label.toUpperCase()]["type"] === "string"
-          ) {
-            toNode.attrs[fromNode.label.toUpperCase()]["value"][0] +=
+          if (toNode.attrs[trueLabel]["type"] === "multi")
+            toNode.attrs[trueLabel]["value"] = toNode.attrs[trueLabel][
+              "value"
+            ].concat([fromNode.attrs["ID"]["value"][0]]);
+          else if (toNode.attrs[trueLabel]["type"] === "string") {
+            toNode.attrs[trueLabel]["value"][0] +=
               " | " + fromNode.attrs["ID"]["value"][0];
           }
-        } else {
+        } else if (trueLabel) {
           // else just set the relation
-          toNode.attrs[fromNode.label.toUpperCase()]["value"][0] =
+          toNode.attrs[trueLabel]["value"][0] =
             fromNode.attrs["ID"]["value"][0];
+        } else {
+          this.showToast(
+            "Relation from " +
+              fromNode.attrs["ID"]["value"] +
+              " to " +
+              toNode.attrs["ID"]["value"] +
+              " is not allowed and won't be saved!"
+          );
         }
       }
 
@@ -376,6 +405,23 @@ export default {
       let style = { stroke: obj.backgroundColor, "stroke-width": 4 };
       return style;
     },
+    edgeTextExpr(obj) {
+      var fromNode = this.nodesDataSource._array.filter(
+        (item) => item["id"] === obj.from
+      )[0];
+      var toNode = this.nodesDataSource._array.filter(
+        (item) => item["id"] === obj.to
+      )[0];
+
+      if (fromNode && toNode)
+        for (let label of Object.keys(toNode.attrs)) {
+          if (label.includes(fromNode.label.toUpperCase())) {
+            return label;
+          }
+        }
+
+      return "";
+    },
     showToast(text) {
       // function for in-graph toast messages
       notify({
@@ -404,6 +450,24 @@ export default {
         // do not allow having text in the connector: double click has another behaviour!!!
         e.allowed = false;
       } else if (e.operation === "changeConnectorText") {
+        e.allowed = false;
+      } else if (
+        e.operation === "changeConnection" &&
+        e.reason !== "checkUIElementAvailability"
+      ) {
+        if (!e.args.connector.fromKey || !e.args.connector.toKey) return;
+        var fromNode = this.nodesDataSource._array.filter(
+          (item) => item["id"] === e.args.connector.fromKey
+        )[0];
+        var toNode = this.nodesDataSource._array.filter(
+          (item) => item["id"] === e.args.connector.toKey
+        )[0];
+
+        for (let label of Object.keys(toNode.attrs)) {
+          if (label.includes(fromNode.label.toUpperCase())) {
+            return;
+          }
+        }
         e.allowed = false;
       } else {
         this.setUnsavedWork(true); // some modifications have occurred -> need to save before exiting
