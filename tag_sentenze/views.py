@@ -483,7 +483,7 @@ def completed_tagging(request, id):
             t = s.pop(0)
             if isinstance(t, str):  # <tag>
                 words.append(t)
-            elif 'text' in t:       # token
+            elif t['type'] == 'token':       # token
                 if t['text'] == '<br/>':
                     words.append('\n')
                 else:
@@ -544,7 +544,6 @@ def completed_tagging(request, id):
 
         xml_string = "".join(spaced_words)
         xml_string = """<sentag>\n""" + xml_string + """\n</sentag>"""
-        # print(xml_string)
 
         # validate xml
         schema_string = tagging.judgment.xsd.tags
@@ -556,7 +555,7 @@ def completed_tagging(request, id):
         except etree.DocumentInvalid as error:
             # if not valid return fail with error message
             print(str(error))
-            return Response(data={str(error)}, status=500)
+            return Response(data={"Validation error: " + str(error)}, status=500)
 
         # else if valid then save in db WITH XML TEXT and return success
         serializer = TaggingSerializer(instance=tagging, data={'token_manager': json.dumps(
