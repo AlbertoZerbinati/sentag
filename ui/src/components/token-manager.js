@@ -71,6 +71,7 @@ class TokenManager {
           graph: _class.graph,
           relations: _class.relations,
           backgroundColor: _class.color,
+          text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
           if (attrs && attrs.map(a => Object.keys(a)[0]).includes(key.name)) {
@@ -134,6 +135,7 @@ class TokenManager {
           relations: _class.relations,
           attrs: {},
           backgroundColor: _class.color,
+          text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
           if (attrs && attrs.map(a => Object.keys(a)[0]).includes(key.name)) {
@@ -255,21 +257,23 @@ class TokenManager {
   }
 
 
-  // findTokenBlock(token) {
-  //   return this.recursiveFindTokenBlock(token, this.tokens);
-  // }
-  // recursiveFindTokenBlock(token, _tokens) {
-  //   if (Array.isArray(_tokens)) {
-  //     for (let t of _tokens) {
-  //       if (JSON.stringify(t) == JSON.stringify(token)) {
-  //         return t;
-  //       } else if (Array.isArray(t.tokens)) {
-  //         return this.recursiveFindTokenBlock(token, t.tokens);
-  //       }
-  //     }
-  //   }
-  //   return null;
-  // }
+  findTokenBlock(token) {
+    return this.recursiveFindTokenBlock(token, this.tokens);
+  }
+  recursiveFindTokenBlock(token, _tokens) {
+    if (Array.isArray(_tokens)) {
+      for (let t of _tokens) {
+        if (t.type == "token-block") {
+          if (t.id == token.id) {
+            return t;
+          } else if (Array.isArray(t.tokens)) {
+            return this.recursiveFindTokenBlock(token, t.tokens);
+          }
+        }
+      }
+    }
+    return null;
+  }
 
   /**
    * 
@@ -282,21 +286,19 @@ class TokenManager {
   recursiveReplaceTokenBlock(token, _tokens) {
     if (Array.isArray(_tokens)) {
       for (let t of _tokens) {
-        if (JSON.stringify(t, this.replacer) == JSON.stringify(token, this.replacer)) {
-          let token_start = t.start;
-          let index = _tokens.map(t => t.start).indexOf(token_start);
-          _tokens.splice(index, 1, token);
-          return true;
-        } else if (Array.isArray(t.tokens)) {
-          return this.recursiveReplaceTokenBlock(token, t.tokens);
+        if (t.type == "token-block") {
+          if (t.id == token.id) {
+            let token_start = t.start;
+            let index = _tokens.map(t => t.start).indexOf(token_start);
+            _tokens.splice(index, 1, token);
+            return true;
+          } else if (Array.isArray(t.tokens)) {
+            return this.recursiveReplaceTokenBlock(token, t.tokens);
+          }
         }
       }
     }
     return false;
-  }
-  replacer(key, value) {
-    if (key == "attrs") return undefined;
-    else return value;
   }
 
 }

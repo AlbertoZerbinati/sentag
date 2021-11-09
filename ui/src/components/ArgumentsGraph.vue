@@ -50,18 +50,6 @@
 </template>
 
 <script>
-// <a @click="print">print</a>
-
-// <DxTooltip
-//   v-model:visible="popupVisible"
-//   :close-on-outside-click="false"
-//   target="#node2"
-// >
-//   Tooltip content
-// </DxTooltip>
-
-// <!-- @item-click="onItemClick" -->
-
 import {
   DxDiagram,
   DxNodes,
@@ -119,20 +107,9 @@ export default {
         if (!this.selectedNode.dataItem) return "";
         // else if one selected
         else {
-          // use stack unfolding of token structure to build the text
-          let ret = "";
-          let stack = this.selectedNode.dataItem.tokens.slice();
-          // console.log({'initial stack':JSON.parse(JSON.stringify(stack))})
-          while (stack.length !== 0 && ret.length < 100) {
-            const token = stack.shift();
-            if (token.type === "token-block") {
-              stack = token.tokens.slice().concat(stack);
-            } else {
-              // type = 'token'
-              ret += " " + token["text"];
-            }
-          }
-          return ret.length >= 100 ? ret + "..." : ret; // eventual '...' if text is too long
+          return this.selectedNode.dataItem.text.length >= 100
+            ? this.selectedNode.dataItem.text.substring(100) + "..."
+            : this.selectedNode.dataItem.text; // eventual '...' if text is too long
         }
       },
     },
@@ -374,7 +351,13 @@ export default {
       return "ellipse";
     },
     itemTextExpr(item) {
-      return item.label.toUpperCase() + " - " + item.attrs["ID"]["value"][0];
+      return (
+        item.label.toUpperCase() +
+        " - " +
+        item.attrs["ID"]["value"][0] +
+        "\n" +
+        item.text
+      );
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };
