@@ -79,7 +79,7 @@ class TokenManager {
               'value': [attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name]],
               'options': key.options
             };
-            if(key.type === "multi") {
+            if (key.type === "multi") {
               newTokenBlock.attrs[key.name]['value'] = attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name].split(" ")
             }
           } else if (key.name === 'ID') {
@@ -253,6 +253,52 @@ class TokenManager {
   resetBlocks() {
     this.tokens = this.initialTokens.slice();
   }
+
+
+  // findTokenBlock(token) {
+  //   return this.recursiveFindTokenBlock(token, this.tokens);
+  // }
+  // recursiveFindTokenBlock(token, _tokens) {
+  //   if (Array.isArray(_tokens)) {
+  //     for (let t of _tokens) {
+  //       if (JSON.stringify(t) == JSON.stringify(token)) {
+  //         return t;
+  //       } else if (Array.isArray(t.tokens)) {
+  //         return this.recursiveFindTokenBlock(token, t.tokens);
+  //       }
+  //     }
+  //   }
+  //   return null;
+  // }
+
+  /**
+   * 
+   * @param {Object} token to update the attributes to
+   * @returns true if updated corretly (token was present in the tm), false otherwise
+   */
+  updateBlockAttrs(token) {
+    return this.recursiveReplaceTokenBlock(token, this.tokens);
+  }
+  recursiveReplaceTokenBlock(token, _tokens) {
+    if (Array.isArray(_tokens)) {
+      for (let t of _tokens) {
+        if (JSON.stringify(t, this.replacer) == JSON.stringify(token, this.replacer)) {
+          let token_start = t.start;
+          let index = _tokens.map(t => t.start).indexOf(token_start);
+          _tokens.splice(index, 1, token);
+          return true;
+        } else if (Array.isArray(t.tokens)) {
+          return this.recursiveReplaceTokenBlock(token, t.tokens);
+        }
+      }
+    }
+    return false;
+  }
+  replacer(key, value) {
+    if (key == "attrs") return undefined;
+    else return value;
+  }
+
 }
 
 export default TokenManager;

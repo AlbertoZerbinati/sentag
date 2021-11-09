@@ -169,10 +169,10 @@ export default {
             flattened_tm.push(next);
           }
         }
+        // console.log(flattened_tm)
 
         // get the graph's nodes
         const nodes = flattened_tm.filter((token) => token.relations);
-        // console.log(nodes)
 
         // istantiate nodes datasource
         this.nodesDataSource = new ArrayStore({
@@ -188,13 +188,17 @@ export default {
 
         // populate the edges datasoruce, based on nodes' attributes
         for (let node of nodes) {
-          console.log(node);
+          // console.log(node);
           // for each node, check if there exist another node with the label of one of its attributes
           for (let attr_label of Object.keys(node.attrs)) {
-            if (!attr_label.includes("_")) continue; // not an label of interest
+            // if (!attr_label.includes("_")) continue; // not an label of interest
             if (!node.attrs[attr_label]["value"].length) continue;
 
-            let target_label = attr_label.split("_")[1]; // extract the true label
+            // extract the true label
+            let target_label = "";
+            if (attr_label.includes("_"))
+              target_label = attr_label.split("_")[1];
+            else target_label = attr_label;
 
             // console.log(
             //   attr_label + node.attrs[attr_label]["value"][0].split(",")
@@ -205,7 +209,7 @@ export default {
                 .map((node) => node.label.toUpperCase())
                 .includes(target_label)
             ) {
-              console.log(attr_label);
+              // console.log(attr_label);
               // if there's one, than check if there must be an edge between the two
               if (
                 node.attrs[attr_label]["value"][0] !== null &&
@@ -339,13 +343,9 @@ export default {
         }
       }
 
-      for (let node of this.nodesDataSource._array) {
-        console.log(node);
-      }
-
-      // ######################################
-      // TODO: manage the nested arguments ????
-      // ######################################
+      // for (let node of this.nodesDataSource._array) {
+      //   console.log(node);
+      // }
 
       // now that all the changes have been pushed into the TM,
       // PUT the token manager into the database, via an axios call
@@ -365,6 +365,12 @@ export default {
         }
         return cookieValue;
       }
+
+      // updated attributes of nested blocks
+      for (let t of this.nodesDataSource._array) {
+        this.tm.updateBlockAttrs(t);
+      }
+
       const csrftoken = getCookie("csrftoken");
       const params = {
         tm: JSON.stringify(this.tm),

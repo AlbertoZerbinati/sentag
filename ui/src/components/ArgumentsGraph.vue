@@ -319,10 +319,6 @@ export default {
         // ignore edges without an assigned type (the black ones)!!!
       }
 
-      // ######################################
-      // TODO: manage the nested arguments ????
-      // ######################################
-
       // now that all the changes have been pushed into the TM,
       // PUT the token manager into the database, via an axios call
       function getCookie(name) {
@@ -346,6 +342,12 @@ export default {
         tm: JSON.stringify(this.tm),
         cp: false, // set as not completed: the annotator will have to manually set it in the tagging page
       };
+
+      // updated attributes of nested blocks
+      for (let t of this.nodesDataSource._array) {
+        this.tm.updateBlockAttrs(t);
+      }
+
       axios
         .put("/api/update/" + this.tagging_id, params, {
           headers: {
