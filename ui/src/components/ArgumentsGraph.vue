@@ -138,72 +138,7 @@ export default {
         }
 
         this.tm = new TokenManager([], JSON.parse(JSON.parse(this.tm)));
-
-        // flatten tm with the stack technique
-        const stack = [...this.tm.tokens];
-        const flattened_tm = [];
-        while (stack.length) {
-          const next = stack.pop();
-          if (next.type === "token-block" && Array.isArray(next.tokens)) {
-            stack.push(...next.tokens);
-            flattened_tm.push(next);
-          }
-        }
-
-        // get the graph's nodes
-        const nodes = flattened_tm.filter((token) => token.graph);
-
-        // istantiate nodes datasource
-        this.nodesDataSource = new ArrayStore({
-          key: "id",
-          data: nodes,
-        });
-
-        // istantiate edges datasource (initially empty)
-        this.edgesDataSource = new ArrayStore({
-          key: "id",
-          data: [],
-        });
-
-        // populate the edges datsource with correct type of edges, based on nodes' attributes
-        for (var node of nodes) {
-          if (node.attrs["PRO"] && node.attrs["PRO"]["value"][0] !== "") {
-            // if this node supportes others
-            const supported = node.attrs["PRO"]["value"];
-            for (const sup of supported) {
-              const toNode = nodes.filter(
-                (n) => n.attrs["ID"]["value"][0] === sup
-              )[0];
-              if (toNode) {
-                // push a support edge
-                this.edgesDataSource.push([
-                  {
-                    type: "insert",
-                    data: { from: node.id, to: toNode.id, type: "support" },
-                  },
-                ]);
-              }
-            }
-          }
-          if (node.attrs["CON"] && node.attrs["CON"]["value"][0] !== "") {
-            // if this node attacks others
-            const attacked_nodes = node.attrs["CON"]["value"];
-            for (const attacked of attacked_nodes) {
-              const toNode = nodes.filter(
-                (n) => n.attrs["ID"]["value"][0] === attacked
-              )[0];
-              if (toNode) {
-                // push an attack edge
-                this.edgesDataSource.push([
-                  {
-                    type: "insert",
-                    data: { from: node.id, to: toNode.id, type: "attack" },
-                  },
-                ]);
-              }
-            }
-          }
-        }
+        this.initializeGraph();
       })
       .catch((err) => alert(err));
   },
@@ -211,6 +146,75 @@ export default {
     ...mapMutations(["setUnsavedWork"]),
     print() {
       console.log(this.popupContentText);
+    },
+    initializeGraph() {
+      // initialize the graph with nodes and connectors
+
+      // flatten tm with the stack technique
+      const stack = [...this.tm.tokens];
+      const flattened_tm = [];
+      while (stack.length) {
+        const next = stack.pop();
+        if (next.type === "token-block" && Array.isArray(next.tokens)) {
+          stack.push(...next.tokens);
+          flattened_tm.push(next);
+        }
+      }
+
+      // get the graph's nodes
+      const nodes = flattened_tm.filter((token) => token.graph);
+
+      // istantiate nodes datasource
+      this.nodesDataSource = new ArrayStore({
+        key: "id",
+        data: nodes,
+      });
+
+      // istantiate edges datasource (initially empty)
+      this.edgesDataSource = new ArrayStore({
+        key: "id",
+        data: [],
+      });
+
+      // populate the edges datsource with correct type of edges, based on nodes' attributes
+      for (var node of nodes) {
+        if (node.attrs["PRO"] && node.attrs["PRO"]["value"][0] !== "") {
+          // if this node supportes others
+          const supported = node.attrs["PRO"]["value"];
+          for (const sup of supported) {
+            const toNode = nodes.filter(
+              (n) => n.attrs["ID"]["value"][0] === sup
+            )[0];
+            if (toNode) {
+              // push a support edge
+              this.edgesDataSource.push([
+                {
+                  type: "insert",
+                  data: { from: node.id, to: toNode.id, type: "support" },
+                },
+              ]);
+            }
+          }
+        }
+        if (node.attrs["CON"] && node.attrs["CON"]["value"][0] !== "") {
+          // if this node attacks others
+          const attacked_nodes = node.attrs["CON"]["value"];
+          for (const attacked of attacked_nodes) {
+            const toNode = nodes.filter(
+              (n) => n.attrs["ID"]["value"][0] === attacked
+            )[0];
+            if (toNode) {
+              // push an attack edge
+              this.edgesDataSource.push([
+                {
+                  type: "insert",
+                  data: { from: node.id, to: toNode.id, type: "attack" },
+                },
+              ]);
+            }
+          }
+        }
+      }
     },
     save() {
       // console.log("saving...");
