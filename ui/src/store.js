@@ -26,6 +26,9 @@ export const mutations = {
   setXMLText(state, payload) {
     state.XMLText = payload;
   },
+  setTokenManager(state, payload) {
+    state.tokenManager = payload;
+  },
   addClass(state, payload) {
     let lastIndex = state.classes.reduce((p, c) => {
       return c.id > p ? c.id : p;
@@ -62,6 +65,7 @@ export const mutations = {
 export default {
   state() {
     return {
+      tokenManager: {},
       classes: [],
       inputText: "",
       XMLText: "",

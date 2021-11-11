@@ -105,7 +105,7 @@ export default {
         // if initialized
         else {
           return this.selectedNode.dataItem.text.length >= 100
-            ? this.selectedNode.dataItem.text.substring(0,100) + "..."
+            ? this.selectedNode.dataItem.text.substring(0, 100) + "..."
             : this.selectedNode.dataItem.text; // eventual '...' if text is too long
         }
       },
@@ -124,125 +124,17 @@ export default {
     this.setUnsavedWork(false);
     window.onbeforeunload = () => (this.unsavedWork ? true : null);
 
-    // build the initial graph from token manager
+    // query for the initial token manager
     axios
       .get("/api/" + this.tagging_id)
       .then((res) => {
         // get the old token manager, if available
         this.tm = res.data["token_manager"];
-        if (this.tm === "") {
+        if (!this.tm.length) {
           return;
         }
-
         this.tm = new TokenManager([], JSON.parse(JSON.parse(this.tm)));
-
-        // flatten tm with the stack technique
-        const stack = [...this.tm.tokens];
-        const flattened_tm = [];
-        while (stack.length) {
-          const next = stack.pop();
-          if (next.type === "token-block" && Array.isArray(next.tokens)) {
-            stack.push(...next.tokens);
-            flattened_tm.push(next);
-          }
-        }
-        // console.log(flattened_tm)
-
-        // get the graph's nodes
-        const nodes = flattened_tm.filter((token) => token.relations);
-
-        // istantiate nodes datasource
-        this.nodesDataSource = new ArrayStore({
-          key: "id",
-          data: nodes,
-        });
-
-        // istantiate edges datasource (initially empty)
-        this.edgesDataSource = new ArrayStore({
-          key: "id",
-          data: [],
-        });
-
-        // populate the edges datasoruce, based on nodes' attributes
-        for (let node of nodes) {
-          // console.log(node);
-          // for each node, check if there exist another node with the label of one of its attributes
-          for (let attr_label of Object.keys(node.attrs)) {
-            // if (!attr_label.includes("_")) continue; // not an label of interest
-            if (!node.attrs[attr_label]["value"].length) continue;
-
-            // extract the true label
-            let target_label = "";
-            if (attr_label.includes("_"))
-              target_label = attr_label.split("_")[1];
-            else target_label = attr_label;
-
-            // console.log(
-            //   attr_label + node.attrs[attr_label]["value"][0].split(",")
-            // );
-            // console.log(attr_label)
-            if (
-              nodes
-                .map((node) => node.label.toUpperCase())
-                .includes(target_label)
-            ) {
-              // console.log(attr_label);
-              // if there's one, than check if there must be an edge between the two
-              if (
-                node.attrs[attr_label]["value"][0] !== null &&
-                nodes
-                  .map((n) => n.attrs["ID"])
-                  .filter(
-                    (id) =>
-                      node.attrs[attr_label]["value"][0]
-                        .split(" | ") // string attr
-                        .includes(id) ||
-                      node.attrs[attr_label]["value"][0].includes(id) // multi attr
-                  )
-              ) {
-                // here we are sure there exist a connection between two nodes:
-                // the pointed one is 'node', the other one has ID in node.attrs[attr_label]["value"]
-
-                // we then cycle over every fromNode:
-                // not multi attr
-                if (node.attrs[attr_label]["type"] !== "multi") {
-                  for (let from_id of node.attrs[attr_label]["value"][0].split(
-                    " | "
-                  )) {
-                    let fromNode = nodes.filter(
-                      (n) => n.attrs["ID"]["value"][0] === from_id
-                    )[0];
-                    if (fromNode) {
-                      // so we create the edge and push it
-                      this.edgesDataSource.push([
-                        {
-                          type: "insert",
-                          data: { from: fromNode.id, to: node.id },
-                        },
-                      ]);
-                    }
-                  }
-                } else {
-                  // multi attr
-                  for (let from_id of node.attrs[attr_label]["value"]) {
-                    let fromNode = nodes.filter(
-                      (n) => n.attrs["ID"]["value"][0] === from_id
-                    )[0];
-                    if (fromNode) {
-                      // so we create the edge and push it
-                      this.edgesDataSource.push([
-                        {
-                          type: "insert",
-                          data: { from: fromNode.id, to: node.id },
-                        },
-                      ]);
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
+        this.initializeGraph();
       })
       .catch((err) => alert(err));
   },
@@ -250,6 +142,121 @@ export default {
     ...mapMutations(["setUnsavedWork"]),
     print() {
       console.log(this.popupContentText);
+    },
+    initializeGraph() {
+      // initialize the graph with nodes and connectors
+
+      // flatten tm with the stack technique
+      const stack = [...this.tm.tokens];
+      const flattened_tm = [];
+      while (stack.length) {
+        const next = stack.pop();
+        if (next.type === "token-block" && Array.isArray(next.tokens)) {
+          stack.push(...next.tokens);
+          flattened_tm.push(next);
+        }
+      }
+      // console.log(flattened_tm)
+
+      // get the graph's nodes
+      const nodes = flattened_tm.filter((token) => token.relations);
+
+      // istantiate nodes datasource
+      this.nodesDataSource = new ArrayStore({
+        key: "id",
+        data: nodes,
+      });
+
+      // istantiate edges datasource (initially empty)
+      this.edgesDataSource = new ArrayStore({
+        key: "id",
+        data: [],
+      });
+
+      // populate the edges datasoruce, based on nodes' attributes
+      for (let node of nodes) {
+        // console.log(node);
+        // for each node, check if there exist another node with the label of one of its attributes
+        for (let attr_label of Object.keys(node.attrs)) {
+          // if (!attr_label.includes("_")) continue; // not an label of interest
+          if (!node.attrs[attr_label]["value"].length) continue;
+
+          // extract the true label
+          let target_label = "";
+          if (attr_label.includes("_")) target_label = attr_label.split("_")[1];
+          else target_label = attr_label;
+
+          // console.log(
+          //   attr_label + node.attrs[attr_label]["value"][0].split(",")
+          // );
+          // console.log(attr_label)
+          if (
+            nodes.map((node) => node.label.toUpperCase()).includes(target_label)
+          ) {
+            // console.log(nodes.map((n) => n.id));
+
+            // console.log(
+            //   node.attrs[attr_label]["value"][0].toString().split(" | ").includes()
+            // );
+
+            // if there's one, than check if there must be an edge between the two
+            if (
+              node.attrs[attr_label]["value"][0] !== null &&
+              nodes
+                .map((n) => n.id)
+                .filter(
+                  (id) =>
+                    node.attrs[attr_label]["value"][0]
+                      .toString()
+                      .split(" | ") // string attr
+                      .includes(id.toString()) ||
+                    node.attrs[attr_label]["value"].includes(id.toString()) // multi attr
+                ).length
+            ) {
+              console.log(".");
+              // here we are sure there exist a connection between two nodes:
+              // the pointed one is 'node', the other one has ID in node.attrs[attr_label]["value"]
+
+              // we then cycle over every fromNode:
+              // not multi attr
+              if (node.attrs[attr_label]["type"] !== "multi") {
+                for (let from_id of node.attrs[attr_label]["value"][0]
+                  .toString()
+                  .split(" | ")) {
+                  let fromNode = nodes.filter(
+                    (n) => n.id.toString() === from_id.toString()
+                  )[0];
+                  if (fromNode) {
+                    // so we create the edge and push it
+                    this.edgesDataSource.push([
+                      {
+                        type: "insert",
+                        data: { from: fromNode.id, to: node.id },
+                      },
+                    ]);
+                  }
+                }
+              } else {
+                // multi attr
+                for (let from_id of node.attrs[attr_label]["value"]) {
+                  let fromNode = nodes.filter(
+                    (n) => n.id.toString() === from_id.toString()
+                  )[0];
+                  if (fromNode) {
+                    // so we create the edge and push it
+                    this.edgesDataSource.push([
+                      {
+                        type: "insert",
+                        data: { from: fromNode.id, to: node.id },
+                      },
+                    ]);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
     save() {
       // console.log("saving...");
@@ -300,15 +307,13 @@ export default {
           if (toNode.attrs[trueLabel]["type"] === "multi")
             toNode.attrs[trueLabel]["value"] = toNode.attrs[trueLabel][
               "value"
-            ].concat([fromNode.attrs["ID"]["value"][0]]);
+            ].concat([fromNode.id]);
           else if (toNode.attrs[trueLabel]["type"] === "string") {
-            toNode.attrs[trueLabel]["value"][0] +=
-              " | " + fromNode.attrs["ID"]["value"][0];
+            toNode.attrs[trueLabel]["value"][0] += " | " + fromNode.id;
           }
         } else if (trueLabel) {
           // else just set the relation
-          toNode.attrs[trueLabel]["value"][0] =
-            fromNode.attrs["ID"]["value"][0];
+          toNode.attrs[trueLabel]["value"][0] = fromNode.id;
         } else {
           this.showToast(
             "Relation from " +
@@ -382,12 +387,12 @@ export default {
       let ret =
         item.label.toUpperCase() + " - " + item.attrs["ID"]["value"][0] + "\n";
       if (item.text.length > 100) {
-        ret += item.text.substring(0,200) + "...";
+        ret += item.text.substring(0, 200) + "...";
       } else {
         ret += item.text;
       }
 
-      return ret
+      return ret;
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };
@@ -472,6 +477,7 @@ export default {
       // console.log({ "item click": obj});
       if (obj.item.itemType === "shape") this.selectedNode = obj.item;
       else this.selectedNode = {};
+      console.log(obj.item);
     },
     onItemDblClick(obj) {
       // not a connector -> popup

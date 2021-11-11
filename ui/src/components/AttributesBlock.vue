@@ -40,6 +40,7 @@
                 v-if="currentBlock.attrs[at]['type'] === 'string'"
                 @keydown="onKeyUp"
                 v-model="currentBlock.attrs[at]['value'][0]"
+                v-maxchars="18"
                 class="input is-normal"
                 type="text"
               />
@@ -108,7 +109,13 @@ export default {
     VueMultiselect,
   },
   computed: {
-    ...mapState(["currentBlock", "currentClass", "unsavedWork", "done"]),
+    ...mapState([
+      "tokenManager",
+      "currentBlock",
+      "currentClass",
+      "unsavedWork",
+      "done",
+    ]),
   },
   methods: {
     ...mapMutations(["setUnsavedWork", "setDone"]),
@@ -123,6 +130,25 @@ export default {
     onSelectionChanged() {
       this.setUnsavedWork(true);
       this.setDone(false);
+    },
+  },
+  directives: {
+    maxchars: {
+      twoWay() {
+        true;
+      },
+      beforeMount(el, binding) {
+        let maxChars = binding.value;
+        let handler = function (e) {
+          if (e.target.value.length > maxChars) {
+            e.target.value = e.target.value.substr(0, maxChars);
+          }
+        };
+        el.addEventListener("input", handler);
+      },
+      unmounted(el, binding) {
+        el.removeEventListener(binding.arg, console.log(binding.value));
+      },
     },
   },
 };

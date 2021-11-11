@@ -1,6 +1,6 @@
 <template>
   <div>
-    <AnnotationPage v-if="go" :title="title" :oldtm="oldtm" />
+    <AnnotationPage v-if="go" :title="title" />
   </div>
 </template>
 
@@ -25,7 +25,13 @@ export default {
     AnnotationPage,
   },
   methods: {
-    ...mapMutations(["setInputText", "setXMLText", "addClass", "setDone"]),
+    ...mapMutations([
+      "setInputText",
+      "setXMLText",
+      "setTokenManager",
+      "addClass",
+      "setDone",
+    ]),
   },
   created() {
     // ottengo il tagging ID dai metadati
@@ -41,11 +47,18 @@ export default {
         // 1) le parole della sentenza
         this.setInputText(res.data["initial_text"]);
         // 1.1) le parole xml
-        this.setXMLText(res.data["xml_text"])
+        this.setXMLText(res.data["xml_text"]);
         // 2) il titolo della sentenza
         this.title = res.data["name"];
         // 3) il vecchio token manager
-        this.oldtm = res.data["token_manager"];
+
+        if (!this.tokenManager) {
+          this.oldtm = res.data["token_manager"];
+          if (this.oldtm.length) {
+            this.oldtm = JSON.parse(JSON.parse(this.oldtm));
+          }
+          this.setTokenManager(this.oldtm);
+        }
         // 4) il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
         this.setDone(res.data["completed"]);
         // 5) i tag da parsare, perché passati come xsd string

@@ -30,7 +30,7 @@
             <component
               :is="t.type === 'token' ? 'Token' : 'TokenBlock'"
               :id="'t' + t.start"
-              v-for="t in tm.tokens"
+              v-for="t in tokenManager.tokens"
               :token="t"
               :key="t.start"
               :backgroundColor="t.backgroundColor"
@@ -86,12 +86,12 @@ import TokenManager from "./token-manager";
 
 export default {
   name: "AnnotationPage",
-  data: function () {
-    return {
-      tm: {},
-    };
-  },
-  props: ["title", "oldtm"],
+  // data: function () {
+  //   return {
+  //     tm: {},
+  //   };
+  // },
+  props: ["title"],
   components: {
     Token,
     TokenBlock,
@@ -100,6 +100,7 @@ export default {
     ...mapState([
       "inputText",
       "XMLText",
+      "tokenManager",
       "classes",
       "annotations",
       "currentClass",
@@ -133,8 +134,8 @@ export default {
       .querySelector("meta[name='must-parse']")
       .getAttribute("content");
 
-    if (this.oldtm.length) {
-      this.tm = new TokenManager([], JSON.parse(JSON.parse(this.oldtm))); // note: double json parsing is needed
+    if (this.tokenManager) {
+      this.setTokenManager(new TokenManager([], this.tokenManager));
     } else {
       this.tokenizeCurrentSentence();
     }
@@ -148,7 +149,7 @@ export default {
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
-    ...mapMutations(["setCurrentBlock", "setUnsavedWork"]),
+    ...mapMutations(["setCurrentBlock", "setUnsavedWork", "setTokenManager"]),
 
     tokenizeCurrentSentence() {
       // function used for parsing xml input
@@ -212,7 +213,7 @@ export default {
 
           if (currentClasses[0]) {
             // set the indices of start and end and the current class and add the token-block into the token manager
-            this.tm.addNewBlock(
+            this.tokenManager.addNewBlock(
               last_index_token,
               last_index_token +
                 xmlNode.textContent.replace(/\s+/g, " ").trimEnd().length -
@@ -236,7 +237,7 @@ export default {
             // console.log("br",len)
             // } else if (node.nodeName == "body") {
             //   console.log("a");
-          } else if (node.textContent.trim().length){
+          } else if (node.textContent.trim().length) {
             // console.log(node.textContent);
             len += node.textContent.replace(/\s+/g, " ").length;
           }
@@ -267,7 +268,7 @@ export default {
       }
 
       // istanzia token manager coi tokens
-      this.tm = new TokenManager(tokens);
+      this.tokenManager = new TokenManager(tokens);
 
       // if this judgment has to be parsed -> parse it recursively
       if (this.htbp == "True") {
@@ -309,7 +310,11 @@ export default {
 
       // if valid indices then add the new block, of type currentClass
       if (!isNaN(startIdx) && !isNaN(endIdx)) {
-        let cb = this.tm.addNewBlock(startIdx, endIdx, this.currentClass);
+        let cb = this.tokenManager.addNewBlock(
+          startIdx,
+          endIdx,
+          this.currentClass
+        );
         if (cb) {
           this.setCurrentBlock(cb);
         }
@@ -321,7 +326,7 @@ export default {
       console.log(startIdx, endIdx);
     },
     onRemoveBlock(data) {
-      this.tm.removeBlock(data.start, data.end);
+      this.tokenManager.removeBlock(data.start, data.end);
       this.setCurrentBlock(new Object());
       this.setUnsavedWork(true);
       this.done = false;
@@ -332,7 +337,7 @@ export default {
           "Are you sure you want to reset ALL the annotations? The unsaved work will be lost"
         )
       )
-        this.tm.resetBlocks();
+        this.tokenManager.resetBlocks();
       this.setUnsavedWork(true);
       this.done = false;
     },
@@ -356,7 +361,7 @@ export default {
       }
       const csrftoken = getCookie("csrftoken");
       const params = {
-        tm: JSON.stringify(this.tm),
+        tm: JSON.stringify(this.tokenManager),
         cp: this.done,
       };
 
@@ -402,7 +407,7 @@ export default {
       }
       const csrftoken = getCookie("csrftoken");
       const params = {
-        tm: JSON.stringify(this.tm),
+        tm: JSON.stringify(this.tokenManager),
         cp: this.done,
       };
       axios
@@ -454,7 +459,7 @@ export default {
 <style lang="scss" scoped>
 #editor {
   padding: 0.2rem;
-    font-size: 1.1rem;
+  font-size: 1.1rem;
 }
 .right {
   margin-left: 100px;
