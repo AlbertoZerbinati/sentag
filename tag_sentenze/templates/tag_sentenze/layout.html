@@ -19,7 +19,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-lg navbar-collapse w-100 order-1 order-md-0 dual-collapse2 navbar-dark bg-dark">
+    <nav class="navbar navbar-lg w-100 navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'tag_sentenze:list-sentenze' %}" id="logo">
                 <img class="d-inline-block align-text-top" src="{% static 'tag_sentenze/favicon.png' %}" width="40">
@@ -91,7 +91,7 @@
 
         </div>
     </nav>
-    <div class="container-fluid px-2">
+    <div class="container-fluid">
         <div class="row gx-2 top-buffer">
             {% csrf_token %}
             <div class="col col-sm-3 sticky-top">
@@ -105,6 +105,16 @@
             </div>
         </div>
     </div>
+
+    <footer id="footer" class="footer-1">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <p>Copyright <strong>SenTag</strong> © 2021. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
 
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>

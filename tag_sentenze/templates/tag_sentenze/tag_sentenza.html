@@ -22,7 +22,7 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-lg navbar-collapse w-100 order-1 order-md-0 dual-collapse2 navbar-dark bg-dark">
+    <nav class="navbar navbar-lg  w-100 navbar-dark bg-dark">
         <div class="container-fluid">
             <a class="navbar-brand" href="{% url 'tag_sentenze:list-sentenze' %}" id="logo">
                 <img class="d-inline-block align-text-top" src="{% static 'tag_sentenze/favicon.png' %}" width="40">
@@ -93,16 +93,16 @@
             {% endif %}
         </div>
     </nav>
-    <div class="container-fluid px-2">
+    <div class="container-fluid">
         <div class="row gx-2 top-buffer">
             <div class="col col-sm-3 sticky-top">
-                <div class="p-2 no-border sticky-top">
+                <div class="no-border sticky-top">
                     <!--install here the classes-and-attributes-block-->
                     <div id="sidebar"></div>
                 </div>
             </div>
             <div class="col col-sm-9">
-                <div class="p-2 no-border">
+                <div class="no-border">
                     <!--install here the annotation-page-->
                     <div id="editor"></div>
                 </div>

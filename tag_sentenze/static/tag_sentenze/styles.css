@@ -21,12 +21,14 @@
 }
 
 .link {
-    color:rgb(184, 184, 184);
+    color: rgb(184, 184, 184);
     /* width:130px; */
 }
-.link:hover{
-    color:white
+
+.link:hover {
+    color: white
 }
+
 .add-button {
     background-color: white;
     border: 2px solid rgb(48, 48, 48);
@@ -40,7 +42,8 @@
 }
 
 .add-sentenza-button {
-    background-color: white; /* Green */
+    background-color: white;
+    /* Green */
     border: 2px solid rgb(48, 48, 48);
     color: black;
     border-radius: 10px;
@@ -52,7 +55,8 @@
 }
 
 .remove-button {
-    background-color: white; /* Green */
+    background-color: white;
+    /* Green */
     border: 2px solid rgb(48, 48, 48);
     color: black;
     border-radius: 10px;
@@ -64,7 +68,8 @@
 }
 
 .remove-sentenza-button {
-    background-color: white; /* Green */
+    background-color: white;
+    /* Green */
     border: 2px solid rgb(48, 48, 48);
     color: black;
     border-radius: 10px;
@@ -110,4 +115,27 @@
 #dropdown-menu-right {
     right: 0;
     left: auto;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+}
+
+body {
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+footer {
+    margin-top: auto;
+    padding: 10px;
+    padding-top: 30px;
+    background-color: #f3f3f3;
+}
+
+.col {
+    padding: 8px;
 }
