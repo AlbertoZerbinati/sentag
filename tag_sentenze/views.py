@@ -484,7 +484,7 @@ def completed_tagging(request, id):
                 for k, v in t['attrs'].items():
                     if v['value'][0] != "":
                         start_tag = start_tag + \
-                            f' {k}="{" ".join(v["value"])}"'
+                            f' {k}="{" ".join([str(val) for val in v["value"]])}"'
                 start_tag = start_tag + '>'
                 words.append(start_tag)
 
@@ -533,6 +533,7 @@ def completed_tagging(request, id):
 
         xml_string = "".join(spaced_words)
         xml_string = """<sentag>\n""" + xml_string + """\n</sentag>"""
+        # print(xml_string)
 
         # validate xml
         schema_string = tagging.judgment.xsd.tags

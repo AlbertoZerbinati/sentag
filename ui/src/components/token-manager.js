@@ -178,13 +178,12 @@ class TokenManager {
   /**
    * Removes a token block and puts back all the tokens in their original position
    *
-   * @param {Number} blockStart 'start' value of the token block to remove
-   * @param {Number} blockEnd 'end' value of the token block to remove
+   * @param {Number} blockId id of the token block to be removed
    */
-  removeBlock(blockStart, blockEnd) {
-    this.recursiveRemoveBlock(blockStart, blockEnd, this.tokens)
+  removeBlock(blockId) {
+    this.recursiveRemoveBlock(blockId, this.tokens)
   }
-  recursiveRemoveBlock(blockStart, blockEnd, _tokens) {
+  recursiveRemoveBlock(blockId, _tokens) {
     let selectedBlock = null;
 
     // LIVELLO 0
@@ -193,7 +192,7 @@ class TokenManager {
         if (child.type === "token-block") { // per performance: verifica se sia 
           // un blocco da rimuovere o se ne 
           // contenga da rimuovere solo se e' un TOKEN-BLOCK
-          let selected = this.recursiveRemoveBlock(blockStart, blockEnd, child);
+          let selected = this.recursiveRemoveBlock(blockId, child);
           if (selected !== null) {
             selectedBlock = selected;
             break; // si ferma se ha individuato il token-block da rimuovere
@@ -218,14 +217,14 @@ class TokenManager {
     }
     // rimozione di questo TOKEN-BLOCK ad un certo livello innestato (>0) --> ritorna il BLOCK 
     // cosi' ai livelli richiamanti questo blocco puo' essere sostituito dai tokens interni se necessario
-    else if (_tokens.type === "token-block" && _tokens.start === blockStart && _tokens.end === blockEnd) {
+    else if (_tokens.type === "token-block" && _tokens.id == blockId) {
       return _tokens;
     }
     // se TOKEN-BLOCK non e' da rimuovere allora chiamata ricorsiva, come per LIVELLO 0 ma agendo sui .tokens
     else if (Array.isArray(_tokens.tokens)) {
       for (let child of _tokens.tokens) {
         if (child.type === "token-block") { //(per performance)
-          let selected = this.recursiveRemoveBlock(blockStart, blockEnd, child);
+          let selected = this.recursiveRemoveBlock(blockId, child);
           if (selected !== null) {
             selectedBlock = selected;
             break;

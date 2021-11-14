@@ -29,9 +29,7 @@
 
       <a
         class="tag delete is-small is-danger"
-        @click.stop="
-          $emit('remove-block', { start: token.start, end: token.end })
-        "
+        @click.stop="$emit('remove-block', token.id)"
       >
       </a>
     </span>
@@ -72,8 +70,8 @@ export default {
   },
   methods: {
     ...mapMutations(["setCurrentBlock"]),
-    removeBlock: function (data) {
-      this.$emit("remove-block", data);
+    removeBlock: function (id) {
+      this.$emit("remove-block", id);
     },
   },
 };
@@ -91,7 +89,6 @@ mark {
   margin-right: 2px;
   box-decoration-break: clone;
   -webkit-box-decoration-break: clone; /* most browsers need -webkit */
-
 
   // &::after {
   //   content: var(--tag);

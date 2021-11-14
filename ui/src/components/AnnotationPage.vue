@@ -292,8 +292,8 @@ export default {
 
       console.log(startIdx, endIdx);
     },
-    onRemoveBlock(data) {
-      this.tokenManager.removeBlock(data.start, data.end);
+    onRemoveBlock(id) {
+      this.tokenManager.removeBlock(id);
       this.setCurrentBlock(new Object());
       this.setUnsavedWork(true);
       this.done = false;
