@@ -74,14 +74,14 @@ class TokenManager {
           text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
-          if (attrs && attrs.map(a => Object.keys(a)[0]).includes(key.name)) {
+          if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name]],
+              'value': [attrs[key.name]],
               'options': key.options
             };
             if (key.type === "multi") {
-              newTokenBlock.attrs[key.name]['value'] = attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name].split(" ")
+              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(" ")
             }
           } else if (key.name === 'ID') {
             newTokenBlock.attrs[key.name] = {
@@ -138,12 +138,15 @@ class TokenManager {
           text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
-          if (attrs && attrs.map(a => Object.keys(a)[0]).includes(key.name)) {
+          if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[attrs.map(a => Object.keys(a)[0]).indexOf(key.name)][key.name]],
+              'value': [attrs[key.name]],
               'options': key.options
             };
+            if (key.type === "multi") {
+              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(" ")
+            }
           } else if (key.name === 'ID')
             newTokenBlock.attrs[key.name] = {
               'type': key.type,

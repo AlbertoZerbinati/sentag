@@ -83,8 +83,8 @@ export default {
 mark {
   padding-right: 0.3rem;
   padding-left: 0.3rem;
-  padding-top: 0.15rem;
-  padding-bottom: 0.29rem;
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
   position: relative;
   border-radius: 8px;
   cursor: pointer;

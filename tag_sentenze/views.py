@@ -16,6 +16,7 @@ from django import forms
 import re
 from io import StringIO
 
+
 @login_required
 def index(request):
     # the home page shows the list of assigned judgments
@@ -252,9 +253,8 @@ def add_multiple_schemas(request):
         print('Tagger access')
         return redirect('/sentenze/')
 
+
 # automatic assignment of a new uploaded judgment to all editors and admins
-
-
 def auto_assignment(judgment_id, current_user_id=-1, xml_string=""):
     admins = list(User.objects.filter(groups__name='Admins'))
     editors = list(User.objects.filter(groups__name='Editors'))
@@ -336,51 +336,25 @@ def parse_xml(request):
             if form.is_valid():
                 new_schema = False
 
-                # we have an xml file and either an xsd file or a Schema
+                # # we have an xml file and either an xsd file or a Schema
                 # build xml string from file
                 xml_string = b""
                 f = request.FILES["xml_file"]
                 for chunk in f.chunks():
                     xml_string += chunk
 
-                # build xsd string
-                xsd_text = ""
-
                 # case 1: xml file + xsd file
                 if "xsd_file" in request.FILES.keys():
-                    # print("xsd_file")
-                    f = request.FILES["xsd_file"]
-                    for chunk in f.chunks():
-                        xsd_text += chunk.decode("utf-8")
-
                     new_schema = True
                 # case 2: xml file + Schema
                 else:
                     # print("schema")
                     id_xsd_schema = form.data['schema']
                     schema = Schema.objects.get(id=id_xsd_schema)
-                    xsd_text = schema.tags.encode("ascii")
 
                 # DO NOT validate xml-xsd... ACCEPT ALSO INVALID ONES
-                # schema_root = etree.XML(xsd_text)
-                # xmlschema = etree.XMLSchema(schema_root)
-                # parser = etree.XMLParser(schema=xmlschema)
-                # try:
-                #     etree.fromstring(xml_string, parser)
-                # except etree.XMLSyntaxError as error:
-                #     # if not valid raise error message
-                #     form.add_error(None, forms.ValidationError(
-                #         "XML text didn't pass validation with respect to the XSD"))
-                #     form.add_error(None, forms.ValidationError(
-                #         str(error)))
-                #     context = {
-                #         'form': form,
-                #     }
-                #     return render(request, 'tag_sentenze/parse_xml.html', context=context)
 
-                # now we have xml and xsd texts and they are validated!
                 # we need to save them somehow in the database
-
                 # if there is a new schema to upload
                 if new_schema:
                     # we create it
@@ -388,17 +362,32 @@ def parse_xml(request):
                     schema.save()
 
                 # also we need to save the judgment (with original text)
-                # tree = etree.fromstring(xml_string)
-                # notags = etree.tostring(
-                #     tree, encoding='utf8', method='text').decode("utf-8")
-                notags = re.sub('<.*?>','',xml_string.decode("utf-8"))
-                notags = notags.strip().replace("\n", " <br/> ")
+                # add initial tag
+                xml_string = xml_string.decode("utf-8").strip()
+                if not xml_string.startswith("<sentag>"):
+                    xml_string = "<sentag>" + xml_string + "</sentag>"
+
+                # transformations to get the original text
+                # remove the tags
+                notags = re.sub('<.*?>', '', xml_string)
+                # replace the \r\n with <br/>
+                notags = " <br/> ".join(notags.splitlines())
+                # remove multi space
+                notags = " ".join(notags.split())
+                # remove excessive \n
+                notags = re.sub(r'(<br/> *){3,}', "<br/> <br/> ", notags)
+                # remove leading <br/>
+                if notags[:6] == "<br/> ":
+                    notags = notags[6:]
                 # print(notags)
+
+                # save judgment without original text
                 judgment = Judgment.objects.create(
                     judgment_file=request.FILES["xml_file"], initial_text=notags, xsd=schema)
+
                 # assign a tagging object to all editors and admins
                 tagging_id = auto_assignment(
-                    judgment.id, request.user.id, xml_string.decode("utf-8"))
+                    judgment.id, request.user.id, xml_string)  # also save the original xml text in the tagging
 
                 # and then load the tagging interface
                 return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
