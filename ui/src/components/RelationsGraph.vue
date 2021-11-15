@@ -21,7 +21,7 @@
         :style-expr="itemStyleExpr"
         :key-expr="'id'"
       >
-        <DxAutoLayout :orientation="'vertical'" :type="'layered'" />
+        <DxAutoLayout :orientation="'horizontal'" :type="'auto'" />
       </DxNodes>
 
       <DxEdges :data-source="edgesDataSource" :text-expr="edgeTextExpr" />
@@ -292,6 +292,9 @@ export default {
           (item) => item["id"] === connector.to
         )[0];
 
+        if (!toNode || !fromNode) {
+          continue;
+        }
         let trueLabel = null;
         // build the true label name (containing "_")
         for (let label of Object.keys(toNode.attrs)) {
@@ -377,7 +380,15 @@ export default {
           this.setUnsavedWork(false) // no more need to ask for confirmation before exiting
         )
         .catch((e) => {
-          console.log(e);
+          // toast({
+          //   message: "Something went wrong",
+          //   type: "is-warning",
+          //   dismissible: "true",
+          //   pauseOnHover: "true",
+          //   duration: 2000,
+          //   position: "bottom-right",
+          // }),
+          console.log(e)
         });
     },
     itemTypeExpr() {
