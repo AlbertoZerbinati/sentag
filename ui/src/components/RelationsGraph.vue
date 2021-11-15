@@ -217,37 +217,37 @@ export default {
               // here we are sure there exist a connection between two nodes:
               // the pointed one is 'node', the other one has ID in node.attrs[attr_label]["value"]
 
-              // we then cycle over every fromNode:
+              // we then cycle over every toNode:
               // not multi attr
               if (node.attrs[attr_label]["type"] !== "multi") {
-                for (let from_id of node.attrs[attr_label]["value"][0]
+                for (let to_id of node.attrs[attr_label]["value"][0]
                   .toString()
                   .split(" | ")) {
-                  let fromNode = nodes.filter(
-                    (n) => n.id.toString() === from_id.toString()
+                  let toNode = nodes.filter(
+                    (n) => n.id.toString() === to_id.toString()
                   )[0];
-                  if (fromNode) {
+                  if (toNode) {
                     // so we create the edge and push it
                     this.edgesDataSource.push([
                       {
                         type: "insert",
-                        data: { from: fromNode.id, to: node.id },
+                        data: { to: toNode.id, from: node.id },
                       },
                     ]);
                   }
                 }
               } else {
                 // multi attr
-                for (let from_id of node.attrs[attr_label]["value"]) {
-                  let fromNode = nodes.filter(
-                    (n) => n.id.toString() === from_id.toString()
+                for (let to_id of node.attrs[attr_label]["value"]) {
+                  let toNode = nodes.filter(
+                    (n) => n.id.toString() === to_id.toString()
                   )[0];
-                  if (fromNode) {
+                  if (toNode) {
                     // so we create the edge and push it
                     this.edgesDataSource.push([
                       {
                         type: "insert",
-                        data: { from: fromNode.id, to: node.id },
+                        data: { to: toNode.id, from: node.id },
                       },
                     ]);
                   }
@@ -297,26 +297,26 @@ export default {
         }
         let trueLabel = null;
         // build the true label name (containing "_")
-        for (let label of Object.keys(toNode.attrs)) {
-          if (label.includes(fromNode.label.toUpperCase())) {
+        for (let label of Object.keys(fromNode.attrs)) {
+          if (label.includes(toNode.label.toUpperCase())) {
             trueLabel = label;
             break;
           }
         }
-        // modify the toNode attribute labelled as fromNode
+        // modify the fromNode attribute labelled as toNode
         //    NOTE: this also pushes the changes into the tokenManger already
-        if (trueLabel && toNode.attrs[trueLabel]["value"][0] !== "") {
-          // if there already is relation from that fromNode class, check if it is a 'mutual' attr
-          if (toNode.attrs[trueLabel]["type"] === "multi")
-            toNode.attrs[trueLabel]["value"] = toNode.attrs[trueLabel][
+        if (trueLabel && fromNode.attrs[trueLabel]["value"][0] !== "") {
+          // if there already is relation from that toNode class, check if it is a 'mutual' attr
+          if (fromNode.attrs[trueLabel]["type"] === "multi")
+            fromNode.attrs[trueLabel]["value"] = fromNode.attrs[trueLabel][
               "value"
-            ].concat([fromNode.id]);
-          else if (toNode.attrs[trueLabel]["type"] === "string") {
-            toNode.attrs[trueLabel]["value"][0] += " | " + fromNode.id;
+            ].concat([toNode.id]);
+          else if (fromNode.attrs[trueLabel]["type"] === "string") {
+            fromNode.attrs[trueLabel]["value"][0] += " | " + toNode.id;
           }
         } else if (trueLabel) {
           // else just set the relation
-          toNode.attrs[trueLabel]["value"][0] = fromNode.id;
+          fromNode.attrs[trueLabel]["value"][0] = toNode.id;
         } else {
           this.showToast(
             "Relation from " +
@@ -388,7 +388,7 @@ export default {
           //   duration: 2000,
           //   position: "bottom-right",
           // }),
-          console.log(e)
+          console.log(e);
         });
     },
     itemTypeExpr() {
@@ -421,8 +421,8 @@ export default {
       )[0];
 
       if (fromNode && toNode)
-        for (let label of Object.keys(toNode.attrs)) {
-          if (label.includes(fromNode.label.toUpperCase())) {
+        for (let label of Object.keys(fromNode.attrs)) {
+          if (label.includes(toNode.label.toUpperCase())) {
             return label;
           }
         }
@@ -470,8 +470,8 @@ export default {
           (item) => item["id"] === e.args.connector.toKey
         )[0];
 
-        for (let label of Object.keys(toNode.attrs)) {
-          if (label.includes(fromNode.label.toUpperCase())) {
+        for (let label of Object.keys(fromNode.attrs)) {
+          if (label.includes(toNode.label.toUpperCase())) {
             return;
           }
         }

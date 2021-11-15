@@ -77,11 +77,11 @@ class TokenManager {
           if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[key.name]],
+              'value': [attrs[key.name].replace(/,/g, " ")],
               'options': key.options
             };
             if (key.type === "multi") {
-              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(" ")
+              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
             }
           } else if (key.name === 'ID') {
             newTokenBlock.attrs[key.name] = {
@@ -141,11 +141,11 @@ class TokenManager {
           if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[key.name]],
+              'value': [attrs[key.name].replace(/,/g, " ")],
               'options': key.options
             };
             if (key.type === "multi") {
-              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(" ")
+              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
             }
           } else if (key.name === 'ID')
             newTokenBlock.attrs[key.name] = {
