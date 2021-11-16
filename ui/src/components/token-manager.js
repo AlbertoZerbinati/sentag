@@ -14,10 +14,12 @@ class TokenManager {
         text: t[2],
       }));
       this.initialTokens = this.tokens.slice(); // SHALLOW COPY
+      this.nextIdPerClass = {};
     } else { // in case an oldTM is available
       this.currentID = oldTM.currentID;
       this.tokens = oldTM.tokens
       this.initialTokens = oldTM.initialTokens;
+      this.nextIdPerClass = oldTM.nextIdPerClass;
     }
     this.latestAddedToken = null;
   }
@@ -74,6 +76,7 @@ class TokenManager {
           text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
+          // use the attributes from parameter if available
           if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
@@ -83,10 +86,13 @@ class TokenManager {
             if (key.type === "multi") {
               newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
             }
-          } else if (key.name === 'ID') {
+          }
+          // otherwise initialize by hand
+          else if (key.name === 'ID') {
+            let tokenId = this.getNextIdPerClass(_class.name);
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [_class.name + this.currentID.toString()],
+              'value': [_class.name.charAt(0).toUpperCase() + _class.name.slice(1) + tokenId.toString()],
               'options': []
             };
           } else {
@@ -138,6 +144,7 @@ class TokenManager {
           text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
+          // use the attributes from parameter if available
           if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
@@ -147,18 +154,22 @@ class TokenManager {
             if (key.type === "multi") {
               newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
             }
-          } else if (key.name === 'ID')
+          }
+          // otherwise initialize by hand
+          else if (key.name === 'ID') {
+            let tokenId = this.getNextIdPerClass(_class.name);
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [_class.name + this.currentID.toString()],
+              'value': [_class.name.charAt(0).toUpperCase() + _class.name.slice(1) + tokenId.toString()],
               'options': []
             };
-          else
+          } else {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
               'value': [""],
               'options': key.options
             };
+          }
         }
         this.currentID += 1;
         _tokens.tokens.splice(first_index, selectedTokens.length, newTokenBlock);
@@ -211,6 +222,8 @@ class TokenManager {
         _tokens.splice(block_index, 1);
         // aggiunge i tokens interni, a livello 0 (quidni sovrascive tranquillamente this.tokens, visto che _tokens e' passato per valore)
         this.tokens = _tokens.slice(0, block_index).concat(tokens, _tokens.slice(block_index)); //(per performance)
+        // also remove the id from nextIdPerClass
+        this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
         // ritorna null... verra' ignorato
         selectedBlock = null;
       }
@@ -240,6 +253,8 @@ class TokenManager {
         _tokens.tokens.splice(block_index, 1);
         //aggiungo i tokens
         _tokens.tokens = _tokens.tokens.slice(0, block_index).concat(tokens, _tokens.tokens.slice(block_index)); //(per performance)
+        // also remove the id from nextIdPerClass
+        this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
         selectedBlock = null;
       }
     }
@@ -258,7 +273,11 @@ class TokenManager {
     this.tokens = this.initialTokens.slice();
   }
 
-
+  /**
+   * 
+   * @param {*} token 
+   * @returns 
+   */
   findTokenBlock(token) {
     return this.recursiveFindTokenBlock(token, this.tokens);
   }
@@ -301,6 +320,45 @@ class TokenManager {
       }
     }
     return false;
+  }
+
+  /**
+   * 
+   * @param {*} _class 
+   * @returns 
+   */
+  getNextIdPerClass(_class) {
+    let ids = this.nextIdPerClass[_class]
+    if (ids && ids.length) {
+      console.log(ids)
+      let next = 0;
+      for (; next < ids.length; next++) {
+        console.log(next)
+        if (ids[next] !== next + 1) { // if there's a hole (an id was removed)
+          this.nextIdPerClass[_class].splice(next, 0, next + 1); // update the array
+          return next + 1;
+        } else if (next === ids.length - 1) {
+          this.nextIdPerClass[_class].splice(next + 1, 0, next + 2); // update the array
+          return next + 2;
+        }
+      }
+    } else {
+      this.nextIdPerClass[_class] = [1]; // initialize the array
+      return 1;
+    }
+  }
+
+  /**
+   * 
+   * @param {*} _class 
+   * @param {*} id 
+   */
+  removeIdPerClass(_class, id) {
+    let index = this.nextIdPerClass[_class].indexOf(id);
+    console.log("remove index", index);
+    if (index !== -1) {
+      this.nextIdPerClass[_class].splice(index, 1);
+    }
   }
 
 }
