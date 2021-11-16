@@ -95,14 +95,14 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 mark {
-  // padding-right: 0.3rem;
-  // padding-left: 0.3rem;
-  // padding-top: 0.2rem;
-  // padding-bottom: 0.2rem;
+  padding-right: 5px;
+  padding-left: 5px;
+  padding-top: 3px;
+  padding-bottom: 3px;
   position: relative;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   margin-right: 2px;
   box-decoration-break: clone;
@@ -119,9 +119,10 @@ mark {
   border: 2.2px solid orange;
 }
 .label-start {
-  margin-right: 2px;
-  padding-right: 0px;
-  // top: 2px;
+  margin-right: 4px;
+  // padding-right: 4px;
+  top: -2px;
+  position: relative;
 }
 .label-start::after {
   content: "";

@@ -90,7 +90,7 @@ export default {
 }
 .attribute-title {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 5px;
   margin-bottom: 15px;
   text-align: center;
 }
