@@ -8,16 +8,20 @@
   >
     <span class="control">
       <span class="tag label-start">
-        <span v-if="token.attrs['ID']"
-          ><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{
+        <span v-if="token.attrs['ID']">
+          <strong :style="{ color: 'rgb(	12, 102, 161)' }">{{
             token.attrs["ID"]["value"][0]
-          }}</strong></span
-        >
-        <span v-if="!token.attrs['ID']"
+          }}</strong>
+          <span class="icon">
+            <font-awesome-icon color="#0c66a1" icon="angle-right" /> </span
+        ></span>
+        <span v-else
           ><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{
             token.label
-          }}</strong></span
-        >
+          }}</strong
+          ><span class="icon">
+            <font-awesome-icon color="#0c66a1" icon="angle-right" /> </span
+        ></span>
       </span>
     </span>
 
@@ -33,16 +37,20 @@
     <span class="control">
       <span class="tags has-addons" id="tags">
         <span class="tag label-end">
-          <span v-if="token.attrs['ID']"
-            ><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{
-              token.attrs["ID"]["value"][0]
-            }}</strong></span
-          >
-          <span v-if="!token.attrs['ID']"
+          <span v-if="token.attrs['ID']">
+            <span class="icon">
+              <font-awesome-icon color="#0c66a1" icon="angle-left" /> </span
+            ><strong :style="{ color: 'rgb(	12, 102, 161)' }"
+              >{{ token.attrs["ID"]["value"][0] }}
+            </strong>
+          </span>
+          <span v-else>
+            <span class="icon">
+              <font-awesome-icon color="#0c66a1" icon="angle-left" /> </span
             ><strong :style="{ color: 'rgb(	12, 102, 161)' }">{{
               token.label
-            }}</strong></span
-          >
+            }}</strong>
+          </span>
         </span>
         <span
           class="tag is-delete is-light is-danger"
@@ -119,28 +127,28 @@ mark {
   border: 2.2px solid orange;
 }
 .label-start {
-  margin-right: 4px;
+  margin-right: 5px;
   // padding-right: 4px;
-  top: -2px;
-  position: relative;
+  // top: -2px;
+  // position: relative;
 }
-.label-start::after {
-  content: "";
-  border-style: solid;
-  border-width: 6px 0 6px 8px;
-  border-color: transparent transparent transparent #0c66a1;
-  margin-left: 5px;
-}
+// .label-start::after {
+//   content: "";
+//   border-style: solid;
+//   border-width: 6px 0 6px 8px;
+//   border-color: transparent transparent transparent #0c66a1;
+//   margin-left: 5px;
+// }
 
 #tags {
   display: inline-flex;
 }
 
-.label-end::before {
-  content: "";
-  border-style: solid;
-  border-width: 6px 8px 6px 0;
-  border-color: transparent #0c66a1 transparent transparent;
-  margin-right: 5px;
-}
+// .label-end::before {
+//   content: "";
+//   border-style: solid;
+//   border-width: 6px 8px 6px 0;
+//   border-color: transparent #0c66a1 transparent transparent;
+//   margin-right: 5px;
+// }
 </style>

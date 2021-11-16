@@ -1,22 +1,31 @@
 const niceColors = [
+  "#F3F389",
   "#FFEE00", // giallo
-  "#FCD060", // giallo scuro
+  "#FF9F00", // giallo scuro
+  "#DD4444", // giallo scuro
+  "#BFD200",
+  "#38B000",
+  "#8FA290", // verde scuro
+  "#60D394", // verde
   "#B4FFB3", // verde chiaro
-  "#85DE77", // verde
-  "#8DA290", // verde scuro
   "#B8E1ED", // azzurro
   "#95B4CC", // turchese
+  "#62929E",
+  "#4EA8DE",
+  "#90CAF9",
   "#63CBBF", // cobalto
-  "#4F9EC4", // blu
   "#9375C3", // viola
-  "#E078ED", // fucsia
   "#C7A4DA", // violetto
   "#FFB8DE", // rosa
-  "#F65151", // rosso
-  "#CB3461", // bordeaux
-  "#f7933b", // arancio
-  "#DFA995", // marrone
-  "#D5D5D5", // grigio (18)
+  "#EC91D8",
+  "#E078ED", // fucsia
+  "#FB8F7E", // bordeaux
+  "#F03151", // rosso
+  "#E06055",
+  "#D16A8F", // arancio
+  "#B29479", // marrone
+  "#D08C60",
+  "#D1D1DA", // grigio (18)
 ];
 
 export const mutations = {

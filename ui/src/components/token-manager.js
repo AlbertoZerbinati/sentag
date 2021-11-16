@@ -271,6 +271,7 @@ class TokenManager {
    */
   resetBlocks() {
     this.tokens = this.initialTokens.slice();
+    this.nextIdPerClass = {};
   }
 
   /**
