@@ -178,51 +178,42 @@ export default {
         // console.log(node);
         // for each node, check if there exist another node with the label of one of its attributes
         for (let attr_label of Object.keys(node.attrs)) {
-          // if (!attr_label.includes("_")) continue; // not an label of interest
+          // ignore empty attributes
           if (!node.attrs[attr_label]["value"].length) continue;
 
-          // extract the true label
+          // extract the true label (for ex from O_REQ extract REQ)
           let target_label = "";
           if (attr_label.includes("_")) target_label = attr_label.split("_")[1];
           else target_label = attr_label;
 
-          // console.log(
-          //   attr_label + node.attrs[attr_label]["value"][0].split(",")
-          // );
-          // console.log(attr_label)
+          // if there is at least one node labelled as targetLabel
           if (
             nodes.map((node) => node.label.toUpperCase()).includes(target_label)
           ) {
-            // console.log(nodes.map((n) => n.id));
-
-            // console.log(
-            //   node.attrs[attr_label]["value"][0].toString().split(" | ").includes()
-            // );
-
-            // if there's one, than check if there must be an edge between the two
+            // check if there must be an edge between the two (by comparing id's)
             if (
-              node.attrs[attr_label]["value"][0] !== null &&
+              node.attrs[attr_label]["value"][0] &&
               nodes
                 .map((n) => n.id)
                 .filter(
                   (id) =>
                     node.attrs[attr_label]["value"][0]
-                      .toString()
-                      .split(" | ") // string attr
-                      .includes(id.toString()) ||
-                    node.attrs[attr_label]["value"].includes(id.toString()) // multi attr
+                      .split(" | ")[1] // access id's
+                      .split(" ")
+                      .includes(id.toString())
+                  /*|| node.attrs[attr_label]["value"].includes(id.toString()) // multi attr */
                 ).length
             ) {
               console.log(".");
               // here we are sure there exist a connection between two nodes:
-              // the pointed one is 'node', the other one has ID in node.attrs[attr_label]["value"]
+              // the pointer one is 'node', the pointed one has ID in node.attrs[attr_label]["value"]
 
               // we then cycle over every toNode:
               // not multi attr
-              if (node.attrs[attr_label]["type"] !== "multi") {
+              if (node.attrs[attr_label]["type"] === "string") {
                 for (let to_id of node.attrs[attr_label]["value"][0]
-                  .toString()
-                  .split(" | ")) {
+                  .split(" | ")[1] // access id's
+                  .split(" ")) {
                   let toNode = nodes.filter(
                     (n) => n.id.toString() === to_id.toString()
                   )[0];
@@ -236,7 +227,8 @@ export default {
                     ]);
                   }
                 }
-              } else {
+              }
+              /*else {
                 // multi attr
                 for (let to_id of node.attrs[attr_label]["value"]) {
                   let toNode = nodes.filter(
@@ -253,6 +245,7 @@ export default {
                   }
                 }
               }
+                */
             }
           }
         }
@@ -276,9 +269,9 @@ export default {
             if (node2.attrs[trueLabel]["type"] !== "multi") {
               // not multi attr
               node2.attrs[trueLabel]["value"][0] = "";
-            } else {
+            } /* else {
               node2.attrs[trueLabel]["value"] = [];
-            }
+            } */
         }
       }
 
@@ -304,19 +297,26 @@ export default {
           }
         }
         // modify the fromNode attribute labelled as toNode
-        //    NOTE: this also pushes the changes into the tokenManger already
         if (trueLabel && fromNode.attrs[trueLabel]["value"][0] !== "") {
-          // if there already is relation from that toNode class, check if it is a 'mutual' attr
-          if (fromNode.attrs[trueLabel]["type"] === "multi")
-            fromNode.attrs[trueLabel]["value"] = fromNode.attrs[trueLabel][
-              "value"
-            ].concat([toNode.id]);
-          else if (fromNode.attrs[trueLabel]["type"] === "string") {
-            fromNode.attrs[trueLabel]["value"][0] += " | " + toNode.id;
+          // if (fromNode.attrs[trueLabel]["type"] === "multi")
+          //   fromNode.attrs[trueLabel]["value"] = fromNode.attrs[trueLabel][
+          //     "value"
+          //   ].concat([toNode.id]);
+          /* else */
+
+          // if there already is relation from that toNode class append id and attrs['ID']
+          if (fromNode.attrs[trueLabel]["type"] === "string") {
+            fromNode.attrs[trueLabel]["value"][0] =
+              toNode.attrs["ID"]["value"][0] +
+              " " +
+              fromNode.attrs[trueLabel]["value"][0] +
+              " " +
+              toNode.id.toString();
           }
         } else if (trueLabel) {
-          // else just set the relation
-          fromNode.attrs[trueLabel]["value"][0] = toNode.id;
+          // else set the first relation
+          fromNode.attrs[trueLabel]["value"][0] =
+            toNode.attrs["ID"]["value"][0] + " | " + toNode.id.toString();
         } else {
           this.showToast(
             "Relation from " +

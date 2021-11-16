@@ -484,7 +484,7 @@ def completed_tagging(request, id):
                 for k, v in t['attrs'].items():
                     if v['value'][0] != "":
                         start_tag = start_tag + \
-                            f' {k}="{" ".join([str(val) for val in v["value"]])}"'
+                            f' {k}="{" ".join([str(val).split("|")[0].strip() for val in v["value"]])}"'
                 start_tag = start_tag + '>'
                 words.append(start_tag)
 

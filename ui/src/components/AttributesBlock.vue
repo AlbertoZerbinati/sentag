@@ -33,14 +33,26 @@
             ><strong class="tag">{{ at }}</strong></label
           >
         </div>
-        <div class="field-body" v-if="at !== 'PRO' && at !== 'CON'">
+        <div class="field-body" v-if="at === 'ID'">
+          <div class="field">
+            <p class="control">
+              <input
+                @keydown="onKeyUp"
+                v-model="currentBlock.attrs[at]['value'][0]"
+                class="input is-normal"
+                type="text"
+              />
+            </p>
+          </div>
+        </div>
+        <div class="field-body" v-else-if="at !== 'PRO' && at !== 'CON'">
           <div class="field">
             <p class="control">
               <input
                 v-if="currentBlock.attrs[at]['type'] === 'string'"
                 @keydown="onKeyUp"
-                v-model="currentBlock.attrs[at]['value'][0]"
-                v-maxchars="18"
+                v-bind:value="currentBlock.attrs[at]['value'][0].split('|')[0]"
+                disabled
                 class="input is-normal"
                 type="text"
               />
@@ -177,7 +189,7 @@ export default {
 }
 .attribute-title {
   width: 100%;
-  margin-top: 15px;
+  margin-top: 5px;
   margin-bottom: 15px;
   text-align: center;
 }
