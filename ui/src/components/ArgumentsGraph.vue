@@ -180,11 +180,11 @@ export default {
       for (var node of nodes) {
         if (node.attrs["PRO"] && node.attrs["PRO"]["value"][0] !== "") {
           // if this node supportes others
-          const supported = node.attrs["PRO"]["value"];
+          const supported = node.attrs["PRO"]["value"][0]
+            .split(" | ")[1]
+            .split(" ");
           for (const sup of supported) {
-            const toNode = nodes.filter(
-              (n) => n.attrs["ID"]["value"][0] === sup
-            )[0];
+            const toNode = nodes.filter((n) => n.id.toString() === sup)[0];
             if (toNode) {
               // push a support edge
               this.edgesDataSource.push([
@@ -198,11 +198,13 @@ export default {
         }
         if (node.attrs["CON"] && node.attrs["CON"]["value"][0] !== "") {
           // if this node attacks others
-          const attacked_nodes = node.attrs["CON"]["value"];
+          const attacked_nodes = node.attrs["CON"]["value"][0]
+            .split(" | ")[1]
+            .split(" ");
+          console.log(attacked_nodes);
           for (const attacked of attacked_nodes) {
-            const toNode = nodes.filter(
-              (n) => n.attrs["ID"]["value"][0] === attacked
-            )[0];
+            const toNode = nodes.filter((n) => n.id.toString() === attacked)[0];
+            console.log(nodes.map((n) => n.id));
             if (toNode) {
               // push an attack edge
               this.edgesDataSource.push([
@@ -239,6 +241,10 @@ export default {
           (item) => item["id"] == connector.to
         )[0];
 
+        if (!toNode || !fromNode) {
+          continue;
+        }
+
         // modify their attributes: 'PRO', 'CON'
         //    NOTE: this also pushes the changes into the tokenManger already
         //    TODO: 'S' attribute??
@@ -247,13 +253,16 @@ export default {
           if (fromNode.attrs["PRO"]) {
             if (fromNode.attrs["PRO"]["value"][0] !== "") {
               // if there already is a supporter, append the new one
-              fromNode.attrs["PRO"]["value"].push(
-                toNode.attrs["ID"]["value"][0]
-              );
+              fromNode.attrs["PRO"]["value"][0] =
+                toNode.attrs["ID"]["value"][0] +
+                " " +
+                fromNode.attrs["PRO"]["value"][0] +
+                " " +
+                toNode.id.toString();
             } else {
               // else just set the supporter
               fromNode.attrs["PRO"]["value"][0] =
-                toNode.attrs["ID"]["value"][0];
+                toNode.attrs["ID"]["value"][0] + " | " + toNode.id.toString();
             }
           } else {
             this.showToast(
@@ -269,13 +278,16 @@ export default {
           if (fromNode.attrs["CON"]) {
             if (fromNode.attrs["CON"]["value"][0] !== "") {
               // if there already is an attacked, append the new one
-              fromNode.attrs["CON"]["value"].push(
-                toNode.attrs["ID"]["value"][0]
-              );
+              fromNode.attrs["CON"]["value"] =
+                toNode.attrs["ID"]["value"][0] +
+                " " +
+                fromNode.attrs["CON"]["value"][0] +
+                " " +
+                toNode.id.toString();
             } else {
               // else just set the attacked
               fromNode.attrs["CON"]["value"][0] =
-                toNode.attrs["ID"]["value"][0];
+                toNode.attrs["ID"]["value"][0] + " | " + toNode.id.toString();
             }
           } else {
             this.showToast(
