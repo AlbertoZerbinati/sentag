@@ -180,39 +180,45 @@ export default {
       for (var node of nodes) {
         if (node.attrs["PRO"] && node.attrs["PRO"]["value"][0] !== "") {
           // if this node supportes others
-          const supported = node.attrs["PRO"]["value"][0]
-            .split(" | ")[1]
-            .split(" ");
-          for (const sup of supported) {
-            const toNode = nodes.filter((n) => n.id.toString() === sup)[0];
-            if (toNode) {
-              // push a support edge
-              this.edgesDataSource.push([
-                {
-                  type: "insert",
-                  data: { from: node.id, to: toNode.id, type: "support" },
-                },
-              ]);
+          if (node.attrs["PRO"]["value"][0].split(" | ").length > 1) {
+            const supported = node.attrs["PRO"]["value"][0]
+              .split(" | ")[1]
+              .split(" ");
+            for (const sup of supported) {
+              const toNode = nodes.filter((n) => n.id.toString() === sup)[0];
+              if (toNode) {
+                // push a support edge
+                this.edgesDataSource.push([
+                  {
+                    type: "insert",
+                    data: { from: node.id, to: toNode.id, type: "support" },
+                  },
+                ]);
+              }
             }
           }
         }
         if (node.attrs["CON"] && node.attrs["CON"]["value"][0] !== "") {
           // if this node attacks others
-          const attacked_nodes = node.attrs["CON"]["value"][0]
-            .split(" | ")[1]
-            .split(" ");
-          console.log(attacked_nodes);
-          for (const attacked of attacked_nodes) {
-            const toNode = nodes.filter((n) => n.id.toString() === attacked)[0];
-            console.log(nodes.map((n) => n.id));
-            if (toNode) {
-              // push an attack edge
-              this.edgesDataSource.push([
-                {
-                  type: "insert",
-                  data: { from: node.id, to: toNode.id, type: "attack" },
-                },
-              ]);
+          if (node.attrs["CON"]["value"][0].split(" | ").length > 1) {
+            const attacked_nodes = node.attrs["CON"]["value"][0]
+              .split(" | ")[1]
+              .split(" ");
+            console.log(attacked_nodes);
+            for (const attacked of attacked_nodes) {
+              const toNode = nodes.filter(
+                (n) => n.id.toString() === attacked
+              )[0];
+              console.log(nodes.map((n) => n.id));
+              if (toNode) {
+                // push an attack edge
+                this.edgesDataSource.push([
+                  {
+                    type: "insert",
+                    data: { from: node.id, to: toNode.id, type: "attack" },
+                  },
+                ]);
+              }
             }
           }
         }
