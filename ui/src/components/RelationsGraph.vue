@@ -21,7 +21,7 @@
         :style-expr="itemStyleExpr"
         :key-expr="'id'"
       >
-        <DxAutoLayout :orientation="'horizontal'" :type="'auto'" />
+        <DxAutoLayout :orientation="'horizontal'" :type="'tree'" />
       </DxNodes>
 
       <DxEdges :data-source="edgesDataSource" :text-expr="edgeTextExpr" />

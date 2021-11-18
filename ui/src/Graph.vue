@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-desktop">
+  <div>
     <div class="column">
       <div class="panel">
         <div class="panel-heading" style="position: relative">

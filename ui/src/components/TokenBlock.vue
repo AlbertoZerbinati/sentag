@@ -107,13 +107,14 @@ export default {
 mark {
   padding-right: 5px;
   padding-left: 5px;
-  padding-top: 3px;
-  padding-bottom: 3px;
+  padding-top: 3.2px;
+  padding-bottom: 3.2px;
   position: relative;
   border-radius: 6px;
   cursor: pointer;
   margin-right: 2px;
   box-decoration-break: clone;
+  z-index: 100;
   -webkit-box-decoration-break: clone; /* most browsers need -webkit */
 
   // &::after {
@@ -125,6 +126,8 @@ mark {
 }
 .current {
   border: 2.2px solid orange;
+  z-index: 1000;
+  position: relative;
 }
 .label-start {
   margin-right: 5px;
