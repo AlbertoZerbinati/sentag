@@ -204,12 +204,12 @@ export default {
             const attacked_nodes = node.attrs["CON"]["value"][0]
               .split(" | ")[1]
               .split(" ");
-            console.log(attacked_nodes);
+            // console.log(attacked_nodes);
             for (const attacked of attacked_nodes) {
               const toNode = nodes.filter(
                 (n) => n.id.toString() === attacked
               )[0];
-              console.log(nodes.map((n) => n.id));
+              // console.log(nodes.map((n) => n.id));
               if (toNode) {
                 // push an attack edge
                 this.edgesDataSource.push([
@@ -246,7 +246,6 @@ export default {
         var toNode = this.nodesDataSource._array.filter(
           (item) => item["id"] == connector.to
         )[0];
-
         if (!toNode || !fromNode) {
           continue;
         }
@@ -284,13 +283,14 @@ export default {
           if (fromNode.attrs["CON"]) {
             if (fromNode.attrs["CON"]["value"][0] !== "") {
               // if there already is an attacked, append the new one
-              fromNode.attrs["CON"]["value"] =
+              fromNode.attrs["CON"]["value"][0] =
                 toNode.attrs["ID"]["value"][0] +
                 " " +
                 fromNode.attrs["CON"]["value"][0] +
                 " " +
                 toNode.id.toString();
             } else {
+              console.log("from", fromNode.id, "to", toNode.id, connector.type);
               // else just set the attacked
               fromNode.attrs["CON"]["value"][0] =
                 toNode.attrs["ID"]["value"][0] + " | " + toNode.id.toString();
@@ -318,6 +318,11 @@ export default {
         // ignore edges without an assigned type (the black ones)!!!
       }
 
+      // updated attributes of nested blocks
+      for (let t of this.nodesDataSource._array) {
+        this.tm.updateBlockAttrs(t);
+      }
+
       // now that all the changes have been pushed into the TM,
       // PUT the token manager into the database, via an axios call
       function getCookie(name) {
@@ -341,11 +346,6 @@ export default {
         tm: JSON.stringify(this.tm),
         cp: false, // set as not completed: the annotator will have to manually set it in the tagging page
       };
-
-      // updated attributes of nested blocks
-      for (let t of this.nodesDataSource._array) {
-        this.tm.updateBlockAttrs(t);
-      }
 
       axios
         .put("/api/update/" + this.tagging_id, params, {
@@ -440,7 +440,7 @@ export default {
     //   console.log(this.selectedNode)
     // },
     onItemClick(obj) {
-      // console.log({ "item click": obj});
+      console.log({ "item click": obj.item.dataItem });
       if (obj.item.itemType === "shape") {
         this.selectedNode = obj.item;
         // this.popupContentText = this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..."

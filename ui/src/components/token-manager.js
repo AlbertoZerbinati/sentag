@@ -341,13 +341,14 @@ class TokenManager {
     if (Array.isArray(_tokens)) {
       for (let t of _tokens) {
         if (t.type == "token-block") {
-          if (t.id == token.id) {
+          if (t.id.toString() == token.id.toString()) {
             let token_start = t.start;
             let index = _tokens.map(t => t.start).indexOf(token_start);
             _tokens.splice(index, 1, token);
             return true;
           } else if (Array.isArray(t.tokens)) {
-            return this.recursiveReplaceTokenBlock(token, t.tokens);
+            if (this.recursiveReplaceTokenBlock(token, t.tokens))
+              return true
           }
         }
       }
