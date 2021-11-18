@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-desktop">
+  <div class="columns is-mobile">
     <div class="column">
       <div class="panel">
         <div class="panel-heading" style="position: relative">
@@ -168,7 +168,7 @@ export default {
         let end =
           start + content.length - content.trimEnd().split(" ").at(-1).length;
 
-        console.log("content", content);
+        // console.log("content", content);
         console.log("start", start);
         console.log("end", end);
 
@@ -187,8 +187,8 @@ export default {
             attrs[attribute_name] = xmlNode.getAttribute(attribute.name);
           }
         }
-        console.log(currentClass)
-        console.log(attrs)
+        // console.log(currentClass)
+        console.log("attrs",attrs)
 
         if (currentClass) {
           // set the indices of start and end and the current class and add the token-block into the token manager
@@ -252,9 +252,10 @@ export default {
 
         // add the blocks recursively
         for (let node of xmlDoc.childNodes) parseNode(node, 0);
+        this.tokenManager.adjustIDs()
 
         // and save as completed into database
-        // this.done = true;
+        this.done = true;
       }
     },
     selectTokens() {

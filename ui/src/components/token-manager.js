@@ -87,6 +87,21 @@ class TokenManager {
               newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
             }
           }
+          // in case this is a general attribute, it has to be specialized
+          else if (attrs &&
+            Object.keys(attrs).some((a) => key.name.includes(a + "_") &&
+              attrs[key.name.charAt(0)].toLowerCase().includes(key.name.substr(2).toLowerCase()))) {
+            console.log(key.name + " -> ")
+            // make sure this is the attribute key referring to the content of the attrs
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [attrs[key.name.charAt(0)].replace(/,/g, " ")],
+              'options': key.options
+            };
+            if (key.type === "multi") {
+              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
+            }
+          }
           // otherwise initialize by hand
           else if (key.name === 'ID') {
             let tokenId = this.getNextIdPerClass(_class.name);
@@ -149,6 +164,21 @@ class TokenManager {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
               'value': [attrs[key.name].replace(/,/g, " ")],
+              'options': key.options
+            };
+            if (key.type === "multi") {
+              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
+            }
+          }
+          // in case this is a general attribute, it has to be specialized
+          else if (attrs &&
+            Object.keys(attrs).some((a) => key.name.includes(a + "_") &&
+              attrs[key.name.charAt(0)].toLowerCase().includes(key.name.substr(2).toLowerCase()))) {
+            console.log(key.name + " -> ")
+            // make sure this is the attribute key referring to the content of the attrs
+            newTokenBlock.attrs[key.name] = {
+              'type': key.type,
+              'value': [attrs[key.name.charAt(0)].replace(/,/g, " ")],
               'options': key.options
             };
             if (key.type === "multi") {
@@ -223,7 +253,8 @@ class TokenManager {
         // aggiunge i tokens interni, a livello 0 (quidni sovrascive tranquillamente this.tokens, visto che _tokens e' passato per valore)
         this.tokens = _tokens.slice(0, block_index).concat(tokens, _tokens.slice(block_index)); //(per performance)
         // also remove the id from nextIdPerClass
-        this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
+        if (selectedBlock.attrs['ID'])
+          this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
         // ritorna null... verra' ignorato
         selectedBlock = null;
       }
@@ -254,7 +285,8 @@ class TokenManager {
         //aggiungo i tokens
         _tokens.tokens = _tokens.tokens.slice(0, block_index).concat(tokens, _tokens.tokens.slice(block_index)); //(per performance)
         // also remove the id from nextIdPerClass
-        this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
+        if (selectedBlock.attrs['ID'])
+          this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
         selectedBlock = null;
       }
     }
@@ -360,6 +392,45 @@ class TokenManager {
     if (index !== -1) {
       this.nextIdPerClass[_class].splice(index, 1);
     }
+  }
+
+  /**
+   * 
+   */
+  adjustIDs() {
+    // obtain list of all token-blocks
+    let stack = [...this.tokens];
+    let allTokens = [];
+    while (stack.length) {
+      let t = stack.pop()
+      if (t.type === "token-block") {
+        allTokens.push(t)
+        stack.push(...t.tokens)
+      }
+    }
+    console.log(allTokens)
+    // for each token-block
+    for (let token of allTokens) {
+      // for each attribute
+      for (let attr_key of Object.keys(token.attrs)) {
+        if (attr_key != "ID" && token.attrs[attr_key]["type"] == "string") {
+          // for each value of the attribute (like "Claim1", "Claim2", ...)
+          for (let value_attrs of token.attrs[attr_key]["value"][0].split(" ")) {
+            // find the token with that ID
+            let pointed_token = allTokens.find((a) => a.id != token.id && a.attrs["ID"] && a.attrs["ID"]["value"][0] == value_attrs);
+            // and add the id to the attribute with the usual convention ID ID | id id
+            if (pointed_token) {
+              if (token.attrs[attr_key]["value"][0].includes(" | ")) {
+                token.attrs[attr_key]["value"][0] = token.attrs[attr_key]["value"][0] + " " + pointed_token.id.toString();
+              } else {
+                token.attrs[attr_key]["value"][0] = token.attrs[attr_key]["value"][0] + " | " + pointed_token.id.toString();
+              }
+            }
+          }
+        }
+      }
+    }
+
   }
 
 }
