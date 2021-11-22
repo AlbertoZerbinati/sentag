@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from lxml import etree
+import xmlschema
 from .serializers import TaggingSerializer
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -537,15 +537,13 @@ def completed_tagging(request, id):
 
         # validate xml
         schema_string = tagging.judgment.xsd.tags
-        schema_root = etree.XML(schema_string.encode('ascii'))
-        xmlschema = etree.XMLSchema(schema_root)
-        # parser = etree.XMLParser(schema=xmlschema)
+        schema = xmlschema.XMLSchema11(schema_string.encode('utf-8'))
         try:
-            xmlschema.assertValid(etree.parse(StringIO(xml_string)))
-        except etree.DocumentInvalid as error:
+            xmlschema.validate(xml_string, schema, cls=xmlschema.XMLSchema11)
+        except xmlschema.XMLSchemaValidationError as error:
             # if not valid return fail with error message
             print(str(error))
-            return Response(data={"Validation error: " + str(error)}, status=500)
+            return Response(data={"Validation error:\n\n" + str(error)[:str(error).find("Schema")-2]}, status=500)
 
         # else if valid then save in db WITH XML TEXT and return success
         serializer = TaggingSerializer(instance=tagging, data={'token_manager': json.dumps(
