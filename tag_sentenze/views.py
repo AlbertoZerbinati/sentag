@@ -437,10 +437,11 @@ def update_tagging(request, id):
 
     # read tm from request
     token_manager = json.dumps(request.data['tm'])
+    comments = request.data['comments']
     completed = False
 
     serializer = TaggingSerializer(instance=tagging, data={
-                                   'token_manager': token_manager, 'completed': completed}, partial=True, many=False)
+                                   'token_manager': token_manager, 'comments': comments, 'completed': completed}, partial=True, many=False)
     if serializer.is_valid():
         serializer.save()
     return HttpResponse("Updated")
@@ -462,6 +463,7 @@ def completed_tagging(request, id):
 
     # read tm and cp from request
     token_manager = json.loads(request.data['tm'])
+    comments = request.data['comments']
     completed = request.data['cp']
 
     if completed:
@@ -547,7 +549,7 @@ def completed_tagging(request, id):
 
         # else if valid then save in db WITH XML TEXT and return success
         serializer = TaggingSerializer(instance=tagging, data={'token_manager': json.dumps(
-            request.data['tm']), 'completed': completed, 'xml_text': xml_string}, partial=True, many=False)
+            request.data['tm']), 'comments': comments, 'completed': completed, 'xml_text': xml_string}, partial=True, many=False)
 
         if serializer.is_valid():
             serializer.save()

@@ -29,6 +29,7 @@ export default {
       "setInputText",
       "setXMLText",
       "setTokenManager",
+      "setComments",
       "addClass",
       "setDone",
     ]),
@@ -51,7 +52,6 @@ export default {
         // 2) il titolo della sentenza
         this.title = res.data["name"];
         // 3) il vecchio token manager
-
         if (!this.tokenManager) {
           this.oldtm = res.data["token_manager"];
           if (this.oldtm.length) {
@@ -59,9 +59,11 @@ export default {
           }
           this.setTokenManager(this.oldtm);
         }
-        // 4) il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
+        // 4) the comments
+        this.setComments(res.data["comments"]);
+        // 5) il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
         this.setDone(res.data["completed"]);
-        // 5) i tag da parsare, perché passati come xsd string
+        // 6) i tag da parsare, perché passati come xsd string
         let xml = res.data["tags"];
 
         // parsing delle classi di tag, sfrutta XPath

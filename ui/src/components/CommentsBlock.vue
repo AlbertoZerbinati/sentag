@@ -6,9 +6,9 @@
       </div>
       <textarea
         class="textarea"
-        rows="10"
-        placeholder="Write here personal comments"
-        v-model="comments"
+        rows="20"
+        placeholder="Write here your comments"
+        v-model="_comments"
         @keyup="onKeyUp"
       >
       </textarea>
@@ -17,29 +17,26 @@
 </template>
 
 <script>
-import { mapMutations } from "vuex";
+import { mapState, mapMutations } from "vuex";
 
 export default {
   name: "CommentsBlock",
   computed: {
-    comments: {
+    ...mapState(["comments"]),
+    _comments: {
       get() {
-        return this.$store._state.data.comments;
+        return this.comments;
       },
       set(value) {
-        this.$store.commit("updateComments", value);
+        this.setComments(value);
       },
     },
   },
   methods: {
-    ...mapMutations(["setUnsavedWork", "setDone"]),
-    onKeyUp(e) {
-      if (e.key === ">" || e.key === "<" || e.key === " " || e.key === '"') {
-        e.preventDefault();
-      } else {
-        this.setUnsavedWork(true);
-        this.setDone(false);
-      }
+    ...mapMutations(["setUnsavedWork", "setDone", "setComments"]),
+    onKeyUp() {
+      this.setUnsavedWork(true);
+      this.setDone(false);
     },
   },
 };

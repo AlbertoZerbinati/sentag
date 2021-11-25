@@ -69,7 +69,7 @@ export const mutations = {
   setUnsavedWork(state, payload) {
     state.unsavedWork = payload;
   },
-  updateComments(state, payload) {
+  setComments(state, payload) {
     state.comments = payload;
   }
 };
@@ -78,7 +78,7 @@ export default {
   state() {
     return {
       tokenManager: {},
-      comments: "asl",
+      comments: "",
       classes: [],
       inputText: "",
       XMLText: "",
