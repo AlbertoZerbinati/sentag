@@ -21,7 +21,10 @@
     </div>
 
     <div
-      v-if="Object.keys(currentBlock).length && Object.keys(currentBlock.attrs).length"
+      v-if="
+        Object.keys(currentBlock).length &&
+        Object.keys(currentBlock.attrs).length
+      "
     >
       <div
         class="field is-horizontal"
@@ -41,7 +44,7 @@
                 v-model="currentBlock.attrs[at]['value'][0]"
                 class="input is-normal"
                 type="text"
-                :disabled="!enable"
+                :disabled="!enabled"
               />
             </p>
           </div>
@@ -52,8 +55,11 @@
               <input
                 v-if="currentBlock.attrs[at]['type'] === 'string'"
                 @keydown="onKeyUp"
-                v-bind:value="currentBlock.attrs[at]['value'][0].split('|')[0]"
-                :disabled="!enable"
+                :value="currentBlock.attrs[at]['value'][0].split('|')[0]"
+                @change="
+                  currentBlock.attrs[at]['value'][0] = $event.target.value
+                "
+                :disabled="!enabled"
                 class="input is-normal"
                 type="text"
               />
@@ -98,9 +104,9 @@
           <div class="field">
             <p class="control">
               <input
-                v-bind:value="currentBlock.attrs[at]['value'][0].split('|')[0]"
+                :value="currentBlock.attrs[at]['value'][0].split('|')[0]"
                 class="input is-normal"
-                :disabled="!enable"
+                :disabled="!enabled"
                 title="You can only edit this through the Graph interface"
                 type="text"
               />
@@ -111,10 +117,11 @@
       <div class="is-pulled-right">
         <input
           id="switchRoundedDanger"
-          v-model="enable"
+          v-model="enabled"
           type="checkbox"
           name="switchRoundedDanger"
           class="switch is-rounded is-danger is-small"
+          @change="warning"
         />
         <label for="switchRoundedDanger">Edit</label>
       </div>
@@ -133,7 +140,7 @@ export default {
     VueMultiselect,
   },
   data: function () {
-    return { enable: false };
+    return { enabled: false };
   },
   computed: {
     ...mapState([
@@ -158,24 +165,13 @@ export default {
       this.setUnsavedWork(true);
       this.setDone(false);
     },
-  },
-  directives: {
-    maxchars: {
-      twoWay() {
-        true;
-      },
-      beforeMount(el, binding) {
-        let maxChars = binding.value;
-        let handler = function (e) {
-          if (e.target.value.length > maxChars) {
-            e.target.value = e.target.value.substr(0, maxChars);
-          }
-        };
-        el.addEventListener("input", handler);
-      },
-      unmounted(el, binding) {
-        el.removeEventListener(binding.arg, console.log(binding.value));
-      },
+    warning() {
+      if (this.enabled) {
+        alert(
+          "Warning!\nEditing attributes manually could disrupt the integrity of your work.\n" +
+            "In order to avoid damage, consider using the graph interface."
+        );
+      }
     },
   },
 };
