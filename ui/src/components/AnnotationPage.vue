@@ -169,8 +169,8 @@ export default {
           start + content.length - content.trimEnd().split(" ").at(-1).length;
 
         // console.log("content", content);
-        console.log("start", start);
-        console.log("end", end);
+        // console.log("start", start);
+        // console.log("end", end);
 
         // otherwise th is a node
         // apart for the initial tag (<sentag>) and the <br/> 's we need to add the block into the TM
@@ -184,11 +184,29 @@ export default {
         if (xmlNode.attributes) {
           for (let attribute of xmlNode.attributes) {
             let attribute_name = attribute.name.toString();
-            attrs[attribute_name] = xmlNode.getAttribute(attribute.name);
+            // manage <part> separately...
+            if (xmlNode.nodeName == "part" && attribute_name == "P") {
+              attribute_name = "ID";
+              let value = xmlNode.getAttribute(attribute.name);
+              attrs[attribute_name] = value.toLowerCase().includes("part")
+                ? value
+                : "Part" + value;
+            } else if (attribute_name == "P") {
+              let value = xmlNode.getAttribute(attribute.name);
+              attrs[attribute_name] = value.toLowerCase().includes("part")
+                ? value
+                : "Part" + value.split(/ +|,|\|/).join(" Part");
+            } else {
+              attrs[attribute_name] = xmlNode.getAttribute(attribute.name);
+            }
           }
         }
+        // if (xmlNode.nodeName == "part") {
+        console.log("attrs", attrs);
+        // }
+
         // console.log(currentClass)
-        console.log("attrs",attrs)
+        // console.log("attrs",attrs)
 
         if (currentClass) {
           // set the indices of start and end and the current class and add the token-block into the token manager
@@ -244,18 +262,18 @@ export default {
         // remove excessive \n
         xml = xml.replace(/(<br\/> *){3,}/g, "<br/> <br/> ");
 
-        console.log(xml);
-        console.log(this.inputText);
+        // console.log(xml);
+        // console.log(this.inputText);
 
         let parser = new DOMParser();
         let xmlDoc = parser.parseFromString(xml, "text/xml");
 
         // add the blocks recursively
         for (let node of xmlDoc.childNodes) parseNode(node, 0);
-        this.tokenManager.adjustIDs()
+        this.tokenManager.adjustIDs();
 
         // and save as completed into database
-        this.done = true;
+        // this.done = true;
       }
     },
     selectTokens() {

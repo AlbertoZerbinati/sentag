@@ -21,7 +21,7 @@
     </div>
 
     <div
-      v-if="Object.keys(currentBlock).length && Object.keys(currentBlock.attrs)"
+      v-if="Object.keys(currentBlock).length && Object.keys(currentBlock.attrs).length"
     >
       <div
         class="field is-horizontal"
@@ -41,6 +41,7 @@
                 v-model="currentBlock.attrs[at]['value'][0]"
                 class="input is-normal"
                 type="text"
+                :disabled="!enable"
               />
             </p>
           </div>
@@ -52,7 +53,7 @@
                 v-if="currentBlock.attrs[at]['type'] === 'string'"
                 @keydown="onKeyUp"
                 v-bind:value="currentBlock.attrs[at]['value'][0].split('|')[0]"
-                disabled
+                :disabled="!enable"
                 class="input is-normal"
                 type="text"
               />
@@ -99,13 +100,23 @@
               <input
                 v-bind:value="currentBlock.attrs[at]['value'][0].split('|')[0]"
                 class="input is-normal"
-                disabled
+                :disabled="!enable"
                 title="You can only edit this through the Graph interface"
                 type="text"
               />
             </p>
           </div>
         </div>
+      </div>
+      <div class="is-pulled-right">
+        <input
+          id="switchRoundedDanger"
+          v-model="enable"
+          type="checkbox"
+          name="switchRoundedDanger"
+          class="switch is-rounded is-danger is-small"
+        />
+        <label for="switchRoundedDanger">Edit</label>
       </div>
     </div>
   </div>
@@ -114,11 +125,15 @@
 <script>
 import { mapState, mapMutations } from "vuex";
 import VueMultiselect from "vue-multiselect";
+import "bulma-switch";
 
 export default {
   name: "AttributesBlock",
   components: {
     VueMultiselect,
+  },
+  data: function () {
+    return { enable: false };
   },
   computed: {
     ...mapState([
@@ -197,5 +212,8 @@ export default {
   font-size: 130%;
   text-shadow: 0.6px 0.6px 0.8px #0c66a1;
   color: #0c66a1;
+}
+#switchRoundedDanger {
+  margin-top: 10px;
 }
 </style>

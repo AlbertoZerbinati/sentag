@@ -409,7 +409,7 @@ class TokenManager {
         stack.push(...t.tokens)
       }
     }
-    console.log(allTokens)
+
     // for each token-block
     for (let token of allTokens) {
       // for each attribute
