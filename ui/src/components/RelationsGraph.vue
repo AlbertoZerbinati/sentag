@@ -78,6 +78,7 @@ export default {
   data() {
     return {
       tm: {},
+      comments: "",
       nodesDataSource: {},
       edgesDataSource: {},
       popupVisible: false,
@@ -128,6 +129,8 @@ export default {
     axios
       .get("/api/" + this.tagging_id)
       .then((res) => {
+        // get the comments
+        this.comments = res.data["comments"];
         // get the old token manager, if available
         this.tm = res.data["token_manager"];
         if (!this.tm.length) {
@@ -359,6 +362,7 @@ export default {
       const csrftoken = getCookie("csrftoken");
       const params = {
         tm: JSON.stringify(this.tm),
+        comments: this.comments,
         cp: false, // set as not completed: the annotator will have to manually set it in the tagging page
       };
       axios

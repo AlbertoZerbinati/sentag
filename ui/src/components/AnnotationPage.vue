@@ -50,7 +50,7 @@
               </button>
             </p>
             <p class="control">
-              <button class="button is-link" @click="saveTags">
+              <button class="button" :class="{'is-link' : unsavedWork}" @click="saveTags">
                 <span class="icon is-small">
                   <font-awesome-icon icon="check" />
                 </span>
@@ -101,6 +101,7 @@ export default {
       "inputText",
       "XMLText",
       "tokenManager",
+      "comments",
       "classes",
       "annotations",
       "currentClass",
@@ -202,7 +203,7 @@ export default {
           }
         }
         // if (xmlNode.nodeName == "part") {
-        console.log("attrs", attrs);
+        // console.log("attrs", attrs);
         // }
 
         // console.log(currentClass)
@@ -348,6 +349,7 @@ export default {
       const csrftoken = getCookie("csrftoken");
       const params = {
         tm: JSON.stringify(this.tokenManager),
+        comments: this.comments,
         cp: this.done,
       };
 
@@ -394,6 +396,7 @@ export default {
       const csrftoken = getCookie("csrftoken");
       const params = {
         tm: JSON.stringify(this.tokenManager),
+        comments: this.comments,
         cp: this.done,
       };
       axios
