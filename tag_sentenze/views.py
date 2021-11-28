@@ -267,18 +267,18 @@ def auto_assignment(judgment_id, current_user_id=-1, xml_string=""):
     ret = -1
     # create the new tagging
     for user_id in id_list:
-        if user_id == current_user_id:
-            new_tagging = Tagging.objects.create(
-                profile=Profile.objects.get(pk=user_id),
-                judgment=Judgment.objects.get(id=judgment_id),
-                xml_text=xml_string,
-            )
-            ret = new_tagging.id
-        else:
-            new_tagging = Tagging.objects.create(
-                profile=Profile.objects.get(pk=user_id),
-                judgment=Judgment.objects.get(id=judgment_id),
-            )
+        # if user_id == current_user_id:
+        new_tagging = Tagging.objects.create(
+            profile=Profile.objects.get(pk=user_id),
+            judgment=Judgment.objects.get(id=judgment_id),
+            xml_text=xml_string,
+        )
+        ret = new_tagging.id
+        # else:
+        #     new_tagging = Tagging.objects.create(
+        #         profile=Profile.objects.get(pk=user_id),
+        #         judgment=Judgment.objects.get(id=judgment_id),
+        #     )
 
     return ret
 
@@ -436,12 +436,18 @@ def update_tagging(request, id):
     #     return Response({"detail":"Not found"})
 
     # read tm from request
-    token_manager = json.dumps(request.data['tm'])
+    token_manager = json.loads(request.data['tm'])
     comments = request.data['comments']
     completed = False
 
+    xml_string = generate_xml_from_tm(token_manager)
+
+    # update the xml text without validation
+
+    # TODO: add check for missing attributes
+
     serializer = TaggingSerializer(instance=tagging, data={
-                                   'token_manager': token_manager, 'comments': comments, 'completed': completed}, partial=True, many=False)
+                                   'token_manager': json.dumps(request.data['tm']), 'comments': comments, 'xml_text': xml_string, 'completed': completed}, partial=True, many=False)
     if serializer.is_valid():
         serializer.save()
     return HttpResponse("Updated")
@@ -468,74 +474,7 @@ def completed_tagging(request, id):
 
     if completed:
         # build xml_string
-        words = []
-        s = token_manager['tokens']  # stack
-        while s:
-            t = s.pop(0)
-            if isinstance(t, str):  # <tag>
-                words.append(t)
-            elif t['type'] == 'token':       # token
-                if t['text'] == '<br/>':
-                    words.append('\n')
-                else:
-                    words.append(t['text'])
-            else:                   # token block
-                # append start-tag
-                label = t['label']
-                start_tag = '<' + str(label)
-                for k, v in t['attrs'].items():
-                    if v['value'][0] != "":
-                        start_tag = start_tag + \
-                            f' {k}="{" ".join([str(val).split("|")[0].strip() for val in v["value"]])}"'
-                start_tag = start_tag + '>'
-                words.append(start_tag)
-
-                # push end-tag
-                end_tag = '</' + str(label) + '>'
-                s.insert(0, end_tag)
-
-                # push tokens in reversed order
-                for child in reversed(t['tokens']):
-                    s.insert(0, child)
-
-        # TODO: incipit XML
-        # print(words)
-
-        # add spaces where needed in the words list
-        spaced_words = []
-        for v, w in zip(words[:], words[1:]):
-            # \n
-            if v == "\n" or w == "\n":
-                spaced_words.append(v)
-            # word word
-            elif not "<" in v and not "<" in w:
-                spaced_words.append(v+" ")
-            # <> word
-            elif v.startswith("<") and not v.startswith("</") and not "<" in w:
-                spaced_words.append(v)
-            # </> word
-            elif v.startswith("</") and not "<" in w:
-                spaced_words.append(v+" ")
-            # word <>
-            elif w.startswith("<") and not w.startswith("</") and not "<" in v:
-                spaced_words.append(v+" ")
-            # word </>
-            elif w.startswith("</") and not "<" in v:
-                spaced_words.append(v)
-            # <> <>
-            elif v.startswith("<") and not v.startswith("</") and w.startswith("<") and not w.startswith("</"):
-                spaced_words.append(v)
-            # </> </>
-            elif v.startswith("</") and w.startswith("</"):
-                spaced_words.append(v)
-            # </> </>
-            elif v.startswith("</") and w.startswith("<") and not w.startswith("</"):
-                spaced_words.append(v+" ")
-        spaced_words.append(words[-1])
-
-        xml_string = "".join(spaced_words)
-        xml_string = """<sentag>\n""" + xml_string + """\n</sentag>"""
-        # print(xml_string)
+        xml_string = generate_xml_from_tm(token_manager)
 
         # validate xml
         schema_string = tagging.judgment.xsd.tags
@@ -563,3 +502,77 @@ def completed_tagging(request, id):
         serializer.save()
 
     return Response("Updated")
+
+
+def generate_xml_from_tm(token_manager):
+    """stack technique to generate the xml from the token manager"""
+
+    words = []
+    s = token_manager['tokens']  # stack
+    while s:
+        t = s.pop(0)
+        if isinstance(t, str):  # <tag>
+            words.append(t)
+        elif t['type'] == 'token':       # token
+            if t['text'] == '<br/>':
+                words.append('\n')
+            else:
+                words.append(t['text'])
+        else:                   # token block
+            # append start-tag
+            label = t['label']
+            start_tag = '<' + str(label)
+            for k, v in t['attrs'].items():
+                if v['value'][0] != "":
+                    start_tag = start_tag + \
+                        f' {k}="{" ".join([str(val).split("|")[0].strip() for val in v["value"]])}"'
+            start_tag = start_tag + '>'
+            words.append(start_tag)
+
+            # push end-tag
+            end_tag = '</' + str(label) + '>'
+            s.insert(0, end_tag)
+
+            # push tokens in reversed order
+            for child in reversed(t['tokens']):
+                s.insert(0, child)
+
+    # TODO: incipit XML
+    # print(words)
+
+    # add spaces where needed in the words list
+    spaced_words = []
+    for v, w in zip(words[:], words[1:]):
+        # \n
+        if v == "\n" or w == "\n":
+            spaced_words.append(v)
+        # word word
+        elif not "<" in v and not "<" in w:
+            spaced_words.append(v+" ")
+        # <> word
+        elif v.startswith("<") and not v.startswith("</") and not "<" in w:
+            spaced_words.append(v)
+        # </> word
+        elif v.startswith("</") and not "<" in w:
+            spaced_words.append(v+" ")
+        # word <>
+        elif w.startswith("<") and not w.startswith("</") and not "<" in v:
+            spaced_words.append(v+" ")
+        # word </>
+        elif w.startswith("</") and not "<" in v:
+            spaced_words.append(v)
+        # <> <>
+        elif v.startswith("<") and not v.startswith("</") and w.startswith("<") and not w.startswith("</"):
+            spaced_words.append(v)
+        # </> </>
+        elif v.startswith("</") and w.startswith("</"):
+            spaced_words.append(v)
+        # </> </>
+        elif v.startswith("</") and w.startswith("<") and not w.startswith("</"):
+            spaced_words.append(v+" ")
+    spaced_words.append(words[-1])
+
+    xml_string = "".join(spaced_words)
+    xml_string = """<sentag>\n""" + xml_string + """\n</sentag>"""
+
+    return xml_string
