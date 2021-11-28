@@ -366,6 +366,15 @@ def remove_sentenza_schema_list(request, schema):
     return JsonResponse({'response': data}, status=200)
 
 
+@login_required
+def delete_files(request):
+    schemas = Schema.objects.all()
+    judgments = Judgment.objects.all()
+
+    context = {'schemas': schemas, 'judgments': judgments}
+
+    return render(request, 'users/delete_files.html', context=context)
+
 # Agreement code
 
 

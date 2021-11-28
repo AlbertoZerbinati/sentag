@@ -19,5 +19,6 @@ urlpatterns = [
     path("add_sentenza_schema_list/<str:schema>", views.add_sentenza_schema_list, name="add-sentenza-schema-list"),
     path("remove_sentenza_schema_list/<str:schema>", views.remove_sentenza_schema_list, name="remove-sentenza-schema-list"),
     path("agreement", views.agreement_page, name="agreement-page"),
-    path("calc_agreement/<int:id>", views.agreement_post, name="calculate-agreement")
+    path("calc_agreement/<int:id>", views.agreement_post, name="calculate-agreement"),
+    path("delete_files/", views.delete_files, name="delete-files")
 ]
