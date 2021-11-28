@@ -21,10 +21,15 @@
         :style-expr="itemStyleExpr"
         :key-expr="'id'"
       >
-        <DxAutoLayout :orientation="'horizontal'" :type="'tree'" />
+        <DxAutoLayout :orientation="'horizontal'" :type="'layered'" />
       </DxNodes>
 
-      <DxEdges :data-source="edgesDataSource" :text-expr="edgeTextExpr" />
+      <DxEdges
+        :data-source="edgesDataSource"
+        :text-expr="edgeTextExpr"
+        :style-expr="edgeStyleExpr"
+        :text-style-expr="edgeTextStyleExpr"
+      />
 
       <DxToolbox :visibility="'disabled'" />
       <DxContextToolbox :enabled="false" />
@@ -207,7 +212,6 @@ export default {
                   /*|| node.attrs[attr_label]["value"].includes(id.toString()) // multi attr */
                 ).length
             ) {
-              console.log(".");
               // here we are sure there exist a connection between two nodes:
               // the pointer one is 'node', the pointed one has ID in node.attrs[attr_label]["value"]
 
@@ -399,12 +403,27 @@ export default {
       return "rectangle";
     },
     itemTextExpr(item) {
-      let ret =
-        item.label.toUpperCase() + " - " + item.attrs["ID"]["value"][0] + "\n";
+      let ret = item.label.toUpperCase() + " - \n";
       if (item.text.length > 100) {
         ret += item.text.substring(0, 200) + "...";
       } else {
         ret += item.text;
+      }
+      if (
+        item.attrs &&
+        item.attrs["ID"] &&
+        Object.keys(item.attrs["ID"]).length
+      ) {
+        ret =
+          item.label.toUpperCase() +
+          " - " +
+          item.attrs["ID"]["value"][0] +
+          "\n";
+        if (item.text.length > 100) {
+          ret += item.text.substring(0, 200) + "...";
+        } else {
+          ret += item.text;
+        }
       }
 
       return ret;
@@ -432,6 +451,46 @@ export default {
         }
 
       return "";
+    },
+    edgeStyleExpr(obj) {
+      var fromNode = this.nodesDataSource._array.filter(
+        (item) => item["id"] === obj.from
+      )[0];
+      var toNode = this.nodesDataSource._array.filter(
+        (item) => item["id"] === obj.to
+      )[0];
+
+      let connection_label = "";
+      if (fromNode && toNode)
+        for (let label of Object.keys(fromNode.attrs)) {
+          if (label.includes(toNode.label.toUpperCase())) {
+            connection_label = label;
+          }
+        }
+      if (!connection_label.includes("I_")) {
+        return { "stroke-dasharray": 5, "stroke-width": 1 };
+      }
+    },
+    edgeTextStyleExpr(obj) {
+      var fromNode = this.nodesDataSource._array.filter(
+        (item) => item["id"] === obj.from
+      )[0];
+      var toNode = this.nodesDataSource._array.filter(
+        (item) => item["id"] === obj.to
+      )[0];
+
+      let connection_label = "";
+      if (fromNode && toNode)
+        for (let label of Object.keys(fromNode.attrs)) {
+          if (label.includes(toNode.label.toUpperCase())) {
+            connection_label = label;
+          }
+        }
+      if (!connection_label.includes("I_")) {
+        return { "font-size": 10 };
+      }
+
+      return { "font-weight": "bold", "font-size": 15 };
     },
     showToast(text) {
       // function for in-graph toast messages
@@ -506,4 +565,8 @@ export default {
 </script>
 
 <style scoped>
+#diagram {
+  position: relative;
+  height: 700px;
+}
 </style>

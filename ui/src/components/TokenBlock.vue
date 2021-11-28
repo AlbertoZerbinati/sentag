@@ -114,7 +114,7 @@ mark {
   cursor: pointer;
   margin-right: 2px;
   box-decoration-break: clone;
-  z-index: 100;
+  // z-index: 100;
   -webkit-box-decoration-break: clone; /* most browsers need -webkit */
 
   // &::after {

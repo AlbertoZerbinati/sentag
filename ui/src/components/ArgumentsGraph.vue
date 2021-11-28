@@ -377,12 +377,27 @@ export default {
       return "ellipse";
     },
     itemTextExpr(item) {
-      let ret =
-        item.label.toUpperCase() + " - " + item.attrs["ID"]["value"][0] + "\n";
+      let ret = item.label.toUpperCase() + " - \n";
       if (item.text.length > 100) {
         ret += item.text.substring(0, 200) + "...";
       } else {
         ret += item.text;
+      }
+      if (
+        item.attrs &&
+        item.attrs["ID"] &&
+        Object.keys(item.attrs["ID"]).length
+      ) {
+        ret =
+          item.label.toUpperCase() +
+          " - " +
+          item.attrs["ID"]["value"][0] +
+          "\n";
+        if (item.text.length > 100) {
+          ret += item.text.substring(0, 200) + "...";
+        } else {
+          ret += item.text;
+        }
       }
 
       return ret;
@@ -494,4 +509,8 @@ export default {
 </script>
 
 <style scoped>
+#diagram {
+  position: relative;
+  height: 700px;
+}
 </style>
