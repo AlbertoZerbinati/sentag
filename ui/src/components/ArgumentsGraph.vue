@@ -106,9 +106,6 @@ export default {
   },
   methods: {
     ...mapMutations(["setUnsavedWork"]),
-    print() {
-      console.log(this.popupContentText);
-    },
     initializeGraph() {
       // initialize the graph with nodes and connectors
 
@@ -252,7 +249,7 @@ export default {
                 " " +
                 toNode.id.toString();
             } else {
-              console.log("from", fromNode.id, "to", toNode.id, connector.type);
+              // console.log("from", fromNode.id, "to", toNode.id, connector.type);
               // else just set the attacked
               fromNode.attrs["CON"]["value"][0] =
                 toNode.attrs["ID"]["value"][0] + " | " + toNode.id.toString();
@@ -418,7 +415,7 @@ export default {
     //   console.log(this.selectedNode)
     // },
     onItemClick(obj) {
-      console.log({ "item click": obj.item.dataItem });
+      // console.log({ "item click": obj.item.dataItem });
       if (obj.item.itemType === "shape") {
         this.selectedNode = obj.item;
         // this.popupContentText = this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..."

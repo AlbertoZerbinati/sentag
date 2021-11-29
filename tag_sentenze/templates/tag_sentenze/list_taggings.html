@@ -40,8 +40,8 @@ Taggings
 <script>
     function downl(id) {
         $.get("/download/" + id, function (data) {
-            console.log(typeof data); // string
-            console.log(data); // HTML content of the jQuery.ajax page
+            // console.log(typeof data); // string
+            // console.log(data); // HTML content of the jQuery.ajax page
 
             let filename = data['name'] + ".xml"
             let outputString = data['xml']

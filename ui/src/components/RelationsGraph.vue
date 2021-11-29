@@ -107,9 +107,6 @@ export default {
   },
   methods: {
     ...mapMutations(["setUnsavedWork"]),
-    print() {
-      console.log(this.popupContentText);
-    },
     initializeGraph() {
       // initialize the graph with nodes and connectors
 
@@ -510,7 +507,7 @@ export default {
       // console.log({ "item click": obj});
       if (obj.item.itemType === "shape") this.selectedNode = obj.item;
       else this.selectedNode = {};
-      console.log(obj.item);
+      // console.log(obj.item);
     },
     onItemDblClick(obj) {
       // not a connector -> popup

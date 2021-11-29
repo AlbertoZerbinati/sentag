@@ -91,7 +91,7 @@ class TokenManager {
           else if (attrs &&
             Object.keys(attrs).some((a) => key.name.includes(a + "_") &&
               attrs[key.name.charAt(0)].toLowerCase().includes(key.name.substr(2).toLowerCase()))) {
-            console.log(key.name + " -> ")
+            // console.log(key.name + " -> ")
             // make sure this is the attribute key referring to the content of the attrs
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
@@ -174,7 +174,7 @@ class TokenManager {
           else if (attrs &&
             Object.keys(attrs).some((a) => key.name.includes(a + "_") &&
               attrs[key.name.charAt(0)].toLowerCase().includes(key.name.substr(2).toLowerCase()))) {
-            console.log(key.name + " -> ")
+            // console.log(key.name + " -> ")
             // make sure this is the attribute key referring to the content of the attrs
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
@@ -364,10 +364,8 @@ class TokenManager {
   getNextIdPerClass(_class) {
     let ids = this.nextIdPerClass[_class]
     if (ids && ids.length) {
-      console.log(ids)
       let next = 0;
       for (; next < ids.length; next++) {
-        console.log(next)
         if (ids[next] !== next + 1) { // if there's a hole (an id was removed)
           this.nextIdPerClass[_class].splice(next, 0, next + 1); // update the array
           return next + 1;
@@ -389,7 +387,6 @@ class TokenManager {
    */
   removeIdPerClass(_class, id) {
     let index = this.nextIdPerClass[_class].indexOf(id);
-    console.log("remove index", index);
     if (index !== -1) {
       this.nextIdPerClass[_class].splice(index, 1);
     }

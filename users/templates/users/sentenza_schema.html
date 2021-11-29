@@ -34,7 +34,7 @@
                         csrfmiddlewaretoken: csrf
                     },
                     success: function(response) {
-                        console.log(response)
+                        // console.log(response)
                         window.location.href = 'REDIRECT_URL'
                         window.location.reload() //refresh the page
                     },
@@ -55,7 +55,7 @@
                         csrfmiddlewaretoken: csrf
                     },
                     success: function(response) {
-                        console.log(response)
+                        // console.log(response)
                         window.location.href = 'REDIRECT_URL'
                         window.location.reload() //refresh the page
                     },
@@ -76,7 +76,7 @@
                         lista_sentenze.push(new_sentenza);
                     }
                 }
-                console.log(lista_sentenze);
+                // console.log(lista_sentenze);
                 $.ajax({
                     url: "{% url 'users:add-sentenza-schema-list' selected_schema %}",
                     type: 'post',
@@ -86,7 +86,7 @@
                         csrfmiddlewaretoken: csrf
                     },
                     success: function(response) {
-                        console.log(response)
+                        // console.log(response)
                         window.location.href = 'REDIRECT_URL'
                         window.location.reload() //refresh the page
                         clearAll('.check-add');
@@ -117,7 +117,7 @@
                         csrfmiddlewaretoken: csrf
                     },
                     success: function(response) {
-                        console.log(response)
+                        // console.log(response)
                         window.location.href = 'REDIRECT_URL'
                         window.location.reload() //refresh the page
                         clearAll('.check-remove');

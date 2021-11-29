@@ -48,7 +48,7 @@ def editor_page(request):
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         # get all users from Taggers group
         taggers = User.objects.filter(groups__name='Taggers').all()
-        print(taggers)
+      # print(taggers)
 
         context = {
             'lista_users': taggers,
@@ -67,7 +67,7 @@ def home_permission(request):
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         # get all users from Taggers group
         taggers = User.objects.filter(groups__name='Taggers').all()
-        print(taggers)
+      # print(taggers)
 
         context = {
             'lista_users': taggers,
@@ -128,7 +128,7 @@ def add_permission(request, utente):
     if selected_sentenza not in permission_list:
         selected_user.profile.taggings.add(selected_sentenza)
 
-    print(selected_user.profile.taggings.all())
+  # print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
@@ -145,7 +145,7 @@ def remove_permission(request, utente):
         data['user'] = request.POST.get('selected_user')
         data['sentenza'] = request.POST.get('selected_sentenza')
 
-    print(data)
+  # print(data)
 
     # remove the selected sentenza to the permission of the selected user
     selected_user = User.objects.get(username=data['user'])
@@ -155,7 +155,7 @@ def remove_permission(request, utente):
     if selected_sentenza in permission_list:
         selected_user.profile.taggings.remove(selected_sentenza)
 
-    print(selected_user.profile.taggings.all())
+  # print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
@@ -171,7 +171,7 @@ def add_permission_list(request, utente):
         data['user'] = request.POST.get('selected_user')
         data['sentenze'] = request.POST.get('selected_sentenze')
 
-    print(data)
+  # print(data)
 
     # get all the sentenze
     sentenze = Judgment.objects.values_list('id', flat=True)
@@ -180,17 +180,17 @@ def add_permission_list(request, utente):
     # add a new list of sentenze to the permission of the selected user
     selected_user = User.objects.get(username=data['user'])
     selected_sentenze = json.loads(data['sentenze'])
-    print(selected_sentenze)
+  # print(selected_sentenze)
 
     permission_list = selected_user.profile.taggings.all()
 
     for elem in selected_sentenze:
         tmp_sentenza = Judgment.objects.get(id=elem)
-        print(tmp_sentenza.id)
+      # print(tmp_sentenza.id)
         if tmp_sentenza not in permission_list:
             selected_user.profile.taggings.add(tmp_sentenza)
 
-    print(selected_user.profile.taggings.all())
+  # print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
@@ -206,7 +206,7 @@ def remove_permission_list(request, utente):
         data['user'] = request.POST.get('selected_user')
         data['sentenze'] = request.POST.get('selected_sentenze')
 
-    print(data)
+  # print(data)
 
     # get all the sentenze
     sentenze = Judgment.objects.values_list('id', flat=True)
@@ -215,17 +215,17 @@ def remove_permission_list(request, utente):
     # remove a list of sentenze from the permission of the selected user
     selected_user = User.objects.get(username=data['user'])
     selected_sentenze = json.loads(data['sentenze'])
-    print(selected_sentenze)
+  # print(selected_sentenze)
 
     permission_list = selected_user.profile.taggings.all()
 
     for elem in selected_sentenze:
         tmp_sentenza = Judgment.objects.get(id=elem)
-        print(tmp_sentenza.id)
+      # print(tmp_sentenza.id)
         if tmp_sentenza in permission_list:
             selected_user.profile.taggings.remove(tmp_sentenza)
 
-    print(selected_user.profile.taggings.all())
+  # print(selected_user.profile.taggings.all())
 
     selected_user.save()
 
@@ -239,7 +239,7 @@ def home_judgment_schema(request):
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         # get all users from Taggers group
         schemas = Schema.objects.all()
-        print(schemas)
+      # print(schemas)
 
         context = {
             'lista_schemas': schemas,
@@ -289,7 +289,7 @@ def add_sentenza_schema(request, schema):
         data['schema'] = request.POST.get('selected_schema')
         data['sentenza'] = request.POST.get('selected_sentenza')
 
-    print(data)
+  # print(data)
 
     # add the schema to the selected judgment
     selected_schema = Schema.objects.get(id=data['schema'])
@@ -311,7 +311,7 @@ def remove_sentenza_schema(request, schema):
         data['schema'] = request.POST.get('selected_schema')
         data['sentenza'] = request.POST.get('selected_sentenza')
 
-    print(data)
+  # print(data)
 
     # remove the schema to the selected judgment
     selected_schema = Schema.objects.get(id=data['schema'])
@@ -469,7 +469,7 @@ def calc_agreement(judgment_id):
                             # if label != None:
                             #    words.append(tuple([single_token, tags_value[label]]))
                             # else:
-                            #    print('Label None')
+                            #  # print('Label None')
                             #    words.append(tuple([single_token, None]))
 
                 #print('Words: ', words)
@@ -499,7 +499,7 @@ def calc_agreement(judgment_id):
     #words = []
     # while tokens:
     #    t = tokens.pop(0)
-    #    print(t)
+    #  # print(t)
 
     #    if isinstance(t, str):
     #        words.append({t: None})
@@ -548,7 +548,7 @@ def agreement_post(request, id):
 
         # Agreement value
         score = calc_agreement(id)
-        print('Score: ', score)
+      # print('Score: ', score)
 
         # Save score on the Database if it isn't None
         if score != None:
@@ -557,7 +557,7 @@ def agreement_post(request, id):
             judgment.save()
         else:
             score = '-'
-        print(score)
+      # print(score)
 
     return JsonResponse({'response': score}, status=200)
 
@@ -581,7 +581,7 @@ def agreement_page(request):
 
         # Add agreement score from database
         agreement = judgment.score
-        print("Agreement judgment {}: {}".format(judgment.id, agreement))
+      # print("Agreement judgment {}: {}".format(judgment.id, agreement))
 
         if agreement == None:
             single_row.append('-')
@@ -600,7 +600,7 @@ def agreement_page(request):
                 single_row.append(0)
 
         rows.append(single_row)
-    print(rows)
+  # print(rows)
 
     context = {
         'users': users,

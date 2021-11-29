@@ -311,7 +311,7 @@ export default {
       }
       selection.empty();
 
-      console.log(startIdx, endIdx);
+      // console.log(startIdx, endIdx);
     },
     onRemoveBlock(id) {
       this.tokenManager.removeBlock(id);

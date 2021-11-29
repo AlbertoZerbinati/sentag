@@ -31,8 +31,8 @@
             var judgment_id = button.id.substring(5);
             //Trick to generate the correct url
             var dajngo_url = "{% url 'users:calculate-agreement' 12345 %}".replace(/12345/, judgment_id.toString());
-            console.log(judgment_id);
-            console.log(dajngo_url)
+            // console.log(judgment_id);
+            // console.log(dajngo_url)
             
             $.ajax({
                     url: dajngo_url,
@@ -42,14 +42,14 @@
                         csrfmiddlewaretoken: csrf
                     },
                     success: function(response) {
-                        console.log(response)
+                        // console.log(response)
                         
-                        console.log(typeof response)
+                        // console.log(typeof response)
                         //var judg_id = response['judgment_id']
                         var score = response['response']
                         var div_name = "#div_score_" + judgment_id.toString()
-                        console.log(score)
-                        console.log(div_name)
+                        // console.log(score)
+                        // console.log(div_name)
                         $(div_name).text(score)
 
                         //window.location.href = 'REDIRECT_URL'

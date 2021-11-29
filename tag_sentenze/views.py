@@ -42,11 +42,11 @@ def list_sentenze(request):
         # sentenze_user = current_user.profile.taggings.all()
         sentenze_user = Tagging.objects.filter(profile=profile)
 
-        for elem in sentenze_user:
-            print('{} con id: '.format(elem, elem.id))
+        # for elem in sentenze_user:
+        # print('{} con id: '.format(elem, elem.id))
 
-        print('Current user: ', current_user)
-        print('Permission: ', sentenze_user)
+      # print('Current user: ', current_user)
+      # print('Permission: ', sentenze_user)
         return render(request, 'tag_sentenze/list_sentenze.html', {'sentenze': sentenze_user})
 
 
@@ -55,7 +55,7 @@ def new_sentenza(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        print("Admin/Editor access")
+      # print("Admin/Editor access")
         form = AddJudgmentModelForm()
 
         if request.method == 'POST':
@@ -76,7 +76,7 @@ def new_sentenza(request):
         }
         return render(request, 'tag_sentenze/new_sentenza.html', context=context)
     else:
-        print('Tagger access')
+      # print('Tagger access')
         return redirect('/sentenze/')
 
 
@@ -99,17 +99,17 @@ def tag_sentenza(request, id, htbp=-1):
 
     # admins and editors have access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        print("Admin/Editor access")
+      # print("Admin/Editor access")
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
             'must_parse': htbp > -1
         }
-        print("---->", context['taggings'].id)
+      # print("---->", context['taggings'].id)
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     # taggers has access only to their set of sentenze
     elif sentenza in user_taggings:
-        print('Tagger access with permission')
+      # print('Tagger access with permission')
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
@@ -117,7 +117,7 @@ def tag_sentenza(request, id, htbp=-1):
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
-        print('Taggers access with no permission')
+      # print('Taggers access with no permission')
         return redirect('/sentenze/')
 
 
@@ -135,7 +135,7 @@ def graph(request, id):
 
     # admins and editors have access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        print("Admin/Editor access")
+      # print("Admin/Editor access")
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
@@ -148,7 +148,7 @@ def graph(request, id):
         return render(request, 'tag_sentenze/graph.html', context=context)
     # taggers has access only to their set of sentenze
     elif sentenza in user_taggings:
-        print('Tagger access with permission')
+      # print('Tagger access with permission')
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
@@ -160,7 +160,7 @@ def graph(request, id):
 
         return render(request, 'tag_sentenze/graph.html', context=context)
     else:
-        print('Taggers access with no permission')
+      # print('Taggers access with no permission')
         return redirect('/sentenze/')
 
 
@@ -170,7 +170,7 @@ def new_schema(request):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         form = AddSchemaForm()
-        print("Admin/Editor access")
+      # print("Admin/Editor access")
         if request.method == 'POST':
             # Create a form instance for the schema and add data
             form = AddSchemaForm(request.POST, request.FILES)
@@ -186,7 +186,7 @@ def new_schema(request):
         }
         return render(request, 'tag_sentenze/new_schema.html', context=context)
     else:
-        print('Tagger access')
+      # print('Tagger access')
         return redirect('/sentenze/')
 
 # upload multiplo
@@ -198,7 +198,7 @@ def add_multiple_judgments(request):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         form = AddSchemaJudgmentsForm()
-        print("Admin/Editor access")
+      # print("Admin/Editor access")
         if request.method == 'POST':
             # Get all the file uploaded
             judgment_files = request.FILES.getlist('judgments')
@@ -207,10 +207,10 @@ def add_multiple_judgments(request):
 
             if form.is_valid():
                 schema = form.cleaned_data['schema']
-                print(Schema.objects.get(id=schema.id))
+              # print(Schema.objects.get(id=schema.id))
 
                 for judgment in judgment_files:
-                    print(str(judgment))
+                  # print(str(judgment))
                     new_judg = Judgment.objects.create(
                         judgment_file=judgment,
                         xsd=Schema.objects.get(id=schema.id),
@@ -230,7 +230,7 @@ def add_multiple_judgments(request):
 
         return render(request, 'tag_sentenze/add_multiple_judgment.html', context=context)
     else:
-        print('Tagger access')
+      # print('Tagger access')
         return redirect('/sentenze/')
 
 
@@ -239,13 +239,13 @@ def add_multiple_schemas(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        print("Admin/Editor access")
+      # print("Admin/Editor access")
         if request.method == 'POST':
             # Get all the file uploaded
             schema_files = request.FILES.getlist('schemas')
 
             for schema in schema_files:
-                print(schema)
+              # print(schema)
                 new_schema = Schema.objects.create(
                     schema_file=schema,
                 )
@@ -256,7 +256,7 @@ def add_multiple_schemas(request):
 
         return render(request, 'tag_sentenze/add_multiple_schema.html')
     else:
-        print('Tagger access')
+      # print('Tagger access')
         return redirect('/sentenze/')
 
 
@@ -362,7 +362,7 @@ def list_taggings(request):
         return render(request, 'tag_sentenze/list_taggings.html', context=context)
     # taggers don't
     else:
-        print('Tagger access')
+      # print('Tagger access')
         return redirect('/sentenze')
 
 
@@ -528,7 +528,7 @@ def completed_tagging(request, id):
             xmlschema.validate(xml_string, schema, cls=xmlschema.XMLSchema11)
         except xmlschema.XMLSchemaValidationError as error:
             # if not valid return fail with error message
-            print(str(error))
+          # print(str(error))
             return Response(data={"Validation error:\n\n" + str(error)[:str(error).find("Schema")-2]}, status=500)
 
         # else if valid then save in db WITH XML TEXT and return success

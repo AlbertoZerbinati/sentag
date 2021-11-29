@@ -67,7 +67,7 @@ export default {
       .querySelector("meta[name='graph-type']")
       .getAttribute("content");
 
-    console.log(this.graph_type);
+    // console.log(this.graph_type);
   },
   methods: {
     save() {
