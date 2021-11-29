@@ -64,7 +64,7 @@
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Associate Judgments - Users</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{% url 'users:delete-files' %}"> <i class="bi-trash"
-                        style="font-size: 1.2rem; margin-right: 10px;"></i> Delete files </a>
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Delete files </a>
                     <a class="dropdown-item" href="{% url 'users:agreement-page' %}"> <i class="bi-check-all"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Agreement Page</a>
                     <a class="dropdown-item" href="{% url 'tag_sentenze:list-taggings' %}"> <i class="bi-download"
@@ -93,6 +93,7 @@
 
         </div>
     </nav>
+
     <div class="container-fluid">
         <div class="row gx-2 top-buffer">
             {% csrf_token %}
@@ -100,7 +101,18 @@
                 <div class="p-2 no-border">{% block sidebar %} {% endblock %}</div>
             </div>
             <div class="col col-sm-6">
-                <div class="p-2 no-border">{% block content %} {% endblock %}</div>
+                <div class="p-2 no-border">
+                    {% for message in messages %}
+                    <div class="container-fluid p-0">
+                        <div class="alert {{ message.tags }} alert-dismissible" role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="True">&times;</span>
+                            </button>
+                            {{ message }}
+                        </div>
+                    </div>
+                    {% endfor %}{% block content %} {% endblock %}
+                </div>
             </div>
             <div class="col col-sm-3 ">
                 <div class="p-2 no-border">{% block graph %} {% endblock %}</div>
