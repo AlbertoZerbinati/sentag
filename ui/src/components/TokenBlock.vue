@@ -126,7 +126,7 @@ mark {
 }
 .current {
   border: 2.2px solid orange;
-  z-index: 1000;
+  // z-index: 1000;
   position: relative;
 }
 .label-start {

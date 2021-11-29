@@ -274,7 +274,8 @@ export default {
         this.tokenManager.adjustIDs();
 
         // and save as completed into database
-        // this.done = true;
+        this.saveTags()
+        this.done = true;
       }
     },
     selectTokens() {
