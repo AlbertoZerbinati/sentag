@@ -16,10 +16,10 @@ class Profile(models.Model):
 
 #table implementing the M2M relationship between Judgment and Profile
 class Tagging(models.Model):
-    profile = models.ForeignKey(Profile, on_delete=models.DO_NOTHING)
-    judgment = models.ForeignKey(Judgment, on_delete=models.DO_NOTHING)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    judgment = models.ForeignKey(Judgment, on_delete=models.CASCADE)
     token_manager = models.TextField(blank=True)
-    comments = models.TextField(blank=True)
+    comments = models.TextField(blank=True, null=True)
     xml_text = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
 

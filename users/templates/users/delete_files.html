@@ -19,7 +19,7 @@
             <tr>
                 <td>{{jud.name}}</td>
                 <td> Judgment </td>
-                <td> <button class="btn btn-danger btn-small"> Delete </button> </td>
+                <td> <a class="btn btn-danger btn-small" href="{% url 'tag_sentenze:delete-judgment' jud.id %}"> Delete </a></td>
             </tr>
             {% endfor %}
 
@@ -31,7 +31,7 @@
             <tr>
                 <td>{{sch.name}}</td>
                 <td> Schema </td>
-                <td> <button class="btn btn-danger btn-small"> Delete </button> </td>
+                <td> <a class="btn btn-danger btn-small" href="{% url 'tag_sentenze:delete-schema' sch.id %}"> Delete </a></td>
             </tr>
             {% endfor %}
         </tbody>

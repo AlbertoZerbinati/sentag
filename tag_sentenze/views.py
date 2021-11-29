@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 from django import forms
 import re
 from io import StringIO
+from django.contrib import messages
 
 
 @login_required
@@ -83,13 +84,18 @@ def new_sentenza(request):
 def tag_sentenza(request, id, htbp=-1):
     try:
         # sentenza = Judgment.objects.get(pk=id)
-        sentenza = Tagging.objects.get(id=id).judgment
-    except Judgment.DoesNotExist:
+        tagging = Tagging.objects.get(id=id)
+        sentenza = tagging.judgment
+    except Tagging.DoesNotExist:
         raise Http404()
 
     current_user = request.user
     profile = Profile.objects.get(user=request.user)
     user_taggings = current_user.profile.taggings.all()
+
+    # check if this tagging has to be parsed
+    if tagging.xml_text.startswith("<sentag>") and tagging.token_manager == "":
+        htbp = 1
 
     # admins and editors have access to all the sentenze
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
@@ -254,11 +260,50 @@ def add_multiple_schemas(request):
         return redirect('/sentenze/')
 
 
+@login_required
+def delete_judgment(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            judgment = Judgment.objects.get(id=id)
+        except Judgment.DoesNotExist:
+            raise Http404()
+
+        judgment.delete()
+        messages.warning(request, ("Judgment deleted"))
+    else:
+        messages.warning(request, ("You are not authorized"))
+
+    return redirect(reverse('users:delete-files'))
+
+
+@login_required
+def delete_schema(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            schema = Schema.objects.get(id=id)
+        except Schema.DoesNotExist:
+            raise Http404()
+
+        schema.delete()
+        messages.warning(request, ("Schema deleted"))
+    else:
+        messages.warning(request, ("You are not authorized"))
+
+    return redirect(reverse('users:delete-files'))
+
+
 # automatic assignment of a new uploaded judgment to all editors and admins
-def auto_assignment(judgment_id, current_user_id=-1, xml_string=""):
+def auto_assignment(judgment_id, current_user_id=-1, xml_string="", also_taggers=False):
     admins = list(User.objects.filter(groups__name='Admins'))
     editors = list(User.objects.filter(groups__name='Editors'))
     both_users = admins + editors
+
+    if also_taggers:
+        taggers = list(User.objects.filter(groups__name='Taggers'))
+        both_users = both_users + taggers
+
     both_users = set(both_users)  # remove duplicates
 
     # list with all id of editors and admins users
@@ -387,7 +432,7 @@ def parse_xml(request):
 
                 # assign a tagging object to all editors and admins
                 tagging_id = auto_assignment(
-                    judgment.id, request.user.id, xml_string)  # also save the original xml text in the tagging
+                    judgment.id, request.user.id, xml_string, also_taggers=True)  # also save the original xml text in the tagging
 
                 # and then load the tagging interface
                 return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
