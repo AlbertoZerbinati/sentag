@@ -80,7 +80,7 @@ class TokenManager {
           if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[key.name].replace(/,/g, " ")],
+              'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
               'options': key.options
             };
             if (key.type === "multi") {
@@ -95,7 +95,7 @@ class TokenManager {
             // make sure this is the attribute key referring to the content of the attrs
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[key.name.charAt(0)].replace(/,/g, " ")],
+              'value': [attrs[key.name.charAt(0)].replace(/ +|,|\|/g, " ")],
               'options': key.options
             };
             if (key.type === "multi") {
@@ -163,7 +163,7 @@ class TokenManager {
           if (attrs && Object.keys(attrs).includes(key.name)) {
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[key.name].replace(/,/g, " ")],
+              'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
               'options': key.options
             };
             if (key.type === "multi") {
@@ -178,7 +178,7 @@ class TokenManager {
             // make sure this is the attribute key referring to the content of the attrs
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
-              'value': [attrs[key.name.charAt(0)].replace(/,/g, " ")],
+              'value': [attrs[key.name.charAt(0)].replace(/ +|,|\|/g, " ")],
               'options': key.options
             };
             if (key.type === "multi") {

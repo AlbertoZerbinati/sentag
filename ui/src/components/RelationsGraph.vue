@@ -34,20 +34,6 @@
       <DxToolbox :visibility="'disabled'" />
       <DxContextToolbox :enabled="false" />
     </DxDiagram>
-
-    <DxPopup
-      v-model:visible="popupVisible"
-      :drag-enabled="false"
-      :close-on-outside-click="true"
-      :show-title="true"
-      :show-close-button="true"
-      :width="250"
-      :height="200"
-      container="#diagram"
-      :title="popupTitleText"
-      ><DxPosition my="left top" :of="target" />
-      <p>{{ popupContentText }}</p>
-    </DxPopup>
   </div>
 </template>
 
@@ -60,8 +46,6 @@ import {
   DxAutoLayout,
   DxContextToolbox,
 } from "devextreme-vue/diagram";
-// import { DxTooltip } from 'devextreme-vue/tooltip';
-import { DxPopup, DxPosition } from "devextreme-vue/popup";
 import ArrayStore from "devextreme/data/array_store";
 import notify from "devextreme/ui/notify";
 import axios from "axios";
@@ -77,8 +61,6 @@ export default {
     DxToolbox,
     DxAutoLayout,
     DxContextToolbox,
-    DxPopup,
-    DxPosition, //DxTooltip,
   },
   data() {
     return {
@@ -93,29 +75,6 @@ export default {
   },
   computed: {
     ...mapState(["unsavedWork"]),
-    popupTitleText: {
-      get() {
-        if (!this.selectedNode.dataItem) return "";
-        else
-          return (
-            this.selectedNode.dataItem.label.toUpperCase() +
-            " - " +
-            this.selectedNode.dataItem.attrs["ID"].value[0]
-          );
-      },
-    },
-    popupContentText: {
-      get() {
-        // if not initialized
-        if (!this.selectedNode.dataItem) return "";
-        // if initialized
-        else {
-          return this.selectedNode.dataItem.text.length >= 100
-            ? this.selectedNode.dataItem.text.substring(0, 100) + "..."
-            : this.selectedNode.dataItem.text; // eventual '...' if text is too long
-        }
-      },
-    },
   },
   created() {
     // retrive this tagging's ID and Title
@@ -183,7 +142,7 @@ export default {
 
       // populate the edges datasoruce, based on nodes' attributes
       for (let node of nodes) {
-        // console.log(node);
+        console.log(node);
         // for each node, check if there exist another node with the label of one of its attributes
         for (let attr_label of Object.keys(node.attrs)) {
           // ignore empty attributes
