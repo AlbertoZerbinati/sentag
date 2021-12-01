@@ -32,7 +32,7 @@
               :id="'t' + t.start"
               v-for="t in tokenManager.tokens"
               :token="t"
-              :key="t.start"
+              :key="t.id"
               :backgroundColor="t.backgroundColor"
               :isCurrent="t.id === currentBlock.id"
               @remove-block="onRemoveBlock"

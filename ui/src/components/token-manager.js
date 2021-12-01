@@ -80,6 +80,8 @@ class TokenManager {
         for (const key of _class.attributes) {
           // use the attributes from parameter if available
           if (attrs && Object.keys(attrs).includes(key.name)) {
+            if (key.name === 'ID')
+              this.getNextIdPerClass(_class.name) // advance the counter and throw away
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
               'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
@@ -165,6 +167,8 @@ class TokenManager {
         for (const key of _class.attributes) {
           // use the attributes from parameter if available
           if (attrs && Object.keys(attrs).includes(key.name)) {
+            if (key.name === 'ID')
+              this.getNextIdPerClass(_class.name) // advance the counter and throw away
             newTokenBlock.attrs[key.name] = {
               'type': key.type,
               'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
@@ -259,8 +263,15 @@ class TokenManager {
         // aggiunge i tokens interni, a livello 0 (quidni sovrascive tranquillamente this.tokens, visto che _tokens e' passato per valore)
         this.tokens = _tokens.slice(0, block_index).concat(tokens, _tokens.slice(block_index)); //(per performance)
         // also remove the id from nextIdPerClass
-        if (selectedBlock.attrs['ID'])
-          this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
+        if (selectedBlock.attrs['ID']) {
+          let id = -1;
+          try {
+            id = parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0])
+          } catch (e) {
+            id = selectedBlock.attrs['ID']['value'][0].slice(-1).charCodeAt(0) - 64;
+          }
+          this.removeIdPerClass(selectedBlock.label, id);
+        }
         // ritorna null... verra' ignorato
         selectedBlock = null;
       }
@@ -293,8 +304,15 @@ class TokenManager {
         //aggiungo i tokens
         _tokens.tokens = _tokens.tokens.slice(0, block_index).concat(tokens, _tokens.tokens.slice(block_index)); //(per performance)
         // also remove the id from nextIdPerClass
-        if (selectedBlock.attrs['ID'])
-          this.removeIdPerClass(selectedBlock.label, parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0]));
+        if (selectedBlock.attrs['ID']) {
+          let id = -1;
+          try {
+            id = parseInt(selectedBlock.attrs['ID']['value'][0].match(/\d+$/)[0])
+          } catch (e) {
+            id = selectedBlock.attrs['ID']['value'][0].slice(-1).charCodeAt(0) - 64;
+          }
+          this.removeIdPerClass(selectedBlock.label, id);
+        }
         selectedBlock = null;
       }
     }
