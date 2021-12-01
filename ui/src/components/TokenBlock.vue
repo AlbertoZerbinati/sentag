@@ -54,7 +54,7 @@
         </span>
         <span
           class="tag is-delete is-light is-danger"
-          @click.stop="$emit('remove-block', token.id)"
+          @click.stop="$emit('remove-block', token.id, token.start, token.end)"
         >
         </span>
       </span>
@@ -96,8 +96,8 @@ export default {
   },
   methods: {
     ...mapMutations(["setCurrentBlock"]),
-    removeBlock: function (id) {
-      this.$emit("remove-block", id);
+    removeBlock: function (id, start, end) {
+      this.$emit("remove-block", id, start, end);
     },
   },
 };

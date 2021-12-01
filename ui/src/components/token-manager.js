@@ -51,9 +51,11 @@ class TokenManager {
       selectedTokens = []
       // pusha tutti i TOKEN e TOKEN-BLOCK di livello 0 selezionati in selectedTokens con chiamate ricorsive sui figli
       for (let child of _tokens) {
-        let selected = this.recursiveAddNewBlock(start, end, _class, child, attrs);
-        if (selected !== null)
-          selectedTokens.push(selected);
+        if (child.start <= end && child.end >= start) {
+          let selected = this.recursiveAddNewBlock(start, end, _class, child, attrs);
+          if (selected !== null)
+            selectedTokens.push(selected);
+        }
       }
       // se qualche TOKEN o TOKEN-BLOCK e' stato selezionato -->
       if (selectedTokens.length) {
@@ -137,9 +139,11 @@ class TokenManager {
       // e' come al livello 0 ma applicato a _tokens.tokens
       selectedTokens = []
       for (let child of _tokens.tokens) {
-        let selected = this.recursiveAddNewBlock(start, end, _class, child, attrs);
-        if (selected !== null)
-          selectedTokens.push(selected);
+        if (child.start <= end && child.end >= start) {
+          let selected = this.recursiveAddNewBlock(start, end, _class, child, attrs);
+          if (selected !== null)
+            selectedTokens.push(selected);
+        }
       }
       if (selectedTokens.length) {
         let first_token_start = selectedTokens[0].start;
@@ -221,10 +225,10 @@ class TokenManager {
    *
    * @param {Number} blockId id of the token block to be removed
    */
-  removeBlock(blockId) {
-    this.recursiveRemoveBlock(blockId, this.tokens)
+  removeBlock(blockId, start, end) {
+    this.recursiveRemoveBlock(blockId, start, end, this.tokens)
   }
-  recursiveRemoveBlock(blockId, _tokens) {
+  recursiveRemoveBlock(blockId, start, end, _tokens) {
     let selectedBlock = null;
 
     // LIVELLO 0
@@ -233,10 +237,12 @@ class TokenManager {
         if (child.type === "token-block") { // per performance: verifica se sia 
           // un blocco da rimuovere o se ne 
           // contenga da rimuovere solo se e' un TOKEN-BLOCK
-          let selected = this.recursiveRemoveBlock(blockId, child);
-          if (selected !== null) {
-            selectedBlock = selected;
-            break; // si ferma se ha individuato il token-block da rimuovere
+          if (child.start <= end && child.end >= start) {
+            let selected = this.recursiveRemoveBlock(blockId, start, end, child);
+            if (selected !== null) {
+              selectedBlock = selected;
+              break; // si ferma se ha individuato il token-block da rimuovere
+            }
           }
         }
       }
@@ -268,10 +274,12 @@ class TokenManager {
     else if (Array.isArray(_tokens.tokens)) {
       for (let child of _tokens.tokens) {
         if (child.type === "token-block") { //(per performance)
-          let selected = this.recursiveRemoveBlock(blockId, child);
-          if (selected !== null) {
-            selectedBlock = selected;
-            break;
+          if (child.start <= end && child.end >= start) {
+            let selected = this.recursiveRemoveBlock(blockId, start, end, child);
+            if (selected !== null) {
+              selectedBlock = selected;
+              break;
+            }
           }
         }
       }

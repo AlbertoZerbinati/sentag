@@ -50,7 +50,11 @@
               </button>
             </p>
             <p class="control">
-              <button class="button" :class="{'is-link' : unsavedWork}" @click="saveTags">
+              <button
+                class="button"
+                :class="{ 'is-link': unsavedWork }"
+                @click="saveTags"
+              >
                 <span class="icon is-small">
                   <font-awesome-icon icon="check" />
                 </span>
@@ -274,7 +278,7 @@ export default {
         this.tokenManager.adjustIDs();
 
         // and save as completed into database
-        this.saveTags()
+        this.saveTags();
         this.done = true;
       }
     },
@@ -311,10 +315,10 @@ export default {
       }
       selection.empty();
 
-      // console.log(startIdx, endIdx);
+      console.log(startIdx, endIdx);
     },
-    onRemoveBlock(id) {
-      this.tokenManager.removeBlock(id);
+    onRemoveBlock(id, start, end) {
+      this.tokenManager.removeBlock(id, start, end);
       this.setCurrentBlock(new Object());
       this.setUnsavedWork(true);
       this.done = false;
