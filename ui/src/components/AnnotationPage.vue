@@ -25,7 +25,7 @@
             </span>
           </a>
         </div>
-        <div class="panel-block">
+        <div class="panel-block text">
           <div id="editor" style="white-space: pre-line">
             <component
               :is="t.type === 'token' ? 'Token' : 'TokenBlock'"
@@ -451,9 +451,28 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.panel {
+  position: sticky;
+  overflow-y: auto;
+  top: 0;
+  bottom: 0;
+}
 #editor {
-  padding: 0.2rem;
-  font-size: 1.1rem;
+  // position: relative;
+  // overflow-y: auto;
+  // height: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 70vh;
+  width: 100%;
+  padding-top: 2px;
+  // padding-left: 2px;
+}
+.text {
+  // padding-left: 10px;
+  // padding-top: 10px;
+  // line-height: 1.2rem;
+
 }
 .right {
   margin-left: 100px;

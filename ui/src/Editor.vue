@@ -189,3 +189,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+div {
+  position: relative;
+  height: 100%;
+}
+</style>
