@@ -50,16 +50,18 @@ export default {
   components: {
     ClassesBlock,
     AttributesBlock,
-    CommentsBlock
+    CommentsBlock,
   },
   methods: {
     setTab(tab) {
       this.tab = tab;
-    }
+    },
   },
 };
 </script>
 
 <style lang="css" scoped>
-
+.columns {
+  height: 50vh;
+}
 </style>

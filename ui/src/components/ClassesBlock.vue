@@ -60,9 +60,9 @@ export default {
   border-radius: 5px;
 }
 #column {
-  height: 400px;
+  position:relative;
+  height: 40vh;
   overflow-y: auto;
-  overflow-x: hidden;
 }
 .supertiny {
   height: 16px;

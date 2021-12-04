@@ -56,5 +56,7 @@ export default {
 }
 #column {
   width: 100%;
-}
+  position:relative;
+  height: 40vh;
+  overflow-y: auto;}
 </style>
