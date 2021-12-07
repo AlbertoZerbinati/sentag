@@ -17,15 +17,15 @@
           >
         </p>
         <div class="tags-tab" v-if="tab == 'tags'">
-          <div class="panel-block">
+          <div class="panel-block block">
             <classes-block />
           </div>
-          <div class="panel-block" style="display: block; width=100%;">
+          <div class="panel-block block" style="display: block; width=100%;">
             <attributes-block />
           </div>
         </div>
         <div v-else-if="tab == 'comments'">
-          <div class="panel-block">
+          <div class="panel-block" style="display: block; width=100%;">
             <comments-block />
           </div>
         </div>
@@ -61,7 +61,8 @@ export default {
 </script>
 
 <style lang="css" scoped>
-.columns {
-  height: 50vh;
+.block {
+  height: 42vh;
+  margin-bottom: 5px;
 }
 </style>

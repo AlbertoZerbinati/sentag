@@ -1,37 +1,39 @@
 <template>
-  <div id="column">
-    <div class="is-multiline">
-      <div class="attribute-title stroke">
-        <strong> XSD classes </strong>
-      </div>
-      <div class="tags is-medium">
-        <div class="column" v-for="cl in classes" :key="cl.id">
-          <a
-            :style="{ border: cl.color }"
-            class="tag is-medium"
-            :class="{ 'is-info': cl.id === currentClass.id }"
-            @click="setCurrentClass(cl.id)"
-          >
-            <span
-              class="panel-icon color-box"
-              :style="{ backgroundColor: cl.color }"
-            ></span>
-            <strong>{{ cl.name }}</strong>
-          </a>
-          <br />
-          <span
-            v-for="at in cl.attributes"
-            :key="at.id"
-            :style="{ margin: '3px' }"
-          >
-            <span class="tag tiny"
-              ><i
-                ><strong :style="{ color: '#0c66a1' }">{{
-                  at.name
-                }}</strong></i
-              ></span
+  <div id="root">
+    <div class="attribute-title stroke">
+      <strong> XSD classes </strong>
+    </div>
+    <div id="column">
+      <div class="is-multiline">
+        <div class="tags is-medium">
+          <div class="column" v-for="cl in classes" :key="cl.id">
+            <a
+              :style="{ border: cl.color }"
+              class="tag is-medium"
+              :class="{ 'is-info': cl.id === currentClass.id }"
+              @click="setCurrentClass(cl.id)"
             >
-          </span>
+              <span
+                class="panel-icon color-box"
+                :style="{ backgroundColor: cl.color }"
+              ></span>
+              <strong>{{ cl.name }}</strong>
+            </a>
+            <br />
+            <span
+              v-for="at in cl.attributes"
+              :key="at.id"
+              :style="{ margin: '3px' }"
+            >
+              <span class="tag tiny"
+                ><i
+                  ><strong :style="{ color: '#0c66a1' }">{{
+                    at.name
+                  }}</strong></i
+                ></span
+              >
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -59,9 +61,14 @@ export default {
   margin-right: 1rem;
   border-radius: 5px;
 }
+#root {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 #column {
-  position:relative;
-  height: 40vh;
+  position: relative;
   overflow-y: auto;
 }
 .supertiny {
@@ -91,7 +98,7 @@ export default {
 .attribute-title {
   width: 100%;
   margin-top: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   text-align: center;
 }
 .stroke > strong {

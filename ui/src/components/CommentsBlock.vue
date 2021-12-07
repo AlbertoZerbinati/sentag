@@ -54,9 +54,5 @@ export default {
   text-shadow: 0.6px 0.6px 0.8px #0c66a1;
   color: #0c66a1;
 }
-#column {
-  width: 100%;
-  position:relative;
-  height: 40vh;
-  overflow-y: auto;}
+
 </style>
