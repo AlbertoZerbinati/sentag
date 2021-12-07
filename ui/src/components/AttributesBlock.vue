@@ -1,5 +1,5 @@
 <template>
-  <div id="column" style="overflow: visible">
+  <div id="root">
     <div class="attribute-title stroke">
       <strong
         v-if="
@@ -20,110 +20,115 @@
       <strong v-else> Select a token... </strong>
     </div>
 
-    <div
-      v-if="
-        Object.keys(currentBlock).length &&
-        Object.keys(currentBlock.attrs).length
-      "
-    >
-      <div
-        class="field is-horizontal"
-        v-for="at in Object.keys(currentBlock.attrs)"
-        :key="at.id"
-      >
-        <div class="field-label is-normal">
-          <label class="label tag"
-            ><strong class="tag">{{ at }}</strong></label
+    <div id="column">
+      <div class="is-multiline">
+        <div
+          v-if="
+            Object.keys(currentBlock).length &&
+            Object.keys(currentBlock.attrs).length
+          "
+        >
+          <div
+            class="field is-horizontal"
+            v-for="at in Object.keys(currentBlock.attrs)"
+            :key="at.id"
           >
-        </div>
-        <div class="field-body" v-if="at === 'ID'">
-          <div class="field">
-            <p class="control">
-              <input
-                @keydown="onKeyUp"
-                v-model="currentBlock.attrs[at]['value'][0]"
-                class="input is-normal"
-                type="text"
-                :disabled="!enabled"
-              />
-            </p>
-          </div>
-        </div>
-        <div class="field-body" v-else-if="at !== 'PRO' && at !== 'CON'">
-          <div class="field">
-            <p class="control">
-              <input
-                v-if="currentBlock.attrs[at]['type'] === 'string'"
-                @keydown="onKeyUp"
-                :value="currentBlock.attrs[at]['value'][0].split('|')[0]"
-                @change="
-                  currentBlock.attrs[at]['value'][0] = $event.target.value
-                "
-                :disabled="!enabled"
-                class="input is-normal"
-                type="text"
-              />
-            </p>
-            <p>
-              <VueMultiselect
-                v-if="currentBlock.attrs[at]['type'] === 'mutual'"
-                :options="currentBlock.attrs[at]['options']"
-                :searchable="false"
-                :show-labels="false"
-                :close-on-select="true"
-                v-model="currentBlock.attrs[at]['value'][0]"
-                style="width: 100%"
-              />
-            </p>
-            <div
-              class="select is-multiple"
-              v-if="currentBlock.attrs[at]['type'] === 'multi'"
-              style="display: block; max-width=100%; width=100%;"
-            >
-              <select
-                multiple
-                :size="currentBlock.attrs[at]['options'].length"
-                v-model="currentBlock.attrs[at]['value']"
-                style="overflow: hidden; max-width=100%; width=100%;"
-                @change="onSelectionChanged"
-                value="[]"
+            <div class="field-label is-normal">
+              <label class="label tag"
+                ><strong class="tag">{{ at }}</strong></label
               >
-                <option
-                  v-for="opt in currentBlock.attrs[at]['options']"
-                  :value="opt"
-                  :key="opt"
+            </div>
+            <div class="field-body" v-if="at === 'ID'">
+              <div class="field">
+                <p class="control">
+                  <input
+                    @keydown="onKeyUp"
+                    v-model="currentBlock.attrs[at]['value'][0]"
+                    class="input is-normal"
+                    type="text"
+                  />
+                </p>
+              </div>
+            </div>
+            <div class="field-body" v-else-if="at !== 'PRO' && at !== 'CON'">
+              <div class="field">
+                <p class="control">
+                  <input
+                    v-if="currentBlock.attrs[at]['type'] === 'string'"
+                    @keydown="onKeyUp"
+                    :value="currentBlock.attrs[at]['value'][0].split('|')[0]"
+                    @change="
+                      currentBlock.attrs[at]['value'][0] = $event.target.value
+                    "
+                    :disabled="at.includes('_')"
+                    class="input is-normal"
+                    type="text"
+                  />
+                </p>
+                <p>
+                  <VueMultiselect
+                    v-if="currentBlock.attrs[at]['type'] === 'mutual'"
+                    :options="currentBlock.attrs[at]['options']"
+                    :searchable="false"
+                    :show-labels="false"
+                    :close-on-select="true"
+                    open-direction="bottom"
+                    v-model="currentBlock.attrs[at]['value'][0]"
+                    style="width: 100%"
+                  />
+                </p>
+                <div
+                  class="select is-multiple"
+                  v-if="currentBlock.attrs[at]['type'] === 'multi'"
                   style="display: block; max-width=100%; width=100%;"
                 >
-                  {{ opt }}
-                </option>
-              </select>
+                  <select
+                    multiple
+                    :size="currentBlock.attrs[at]['options'].length"
+                    v-model="currentBlock.attrs[at]['value']"
+                    style="max-width=100%; width=100%; "
+                    @change="onSelectionChanged"
+                    value="[]"
+                  >
+                    <option
+                      v-for="opt in currentBlock.attrs[at]['options']"
+                      :value="opt"
+                      :key="opt"
+                      style="display: block; max-width=100%; width=100%;"
+                    >
+                      {{ opt }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="field-body" v-if="at === 'PRO' || at === 'CON'">
+              <div class="field">
+                <p class="control">
+                  <input
+                    :value="currentBlock.attrs[at]['value'][0].split('|')[0]"
+                    class="input is-normal"
+                    disabled
+                    title="You can only edit this through the Graph interface"
+                    type="text"
+                  />
+                </p>
+              </div>
             </div>
           </div>
+          <!-- <div class="is-pulled-right">
+            <input
+              id="switchRoundedDanger"
+              v-model="enabled"
+              type="checkbox"
+              name="switchRoundedDanger"
+              class="switch is-rounded is-danger is-small"
+            />
+            <label id="labelForSwitchRoundedDanger" for="switchRoundedDanger"
+              >Edit</label
+            >
+          </div> -->
         </div>
-        <div class="field-body" v-if="at === 'PRO' || at === 'CON'">
-          <div class="field">
-            <p class="control">
-              <input
-                :value="currentBlock.attrs[at]['value'][0].split('|')[0]"
-                class="input is-normal"
-                :disabled="!enabled"
-                title="You can only edit this through the Graph interface"
-                type="text"
-              />
-            </p>
-          </div>
-        </div>
-      </div>
-      <div class="is-pulled-right">
-        <input
-          id="switchRoundedDanger"
-          v-model="enabled"
-          type="checkbox"
-          name="switchRoundedDanger"
-          class="switch is-rounded is-danger is-small"
-          @change="warning"
-        />
-        <label for="switchRoundedDanger">Edit</label>
       </div>
     </div>
   </div>
@@ -138,9 +143,6 @@ export default {
   name: "AttributesBlock",
   components: {
     VueMultiselect,
-  },
-  data: function () {
-    return { enabled: false };
   },
   computed: {
     ...mapState([
@@ -165,14 +167,6 @@ export default {
       this.setUnsavedWork(true);
       this.setDone(false);
     },
-    warning() {
-      if (this.enabled) {
-        alert(
-          "Warning!\nEditing attributes manually could disrupt the integrity of your work.\n" +
-            "In order to avoid damage, consider using the graph interface."
-        );
-      }
-    },
   },
 };
 </script>
@@ -180,13 +174,17 @@ export default {
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
 
 <style lang="css" scoped>
-#column {
-  height: 400px;
-  overflow-y: auto;
-  overflow-x: hidden;
+#root {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
-.column {
-  height: 80px;
+#column {
+  position: relative;
+  overflow-y: visible;
+  overflow-x: hidden;
+  height: 100%;
 }
 .tag {
   padding-right: 11px;
@@ -201,7 +199,7 @@ export default {
 .attribute-title {
   width: 100%;
   margin-top: 5px;
-  margin-bottom: 15px;
+  margin-bottom: 5px;
   text-align: center;
 }
 .stroke > strong {
@@ -209,7 +207,7 @@ export default {
   text-shadow: 0.6px 0.6px 0.8px #0c66a1;
   color: #0c66a1;
 }
-#switchRoundedDanger {
-  margin-top: 10px;
+#labelForSwitchRoundedDanger {
+  margin-right: 10px;
 }
 </style>
