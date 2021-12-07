@@ -46,9 +46,6 @@ import {
 } from "devextreme-vue/diagram";
 import ArrayStore from "devextreme/data/array_store";
 import notify from "devextreme/ui/notify";
-import axios from "axios";
-import TokenManager from "./token-manager";
-import { toast } from "bulma-toast";
 import { mapState, mapMutations } from "vuex";
 
 export default {
@@ -72,7 +69,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(["unsavedWork"]),
+    ...mapState(["unsavedWork", "tokenManager"]),
+  },
+  beforeUnmount() {
+    this.save();
   },
   created() {
     // retrive this tagging's ID and Title
@@ -83,26 +83,8 @@ export default {
       .querySelector("meta[name='title-tagging']")
       .getAttribute("content");
 
-    // exit confirmation if there is unsaved work
-    this.setUnsavedWork(false);
-    window.onbeforeunload = () => (this.unsavedWork ? true : null);
-
     // build the initial graph from token manager
-    axios
-      .get("/api/" + this.tagging_id)
-      .then((res) => {
-        // get the comments
-        this.comments = res.data["comments"];
-        // get the old token manager, if available
-        this.tm = res.data["token_manager"];
-        if (this.tm === "") {
-          return;
-        }
-
-        this.tm = new TokenManager([], JSON.parse(JSON.parse(this.tm)));
-        this.initializeGraph();
-      })
-      .catch((err) => alert(err));
+    this.initializeGraph();
   },
   methods: {
     ...mapMutations(["setUnsavedWork"]),
@@ -110,6 +92,7 @@ export default {
       // initialize the graph with nodes and connectors
 
       // flatten tm with the stack technique
+      this.tm = this.tokenManager;
       const stack = [...this.tm.tokens];
       const flattened_tm = [];
       while (stack.length) {
@@ -281,53 +264,6 @@ export default {
       for (let t of this.nodesDataSource._array) {
         this.tm.updateBlockAttrs(t);
       }
-
-      // now that all the changes have been pushed into the TM,
-      // PUT the token manager into the database, via an axios call
-      function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-          const cookies = document.cookie.split(";");
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-              cookieValue = decodeURIComponent(
-                cookie.substring(name.length + 1)
-              );
-              break;
-            }
-          }
-        }
-        return cookieValue;
-      }
-      const csrftoken = getCookie("csrftoken");
-      const params = {
-        tm: JSON.stringify(this.tm),
-        comments: this.comments,
-        cp: false, // set as not completed: the annotator will have to manually set it in the tagging page
-      };
-
-      axios
-        .put("/api/update/" + this.tagging_id, params, {
-          headers: {
-            "X-CSRFToken": csrftoken,
-            "content-type": "application/json",
-          },
-        })
-        .then(
-          toast({
-            message: "Graph saved",
-            type: "is-success",
-            dismissible: "true",
-            pauseOnHover: "true",
-            duration: 2000,
-            position: "bottom-right",
-          }),
-          this.setUnsavedWork(false) // no more need to ask for confirmation before exiting
-        )
-        .catch((e) => {
-          console.log(e);
-        });
     },
     itemTypeExpr() {
       return "ellipse";

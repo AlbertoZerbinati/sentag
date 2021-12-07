@@ -1,41 +1,13 @@
 <template>
-  <div>
-    <div class="column">
-      <div class="panel">
-        <div class="panel-heading" style="position: relative">
-          <a class="button is-link" :href="/sentenza/ + tagging_id">
-            <span class="icon is-small">
-              <font-awesome-icon icon="angle-left" />
-            </span>
-            <span>Text Tagging</span>
-          </a>
-          <strong
-            style="position: absolute; left: 180px; top: 20px"
-            v-if="graph_type === 'arg'"
-            >Arguments Graph {{ tagging_title }}</strong
-          >
-          <strong style="position: absolute; left: 180px; top: 20px" v-else
-            >Relations Graph {{ tagging_title }}</strong
-          >
-        </div>
+  <div class="column">
+    <arguments-graph ref="arggraph" v-if="graph_type === 'arg'" />
+    <relations-graph ref="relgraph" v-else />
 
-        <arguments-graph ref="arggraph" v-if="graph_type === 'arg'" />
-        <relations-graph ref="relgraph" v-else />
-
-        <div class="panel-block">
-          <div class="field is-grouped is-pulled-left">
-            <p class="control">
-              <button class="button is-link" @click="save">
-                <span class="icon is-small">
-                  <font-awesome-icon icon="check" />
-                </span>
-                <span>Save</span>
-              </button>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn3.devexpress.com/jslib/21.1.3/css/dx-diagram.min.css"
+    />
   </div>
 </template>
 
@@ -43,6 +15,7 @@
 // :disabled="graph_type == 'rel'"
 import ArgumentsGraph from "./components/ArgumentsGraph.vue";
 import RelationsGraph from "./components/RelationsGraph.vue";
+import { mapState } from "vuex";
 
 export default {
   components: {
@@ -52,7 +25,12 @@ export default {
   data() {
     return {};
   },
-  computed: {},
+  computed: {
+    ...mapState(["mainTab"]),
+    graph_type: function () {
+      return this.mainTab == "Arguments Graph" ? "arg" : "rel";
+    },
+  },
   created() {
     // retrive this tagging's ID and Title
     this.tagging_id = document
@@ -63,10 +41,6 @@ export default {
       .getAttribute("content");
 
     // also retrive the typology of graph this is: either 'arg' or 'rel'
-    this.graph_type = document
-      .querySelector("meta[name='graph-type']")
-      .getAttribute("content");
-
     // console.log(this.graph_type);
   },
   methods: {

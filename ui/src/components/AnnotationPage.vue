@@ -1,31 +1,35 @@
 <template>
-  <div class="columns is-mobile">
+  <div>
     <div class="column">
       <div class="panel">
-        <div class="panel-heading" style="position: relative">
-          <strong>Tag {{ title }}</strong>
-          <a
-            class="button is-link"
-            style="position: absolute; right: 220px; top: 8px"
-            :href="'/graph/rel/' + tagging_id"
-          >
-            <span>Relations Graph</span>
-            <span class="icon is-small">
-              <font-awesome-icon icon="angle-right" />
-            </span>
-          </a>
-          <a
-            class="button is-link"
-            style="position: absolute; right: 16px; top: 8px"
-            :href="'/graph/arg/' + tagging_id"
-          >
-            <span>Arguments Graph</span>
-            <span class="icon is-small">
-              <font-awesome-icon icon="angle-double-right" />
-            </span>
-          </a>
+        <div class="panel-heading">
+          <strong>{{ mainTab }} {{ title }}</strong>
+          <div class="push-right">
+            <button class="button is-link" @click="changeMainTab('Tag')">
+              <span>Text Tagging</span>
+            </button>
+          </div>
+          <div>
+            <button
+              class="button is-link"
+              @click="changeMainTab('Relations Graph')"
+            >
+              <!-- :href="'/graph/rel/' + tagging_id" -->
+              <span>Relations Graph</span>
+            </button>
+          </div>
+          <div>
+            <button
+              class="button is-link"
+              @click="changeMainTab('Arguments Graph')"
+            >
+              <!-- :href="'/graph/arg/' + tagging_id" -->
+              <span>Arguments Graph</span>
+            </button>
+          </div>
         </div>
-        <div class="panel-block text">
+
+        <div class="panel-block text" v-if="mainTab == 'Tag'">
           <div id="editor" style="white-space: pre-line">
             <component
               :is="t.type === 'token' ? 'Token' : 'TokenBlock'"
@@ -39,9 +43,20 @@
             />
           </div>
         </div>
+        <div class="dx-viewport" v-else>
+          <graph ref="graph" />
+        </div>
+
+        <!-- <div v-else-if="mainTab == 'Arguments Graph'">
+          <arguments-graph ref="arggraph"/>
+        </div>
+        <div v-else>
+          <relations-graph ref="relgraph"/>
+        </div> -->
+
         <div class="panel-block is-justify-content-space-between">
           <div class="field is-grouped is-pulled-left">
-            <p class="control">
+            <p class="control" v-if="mainTab == 'Tag'">
               <button class="button is-danger is-outlined" @click="resetBlocks">
                 <span class="icon is-small">
                   <font-awesome-icon icon="undo" />
@@ -63,7 +78,7 @@
             </p>
           </div>
 
-          <div class="is-pulled-right">
+          <div class="is-pulled-right" v-if="mainTab == 'Tag'">
             <input
               id="switchRoundedSuccess"
               v-model="done"
@@ -87,18 +102,20 @@ import axios from "../axios";
 import Token from "./Token";
 import TokenBlock from "./TokenBlock";
 import TokenManager from "./token-manager";
+import Graph from "../Graph";
 
 export default {
   name: "AnnotationPage",
-  // data: function () {
-  //   return {
-  //     tm: {},
-  //   };
-  // },
+  data: function () {
+    return {
+      tm: {},
+    };
+  },
   props: ["title"],
   components: {
     Token,
     TokenBlock,
+    Graph,
   },
   computed: {
     ...mapState([
@@ -111,6 +128,7 @@ export default {
       "currentClass",
       "currentBlock",
       "unsavedWork",
+      "mainTab",
     ]),
     done: {
       get() {
@@ -154,8 +172,20 @@ export default {
     document.removeEventListener("mouseup", this.selectTokens);
   },
   methods: {
-    ...mapMutations(["setCurrentBlock", "setUnsavedWork", "setTokenManager"]),
-
+    ...mapMutations([
+      "setCurrentBlock",
+      "setUnsavedWork",
+      "setTokenManager",
+      "setMainTab",
+    ]),
+    changeMainTab(tab) {
+      // if(this.mainTab != tab)
+      //   if (this.unsavedWork && confirm("Changes you made may not be saved.")) {
+      //     this.setMainTab(tab);
+      //   } else if (!this.unsavedWork) {
+      this.setMainTab(tab);
+      // }
+    },
     tokenizeCurrentSentence() {
       // function used for parsing xml input
       let parseNode = (xmlNode, last_index_token) => {
@@ -334,7 +364,6 @@ export default {
       this.done = false;
     },
     saveTags() {
-      // retrieve CSRF_TOKEN
       function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {
@@ -350,7 +379,7 @@ export default {
           }
         }
         return cookieValue;
-      }
+      } // retrieve CSRF_TOKEN
       const csrftoken = getCookie("csrftoken");
       const params = {
         tm: JSON.stringify(this.tokenManager),
@@ -457,6 +486,14 @@ export default {
   top: 0;
   bottom: 0;
 }
+.panel-heading {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+.push-right {
+  margin-left: auto;
+}
 #editor {
   // position: relative;
   // overflow-y: auto;
@@ -468,11 +505,9 @@ export default {
   padding-top: 2px;
   // padding-left: 2px;
 }
-.text {
-  // padding-left: 10px;
-  // padding-top: 10px;
-  // line-height: 1.2rem;
-
+.column {
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 .right {
   margin-left: 100px;

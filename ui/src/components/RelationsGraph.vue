@@ -7,11 +7,10 @@
       :show-grid="false"
       :snap-to-grid="false"
       :page-color="'#F9F9F9'"
-      custom-shape-template="GraphNodeTemplate"
+      :units="'px'"
       @request-edit-operation="onRequestEditOperation"
       @item-dbl-click="onItemDblClick"
       @item-click="onItemClick"
-      @click="setPosition"
     >
       <DxNodes
         :data-source="nodesDataSource"
@@ -19,6 +18,7 @@
         :text-expr="itemTextExpr"
         :text-style-expr="itemTextStyleExpr"
         :style-expr="itemStyleExpr"
+        :auto-size-enabled="true"
         :key-expr="'id'"
       >
         <DxAutoLayout :orientation="'horizontal'" :type="'layered'" />
@@ -48,9 +48,6 @@ import {
 } from "devextreme-vue/diagram";
 import ArrayStore from "devextreme/data/array_store";
 import notify from "devextreme/ui/notify";
-import axios from "axios";
-import TokenManager from "./token-manager";
-import { toast } from "bulma-toast";
 import { mapState, mapMutations } from "vuex";
 
 export default {
@@ -71,10 +68,14 @@ export default {
       popupVisible: false,
       selectedNode: {},
       target: "",
+      nodesTextLengths: {},
     };
   },
   computed: {
-    ...mapState(["unsavedWork"]),
+    ...mapState(["unsavedWork", "tokenManager"]),
+  },
+  beforeUnmount() {
+    this.save();
   },
   created() {
     // retrive this tagging's ID and Title
@@ -85,25 +86,7 @@ export default {
       .querySelector("meta[name='title-tagging']")
       .getAttribute("content");
 
-    // exit confirmation if there is unsaved work
-    this.setUnsavedWork(false);
-    window.onbeforeunload = () => (this.unsavedWork ? true : null);
-
-    // query for the initial token manager
-    axios
-      .get("/api/" + this.tagging_id)
-      .then((res) => {
-        // get the comments
-        this.comments = res.data["comments"];
-        // get the old token manager, if available
-        this.tm = res.data["token_manager"];
-        if (!this.tm.length) {
-          return;
-        }
-        this.tm = new TokenManager([], JSON.parse(JSON.parse(this.tm)));
-        this.initializeGraph();
-      })
-      .catch((err) => alert(err));
+    this.initializeGraph();
   },
   methods: {
     ...mapMutations(["setUnsavedWork"]),
@@ -111,6 +94,7 @@ export default {
       // initialize the graph with nodes and connectors
 
       // flatten tm with the stack technique
+      this.tm = this.tokenManager;
       const stack = [...this.tm.tokens];
       const flattened_tm = [];
       while (stack.length) {
@@ -123,7 +107,12 @@ export default {
       // console.log(flattened_tm)
 
       // get the graph's nodes
-      const nodes = flattened_tm.filter((token) => token.relations);
+      let nodes = flattened_tm.filter((token) => token.relations);
+      for (let i = 0; i < nodes.length; i++) {
+        this.nodesTextLengths[nodes[i].id] = 100; // initialize length of every node to 100
+      }
+      console.log(this.nodesTextLengths);
+      // console.log(nodes);
 
       // istantiate nodes datasource
       this.nodesDataSource = new ArrayStore({
@@ -139,7 +128,7 @@ export default {
 
       // populate the edges datasoruce, based on nodes' attributes
       for (let node of nodes) {
-        console.log(node);
+        // console.log(node);
         // for each node, check if there exist another node with the label of one of its attributes
         for (let attr_label of Object.keys(node.attrs)) {
           // ignore empty attributes
@@ -215,7 +204,7 @@ export default {
       }
     },
     save() {
-      // console.log("saving...");
+      console.log("saving...");
 
       // remove every old relations-graph related attribute
       for (let node of this.nodesDataSource._array) {
@@ -291,98 +280,32 @@ export default {
         }
       }
 
-      // for (let node of this.nodesDataSource._array) {
-      //   console.log(node);
-      // }
-
-      // now that all the changes have been pushed into the TM,
-      // PUT the token manager into the database, via an axios call
-      function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== "") {
-          const cookies = document.cookie.split(";");
-          for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === name + "=") {
-              cookieValue = decodeURIComponent(
-                cookie.substring(name.length + 1)
-              );
-              break;
-            }
-          }
-        }
-        return cookieValue;
-      }
-
       // updated attributes of nested blocks
       for (let t of this.nodesDataSource._array) {
         this.tm.updateBlockAttrs(t);
       }
-
-      const csrftoken = getCookie("csrftoken");
-      const params = {
-        tm: JSON.stringify(this.tm),
-        comments: this.comments,
-        cp: false, // set as not completed: the annotator will have to manually set it in the tagging page
-      };
-      axios
-        .put("/api/update/" + this.tagging_id, params, {
-          headers: {
-            "X-CSRFToken": csrftoken,
-            "content-type": "application/json",
-          },
-        })
-        .then(
-          toast({
-            message: "Graph saved",
-            type: "is-success",
-            dismissible: "true",
-            pauseOnHover: "true",
-            duration: 2000,
-            position: "bottom-right",
-          }),
-          this.setUnsavedWork(false) // no more need to ask for confirmation before exiting
-        )
-        .catch((e) => {
-          // toast({
-          //   message: "Something went wrong",
-          //   type: "is-warning",
-          //   dismissible: "true",
-          //   pauseOnHover: "true",
-          //   duration: 2000,
-          //   position: "bottom-right",
-          // }),
-          console.log(e);
-        });
     },
     itemTypeExpr() {
       return "rectangle";
     },
     itemTextExpr(item) {
-      let ret = item.label.toUpperCase() + " - \n";
-      if (item.text.length > 100) {
-        ret += item.text.substring(0, 200) + "...";
-      } else {
-        ret += item.text;
-      }
+      let node = this.nodesDataSource._array.find((n) => n.id == item.id);
+      // console.log("node",node);
+      let completeText = node.label.toUpperCase() + " - ";
       if (
-        item.attrs &&
-        item.attrs["ID"] &&
-        Object.keys(item.attrs["ID"]).length
+        node.attrs &&
+        node.attrs["ID"] &&
+        Object.keys(node.attrs["ID"]).length
       ) {
-        ret =
-          item.label.toUpperCase() +
-          " - " +
-          item.attrs["ID"]["value"][0] +
-          "\n";
-        if (item.text.length > 100) {
-          ret += item.text.substring(0, 200) + "...";
-        } else {
-          ret += item.text;
-        }
+        completeText += node.attrs["ID"]["value"][0];
       }
+      completeText += "\n";
+      completeText += node.text;
 
-      return ret;
+      // console.log(node.textLength);
+      // console.log(completeText.substring(0, parseInt(node.textLength)));
+      // console.log();
+      return completeText.substring(0, this.nodesTextLengths[node.id]);
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };
@@ -464,12 +387,14 @@ export default {
       } else if (e.operation === "deleteShape") {
         e.allowed = false;
       } else if (e.operation === "resizeShape") {
-        if (e.args.newSize.width < 1 || e.args.newSize.height < 0.75) {
-          if (e.reason !== "checkUIElementAvailability") {
-            this.showToast("The Tag size is too small.");
-          }
-          e.allowed = false;
-        }
+        let w = e.args.newSize.width;
+        let h = e.args.newSize.height;
+        // console.log(this.findTextLength(w, h));
+        // console.log(e);
+        var node = this.nodesDataSource._array.find(
+          (item) => item.id == e.args.shape.key
+        );
+        this.nodesTextLengths[node.id] = this.findTextLength(w, h).toString();
       } else if (e.operation === "beforeChangeShapeText") {
         e.allowed = false;
       } else if (e.operation === "beforeChangeConnectorText") {
@@ -507,7 +432,7 @@ export default {
       // console.log({ "item click": obj});
       if (obj.item.itemType === "shape") this.selectedNode = obj.item;
       else this.selectedNode = {};
-      // console.log(obj.item);
+      console.log(this.selectedNode);
     },
     onItemDblClick(obj) {
       // not a connector -> popup
@@ -515,6 +440,58 @@ export default {
     },
     setPosition: function (event) {
       this.target = event;
+    },
+    findTextLength(w, h) {
+      // create a div with given width and height
+      var div = document.createElement("div");
+      div.id = "find-length";
+
+      // div.style.position = "absolute";
+      // div.style.top = "0px";
+      // div.style.left = "0px";
+      // div.style.background = "red";
+      div.style.width = w.toString() + "px";
+      div.style.height = h.toString() + "px";
+      // div.style["z-index"] = "10000";
+      div.style["text-align"] = "center";
+      div.style["font-size"] = "15";
+      div.style["font-weight"] = "bold";
+      div.style["overflow"] = "auto";
+      div.style.padding = "10px";
+
+      // div.innerHTML = this.selectedNode.dataItem.text;
+      document.body.appendChild(div);
+
+      // try all possible length of text until it overflows or the text is over
+      var el = document.getElementById("find-length");
+      // console.log(el)
+
+      let completeText = this.selectedNode.dataItem.label.toUpperCase() + " - ";
+      if (
+        this.selectedNode.dataItem.attrs &&
+        this.selectedNode.dataItem.attrs["ID"] &&
+        Object.keys(this.selectedNode.dataItem.attrs["ID"]).length
+      ) {
+        completeText += this.selectedNode.dataItem.attrs["ID"]["value"][0];
+      }
+      completeText += "\n";
+      completeText += this.selectedNode.dataItem.text;
+
+      for (let i = 0; i <= completeText.length; i++) {
+        el.innerHTML = completeText.substring(0, i);
+        let isOverflowing =
+          el.clientWidth < el.scrollWidth || el.clientHeight < el.scrollHeight;
+        if (isOverflowing) {
+          // remove the div
+          el.parentNode.removeChild(el);
+          // return the the max num of chars
+          return i;
+        }
+      }
+      // remove the div
+      el.parentNode.removeChild(el);
+      // return the the max num of chars
+      return completeText.length;
     },
   },
 };

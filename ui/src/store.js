@@ -59,9 +59,9 @@ export const mutations = {
   },
   setCurrentBlock(state, payload) {
     state.currentBlock = payload;
-    // console.log({
-    //   "current block: ": payload
-    // })
+    console.log({
+      "current block: ": payload
+    })
   },
   setDone(state, payload) {
     state.done = payload;
@@ -71,6 +71,10 @@ export const mutations = {
   },
   setComments(state, payload) {
     state.comments = payload;
+  },
+  setMainTab(state, payload) {
+    state.mainTab = payload;
+    console.log(state.mainTab)
   }
 };
 
@@ -86,6 +90,7 @@ export default {
       currentBlock: {},
       done: false,
       unsavedWork: false,
+      mainTab: "Tag",
     };
   },
   mutations,
