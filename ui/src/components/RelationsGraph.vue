@@ -78,14 +78,7 @@ export default {
     this.save();
   },
   created() {
-    // retrive this tagging's ID and Title
-    this.tagging_id = document
-      .querySelector("meta[name='id-tagging']")
-      .getAttribute("content");
-    this.tagging_title = document
-      .querySelector("meta[name='title-tagging']")
-      .getAttribute("content");
-
+    this.tm = this.tokenManager;
     this.initializeGraph();
   },
   methods: {
@@ -94,7 +87,6 @@ export default {
       // initialize the graph with nodes and connectors
 
       // flatten tm with the stack technique
-      this.tm = this.tokenManager;
       const stack = [...this.tm.tokens];
       const flattened_tm = [];
       while (stack.length) {
@@ -104,15 +96,12 @@ export default {
           flattened_tm.push(next);
         }
       }
-      // console.log(flattened_tm)
 
       // get the graph's nodes
-      let nodes = flattened_tm.filter((token) => token.relations);
+      const nodes = flattened_tm.filter((token) => token.relations);
       for (let i = 0; i < nodes.length; i++) {
         this.nodesTextLengths[nodes[i].id] = 100; // initialize length of every node to 100
       }
-      console.log(this.nodesTextLengths);
-      // console.log(nodes);
 
       // istantiate nodes datasource
       this.nodesDataSource = new ArrayStore({
@@ -204,7 +193,7 @@ export default {
       }
     },
     save() {
-      console.log("saving...");
+      console.log("saving rel graph...");
 
       // remove every old relations-graph related attribute
       for (let node of this.nodesDataSource._array) {
@@ -289,23 +278,18 @@ export default {
       return "rectangle";
     },
     itemTextExpr(item) {
-      let node = this.nodesDataSource._array.find((n) => n.id == item.id);
-      // console.log("node",node);
-      let completeText = node.label.toUpperCase() + " - ";
+      let completeText = item.label.toUpperCase() + " - ";
       if (
-        node.attrs &&
-        node.attrs["ID"] &&
-        Object.keys(node.attrs["ID"]).length
+        item.attrs &&
+        item.attrs["ID"] &&
+        Object.keys(item.attrs["ID"]).length
       ) {
-        completeText += node.attrs["ID"]["value"][0];
+        completeText += item.attrs["ID"]["value"][0];
       }
       completeText += "\n";
-      completeText += node.text;
+      completeText += item.text;
 
-      // console.log(node.textLength);
-      // console.log(completeText.substring(0, parseInt(node.textLength)));
-      // console.log();
-      return completeText.substring(0, this.nodesTextLengths[node.id]);
+      return completeText.substring(0, this.nodesTextLengths[item.id]);
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };
@@ -387,10 +371,9 @@ export default {
       } else if (e.operation === "deleteShape") {
         e.allowed = false;
       } else if (e.operation === "resizeShape") {
-        let w = e.args.newSize.width;
-        let h = e.args.newSize.height;
-        // console.log(this.findTextLength(w, h));
-        // console.log(e);
+        const w = e.args.newSize.width;
+        const h = e.args.newSize.height;
+
         var node = this.nodesDataSource._array.find(
           (item) => item.id == e.args.shape.key
         );
@@ -438,33 +421,23 @@ export default {
       // not a connector -> popup
       if (obj.item.itemType === "shape") this.popupVisible = true;
     },
-    setPosition: function (event) {
-      this.target = event;
-    },
     findTextLength(w, h) {
       // create a div with given width and height
       var div = document.createElement("div");
       div.id = "find-length";
 
-      // div.style.position = "absolute";
-      // div.style.top = "0px";
-      // div.style.left = "0px";
-      // div.style.background = "red";
       div.style.width = w.toString() + "px";
       div.style.height = h.toString() + "px";
-      // div.style["z-index"] = "10000";
       div.style["text-align"] = "center";
       div.style["font-size"] = "15";
       div.style["font-weight"] = "bold";
       div.style["overflow"] = "auto";
       div.style.padding = "10px";
 
-      // div.innerHTML = this.selectedNode.dataItem.text;
       document.body.appendChild(div);
 
       // try all possible length of text until it overflows or the text is over
       var el = document.getElementById("find-length");
-      // console.log(el)
 
       let completeText = this.selectedNode.dataItem.label.toUpperCase() + " - ";
       if (

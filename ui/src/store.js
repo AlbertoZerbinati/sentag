@@ -74,7 +74,6 @@ export const mutations = {
   },
   setMainTab(state, payload) {
     state.mainTab = payload;
-    console.log(state.mainTab)
   }
 };
 

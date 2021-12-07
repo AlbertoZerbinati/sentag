@@ -7,10 +7,10 @@
       :show-grid="false"
       :snap-to-grid="false"
       :page-color="'#F9F9F9'"
+      :units="'px'"
       @request-edit-operation="onRequestEditOperation"
       @item-dbl-click="onItemDblClick"
       @item-click="onItemClick"
-      @click="setPosition"
     >
       <DxNodes
         :data-source="nodesDataSource"
@@ -66,6 +66,7 @@ export default {
       popupVisible: false,
       selectedNode: {},
       target: "",
+      nodesTextLengths: {},
     };
   },
   computed: {
@@ -75,24 +76,16 @@ export default {
     this.save();
   },
   created() {
-    // retrive this tagging's ID and Title
-    this.tagging_id = document
-      .querySelector("meta[name='id-tagging']")
-      .getAttribute("content");
-    this.tagging_title = document
-      .querySelector("meta[name='title-tagging']")
-      .getAttribute("content");
-
     // build the initial graph from token manager
+    this.tm = this.tokenManager;
     this.initializeGraph();
   },
   methods: {
     ...mapMutations(["setUnsavedWork"]),
     initializeGraph() {
       // initialize the graph with nodes and connectors
-
+      
       // flatten tm with the stack technique
-      this.tm = this.tokenManager;
       const stack = [...this.tm.tokens];
       const flattened_tm = [];
       while (stack.length) {
@@ -105,6 +98,9 @@ export default {
 
       // get the graph's nodes
       const nodes = flattened_tm.filter((token) => token.graph);
+      for (let i = 0; i < nodes.length; i++) {
+        this.nodesTextLengths[nodes[i].id] = 100; // initialize length of every node to 100
+      }
 
       // istantiate nodes datasource
       this.nodesDataSource = new ArrayStore({
@@ -167,7 +163,7 @@ export default {
       }
     },
     save() {
-      // console.log("saving...");
+      console.log("saving arg graph...");
 
       // remove every old graph-related attribute
       for (var node of this.nodesDataSource._array) {
@@ -269,30 +265,18 @@ export default {
       return "ellipse";
     },
     itemTextExpr(item) {
-      let ret = item.label.toUpperCase() + " - \n";
-      if (item.text.length > 100) {
-        ret += item.text.substring(0, 200) + "...";
-      } else {
-        ret += item.text;
-      }
+      let completeText = item.label.toUpperCase() + " - ";
       if (
         item.attrs &&
         item.attrs["ID"] &&
         Object.keys(item.attrs["ID"]).length
       ) {
-        ret =
-          item.label.toUpperCase() +
-          " - " +
-          item.attrs["ID"]["value"][0] +
-          "\n";
-        if (item.text.length > 100) {
-          ret += item.text.substring(0, 200) + "...";
-        } else {
-          ret += item.text;
-        }
+        completeText += item.attrs["ID"]["value"][0];
       }
+      completeText += "\n";
+      completeText += item.text;
 
-      return ret;
+      return completeText.substring(0, this.nodesTextLengths[item.id]);
     },
     itemTextStyleExpr() {
       return { "font-weight": "bold", "font-size": 15 };
@@ -329,12 +313,13 @@ export default {
       } else if (e.operation === "deleteShape") {
         e.allowed = false;
       } else if (e.operation === "resizeShape") {
-        if (e.args.newSize.width < 1 || e.args.newSize.height < 0.75) {
-          if (e.reason !== "checkUIElementAvailability") {
-            this.showToast("The Tag size is too small.");
-          }
-          e.allowed = false;
-        }
+        const w = e.args.newSize.width;
+        const h = e.args.newSize.height;
+
+        var node = this.nodesDataSource._array.find(
+          (item) => item.id == e.args.shape.key
+        );
+        this.nodesTextLengths[node.id] = this.findTextLength(w, h).toString();
       } else if (e.operation === "beforeChangeShapeText") {
         e.allowed = false;
       } else if (e.operation === "beforeChangeConnectorText") {
@@ -393,8 +378,51 @@ export default {
         },
       ]);
     },
-    setPosition: function (event) {
-      this.target = event;
+    findTextLength(w, h) {
+      // create a div with given width and height
+      var div = document.createElement("div");
+      div.id = "find-length";
+
+      div.style.width = w.toString() + "px";
+      div.style.height = h.toString() + "px";
+      div.style["text-align"] = "center";
+      div.style["font-size"] = "15";
+      div.style["font-weight"] = "bold";
+      div.style["overflow"] = "auto";
+      div.style.padding = "10px";
+      div.style["z-index"] = "100000";
+
+      document.body.appendChild(div);
+
+      // try all possible length of text until it overflows or the text is over
+      var el = document.getElementById("find-length");
+
+      let completeText = this.selectedNode.dataItem.label.toUpperCase() + " - ";
+      if (
+        this.selectedNode.dataItem.attrs &&
+        this.selectedNode.dataItem.attrs["ID"] &&
+        Object.keys(this.selectedNode.dataItem.attrs["ID"]).length
+      ) {
+        completeText += this.selectedNode.dataItem.attrs["ID"]["value"][0];
+      }
+      completeText += "\n";
+      completeText += this.selectedNode.dataItem.text;
+
+      for (let i = 0; i <= completeText.length; i++) {
+        el.innerHTML = completeText.substring(0, i);
+        let isOverflowing =
+          el.clientWidth < el.scrollWidth || el.clientHeight < el.scrollHeight;
+        if (isOverflowing) {
+          // remove the div
+          el.parentNode.removeChild(el);
+          // return the the max num of chars
+          return i;
+        }
+      }
+      // remove the div
+      el.parentNode.removeChild(el);
+      // return the the max num of chars
+      return completeText.length;
     },
   },
 };
