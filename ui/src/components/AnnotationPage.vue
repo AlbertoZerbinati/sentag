@@ -364,6 +364,9 @@ export default {
       this.done = false;
     },
     saveTags() {
+      if(this.mainTab == "Arguments Graph") this.$refs.graph.$refs.arggraph.save()
+      else if(this.mainTab == "Relations Graph") this.$refs.graph.$refs.relgraph.save()
+      
       function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {

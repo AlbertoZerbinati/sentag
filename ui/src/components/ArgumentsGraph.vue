@@ -84,7 +84,7 @@ export default {
     ...mapMutations(["setUnsavedWork"]),
     initializeGraph() {
       // initialize the graph with nodes and connectors
-      
+
       // flatten tm with the stack technique
       const stack = [...this.tm.tokens];
       const flattened_tm = [];
@@ -315,11 +315,9 @@ export default {
       } else if (e.operation === "resizeShape") {
         const w = e.args.newSize.width;
         const h = e.args.newSize.height;
-
-        var node = this.nodesDataSource._array.find(
-          (item) => item.id == e.args.shape.key
-        );
-        this.nodesTextLengths[node.id] = this.findTextLength(w, h).toString();
+        const l = this.findTextLength(w, h);
+        // console.log({ w: w, h: h, l: l });
+        this.nodesTextLengths[e.args.shape.key] = l;
       } else if (e.operation === "beforeChangeShapeText") {
         e.allowed = false;
       } else if (e.operation === "beforeChangeConnectorText") {
@@ -379,50 +377,14 @@ export default {
       ]);
     },
     findTextLength(w, h) {
-      // create a div with given width and height
-      var div = document.createElement("div");
-      div.id = "find-length";
-
-      div.style.width = w.toString() + "px";
-      div.style.height = h.toString() + "px";
-      div.style["text-align"] = "center";
-      div.style["font-size"] = "15";
-      div.style["font-weight"] = "bold";
-      div.style["overflow"] = "auto";
-      div.style.padding = "10px";
-      div.style["z-index"] = "100000";
-
-      document.body.appendChild(div);
-
-      // try all possible length of text until it overflows or the text is over
-      var el = document.getElementById("find-length");
-
-      let completeText = this.selectedNode.dataItem.label.toUpperCase() + " - ";
-      if (
-        this.selectedNode.dataItem.attrs &&
-        this.selectedNode.dataItem.attrs["ID"] &&
-        Object.keys(this.selectedNode.dataItem.attrs["ID"]).length
-      ) {
-        completeText += this.selectedNode.dataItem.attrs["ID"]["value"][0];
-      }
-      completeText += "\n";
-      completeText += this.selectedNode.dataItem.text;
-
-      for (let i = 0; i <= completeText.length; i++) {
-        el.innerHTML = completeText.substring(0, i);
-        let isOverflowing =
-          el.clientWidth < el.scrollWidth || el.clientHeight < el.scrollHeight;
-        if (isOverflowing) {
-          // remove the div
-          el.parentNode.removeChild(el);
-          // return the the max num of chars
-          return i;
-        }
-      }
-      // remove the div
-      el.parentNode.removeChild(el);
-      // return the the max num of chars
-      return completeText.length;
+      // these coefficients were calculated through linear regression, after collecting empirical data
+      let val =
+        -8.126482949847684 +
+        w * -0.13599902 +
+        h * -0.2172954 +
+        w * h * 0.00569047 -
+        10;
+      return val >= 1 ? val : 2;
     },
   },
 };

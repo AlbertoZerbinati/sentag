@@ -120,50 +120,6 @@ def tag_sentenza(request, id, htbp=-1):
       # print('Taggers access with no permission')
         return redirect('/sentenze/')
 
-
-@login_required
-def graph(request, id):
-    try:
-        # sentenza = Judgment.objects.get(pk=id)
-        sentenza = Tagging.objects.get(id=id).judgment
-    except Judgment.DoesNotExist:
-        raise Http404()
-
-    current_user = request.user
-    profile = Profile.objects.get(user=request.user)
-    user_taggings = current_user.profile.taggings.all()
-
-    # admins and editors have access to all the sentenze
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-      # print("Admin/Editor access")
-        # retrive the taging table starting using profile and judgment as unique identifiers
-        context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
-        }
-        if 'arg' in request.get_full_path():
-            context['type'] = 'arg'
-        else:
-            context['type'] = 'rel'
-
-        return render(request, 'tag_sentenze/graph.html', context=context)
-    # taggers has access only to their set of sentenze
-    elif sentenza in user_taggings:
-      # print('Tagger access with permission')
-        # retrive the taging table starting using profile and judgment as unique identifiers
-        context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0]
-        }
-        if 'arg' in request.get_full_path():
-            context['type'] = 'arg'
-        else:
-            context['type'] = 'rel'
-
-        return render(request, 'tag_sentenze/graph.html', context=context)
-    else:
-      # print('Taggers access with no permission')
-        return redirect('/sentenze/')
-
-
 @login_required
 def new_schema(request):
     # check if current user belongs to Editor or Admin Group
