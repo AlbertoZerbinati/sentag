@@ -2,7 +2,7 @@
   <span
     v-if="token.type === 'token' && token.text != '<br/>'"
     class="token"
-    :id="'t' + token.start"
+    :id="'t' + token.start + '-' + token.end"
   >
     {{ token.text }}
   </span>

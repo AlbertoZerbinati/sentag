@@ -129,12 +129,12 @@ class TokenManager {
       }
     }
     // selezione INTERO TOKEN-BLOCK, se e' token-block non interamente selezionato entrera' nel 4o elseif
-    else if (_tokens.type === "token-block" && _tokens.start >= start && _tokens.tokens.at(-1).start <= end &&
-      !(_tokens.start == start && _tokens.tokens.at(-1).start == end)) {
+    else if (_tokens.type === "token-block" && _tokens.start >= start && _tokens.end <= end &&
+      !(_tokens.start == start && _tokens.end == end)) {
       return _tokens;
     }
     // selezione TOKEN
-    else if (_tokens.type === "token" && _tokens.start + _tokens.text.length >= start && _tokens.start <= end) {
+    else if (_tokens.type === "token" && _tokens.end >= start && _tokens.start <= end) {
       return _tokens;
     }
     // scansione TOKEN dentro un TOKEN-BLOCK non interamente selezionato

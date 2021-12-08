@@ -32,9 +32,8 @@
         <div class="panel-block text" v-if="mainTab == 'Tag'">
           <div id="editor" style="white-space: pre-line">
             <component
-              :is="t.type === 'token' ? 'Token' : 'TokenBlock'"
-              :id="'t' + t.start"
               v-for="t in tokenManager.tokens"
+              :is="t.type === 'token' ? 'Token' : 'TokenBlock'"
               :token="t"
               :key="t.id"
               :backgroundColor="t.backgroundColor"
@@ -324,14 +323,23 @@ export default {
       }
 
       // else get indices
-      let startIdx, endIdx;
-      startIdx = parseInt(
-        selection.anchorNode.parentElement.id.replace("t", "")
-      );
-      endIdx = parseInt(selection.focusNode.parentElement.id.replace("t", ""));
+      const anchorNode = selection.anchorNode.parentElement.id;
+      const focusNode = selection.focusNode.parentElement.id;
 
-      // if valid indices then add the new block, of type currentClass
-      if (!isNaN(startIdx) && !isNaN(endIdx)) {
+      if (anchorNode && focusNode) {
+        // if valid indices then add the new block, of type currentClass
+        const idxAnchor = anchorNode.match(/\d+/g);
+        const idxFocus = focusNode.match(/\d+/g);
+        let startIdx, endIdx;
+        if (parseInt(idxAnchor[0]) < parseInt(idxFocus[0])) {
+          startIdx = parseInt(idxAnchor[0]);
+          endIdx = parseInt(idxFocus[1]);
+        } else {
+          startIdx = parseInt(idxFocus[0]);
+          endIdx = parseInt(idxAnchor[1]);
+        }
+        console.log(startIdx, endIdx);
+
         let cb = this.tokenManager.addNewBlock(
           startIdx,
           endIdx,
@@ -344,8 +352,6 @@ export default {
         this.done = false;
       }
       selection.empty();
-
-      console.log(startIdx, endIdx);
     },
     onRemoveBlock(id, start, end) {
       this.tokenManager.removeBlock(id, start, end);
@@ -364,9 +370,11 @@ export default {
       this.done = false;
     },
     saveTags() {
-      if(this.mainTab == "Arguments Graph") this.$refs.graph.$refs.arggraph.save()
-      else if(this.mainTab == "Relations Graph") this.$refs.graph.$refs.relgraph.save()
-      
+      if (this.mainTab == "Arguments Graph")
+        this.$refs.graph.$refs.arggraph.save();
+      else if (this.mainTab == "Relations Graph")
+        this.$refs.graph.$refs.relgraph.save();
+
       function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== "") {

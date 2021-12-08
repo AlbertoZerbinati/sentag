@@ -2,7 +2,6 @@
   <mark
     class="is-multiline is-rounded"
     :style="{ backgroundColor: backgroundColor }"
-    :id="'tb' + token.start"
     :class="{ current: isCurrent }"
     @click.stop="setCurrentBlock(token)"
   >
