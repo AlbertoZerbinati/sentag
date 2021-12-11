@@ -120,6 +120,7 @@ def tag_sentenza(request, id, htbp=-1):
       # print('Taggers access with no permission')
         return redirect('/sentenze/')
 
+
 @login_required
 def new_schema(request):
     # check if current user belongs to Editor or Admin Group
@@ -438,6 +439,8 @@ def update_tagging(request, id):
 
     # read tm from request
     token_manager = json.loads(request.data['tm'])
+    arggraph = request.data['arggraph']
+    relgraph = request.data['relgraph']
     comments = request.data['comments']
     completed = False
 
@@ -448,7 +451,11 @@ def update_tagging(request, id):
     # TODO: add check for missing attributes
 
     serializer = TaggingSerializer(instance=tagging, data={
-                                   'token_manager': json.dumps(request.data['tm']), 'comments': comments, 'xml_text': xml_string, 'completed': completed}, partial=True, many=False)
+                                   'token_manager': json.dumps(request.data['tm']),
+                                   'arguments_graph': arggraph,
+                                   'relations_graph': relgraph,
+                                   'comments': comments, 'xml_text': xml_string,
+                                   'completed': completed}, partial=True, many=False)
     if serializer.is_valid():
         serializer.save()
     return HttpResponse("Updated")
@@ -470,6 +477,8 @@ def completed_tagging(request, id):
 
     # read tm and cp from request
     token_manager = json.loads(request.data['tm'])
+    arggraph = request.data['arggraph']
+    relgraph = request.data['relgraph']
     comments = request.data['comments']
     completed = request.data['cp']
 
@@ -497,8 +506,11 @@ def completed_tagging(request, id):
         return Response("Updated")
 
     # if set uncompleted then save in db and return success
-    serializer = TaggingSerializer(instance=tagging, data={'token_manager': json.dumps(
-        request.data['tm']), 'completed': completed, }, partial=True, many=False)
+    serializer = TaggingSerializer(instance=tagging, data={'token_manager': json.dumps(request.data['tm']),
+                                                           'arguments_graph': arggraph,
+                                                           'relations_graph': relgraph,
+                                                           'comments': comments,
+                                                           'completed': completed, }, partial=True, many=False)
     if serializer.is_valid():
         serializer.save()
 

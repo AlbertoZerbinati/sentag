@@ -8,4 +8,4 @@ class TaggingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tagging
-        fields = ['name','initial_text','xml_text','tags','token_manager','comments','completed']
+        fields = ['name','initial_text','xml_text','tags','token_manager','arguments_graph','relations_graph','comments','completed']

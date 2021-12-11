@@ -6,7 +6,7 @@ class TokenManager {
    */
   constructor(tokens, oldTM) { // manage the recreation from an old TM or with an array of tokens
     if (arguments.length == 1) { // new token manager
-      this.currentID = 0; // univocal identifier
+      this.currentID = 1; // univocal identifier
       this.tokens = tokens.map((t) => ({
         type: "token",
         start: t[0],

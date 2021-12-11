@@ -74,6 +74,12 @@ export const mutations = {
   },
   setMainTab(state, payload) {
     state.mainTab = payload;
+  },
+  setArgumentsGraphJSON(state, payload) {
+    state.argumentsGraphJSON = payload;
+  },
+  setRelationsGraphJSON(state, payload) {
+    state.relationsGraphJSON = payload;
   }
 };
 
@@ -90,6 +96,8 @@ export default {
       done: false,
       unsavedWork: false,
       mainTab: "Tag",
+      argumentsGraphJSON: {},
+      relationsGraphJSON: {},
     };
   },
   mutations,

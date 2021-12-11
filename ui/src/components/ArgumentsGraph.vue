@@ -70,7 +70,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(["unsavedWork", "tokenManager"]),
+    ...mapState(["unsavedWork", "tokenManager", "argumentsGraphJSON"]),
   },
   beforeUnmount() {
     this.save();
@@ -80,8 +80,52 @@ export default {
     this.tm = this.tokenManager;
     this.initializeGraph();
   },
+  mounted() {
+    // reload the graphical configuration of the graph
+    if (this.argumentsGraphJSON && this.argumentsGraphJSON.includes("shapes")) {
+      // memorize the edge type in order to reset after the import
+      let edges = [];
+      for (let edge of this.edgesDataSource._array) {
+        edges.push({ ...edge });
+      }
+
+      // import old configuration
+      this.$refs.diagram.instance.import(this.argumentsGraphJSON, true);
+
+      // reset the edge types
+      for (let edge of this.edgesDataSource._array) {
+        const key = edge.id;
+        const dataObj = edge;
+        let old_edge = edges.find(
+          (e) => e.from == edge.from && e.to == edge.to
+        );
+        dataObj.type = old_edge.type;
+
+        const index = edges.indexOf(old_edge);
+        if (index > -1) {
+          edges.splice(index, 1);
+        }
+
+        // push the change
+        this.edgesDataSource.push([
+          {
+            type: "update",
+            data: dataObj,
+            key: key,
+          },
+        ]);
+      }
+
+      // set the nodesTextLengths
+      for (let shape of JSON.parse(this.argumentsGraphJSON)["shapes"]) {
+        const w = shape.width / 15;
+        const h = shape.height / 15;
+        this.nodesTextLengths[shape.dataKey] = this.findTextLength(w, h);
+      }
+    }
+  },
   methods: {
-    ...mapMutations(["setUnsavedWork"]),
+    ...mapMutations(["setUnsavedWork", "setArgumentsGraphJSON"]),
     initializeGraph() {
       // initialize the graph with nodes and connectors
 
@@ -260,6 +304,10 @@ export default {
       for (let t of this.nodesDataSource._array) {
         this.tm.updateBlockAttrs(t);
       }
+
+      // after saving the arcs in the TM, we need to save the graph's layout as JSON string
+      // so we export it and then we will reimport it in order to have the same positions and everything as we left it
+      this.setArgumentsGraphJSON(this.$refs.diagram.instance.export());
     },
     itemTypeExpr() {
       return "ellipse";
@@ -382,9 +430,8 @@ export default {
         -8.126482949847684 +
         w * -0.13599902 +
         h * -0.2172954 +
-        w * h * 0.00569047 -
-        10;
-      return val >= 1 ? val : 2;
+        w * h * 0.00569047;
+      return val * 0.95 <= 5 ? 5 : val * 0.95;
     },
   },
 };

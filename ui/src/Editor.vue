@@ -32,6 +32,8 @@ export default {
       "setComments",
       "addClass",
       "setDone",
+      "setArgumentsGraphJSON",
+      "setRelationsGraphJSON",
     ]),
   },
   created() {
@@ -59,11 +61,15 @@ export default {
           }
           this.setTokenManager(this.oldtm);
         }
-        // 4) the comments
+        // 4) the arguments graph configuration
+        this.setArgumentsGraphJSON(JSON.parse(res.data["arguments_graph"]));
+        // 5) the relations graph configuration
+        this.setRelationsGraphJSON(JSON.parse(res.data["relations_graph"]));
+        // 6) the comments
         this.setComments(res.data["comments"]);
-        // 5) il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
+        // 7) il fatto che la sentenza sia già stata completata o meno: lo sincronizzo subito nello store
         this.setDone(res.data["completed"]);
-        // 6) i tag da parsare, perché passati come xsd string
+        // 8) i tag da parsare, perché passati come xsd string
         let xml = res.data["tags"];
 
         // parsing delle classi di tag, sfrutta XPath

@@ -19,6 +19,8 @@ class Tagging(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
     judgment = models.ForeignKey(Judgment, on_delete=models.CASCADE)
     token_manager = models.TextField(blank=True)
+    arguments_graph = models.TextField(blank=True, null=True)
+    relations_graph = models.TextField(blank=True, null=True)
     comments = models.TextField(blank=True, null=True)
     xml_text = models.TextField(blank=True)
     completed = models.BooleanField(default=False)

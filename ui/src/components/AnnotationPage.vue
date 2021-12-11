@@ -121,6 +121,8 @@ export default {
       "inputText",
       "XMLText",
       "tokenManager",
+      "argumentsGraphJSON",
+      "relationsGraphJSON",
       "comments",
       "classes",
       "annotations",
@@ -394,6 +396,8 @@ export default {
       const csrftoken = getCookie("csrftoken");
       const params = {
         tm: JSON.stringify(this.tokenManager),
+        arggraph: JSON.stringify(this.argumentsGraphJSON),
+        relgraph: JSON.stringify(this.relationsGraphJSON),
         comments: this.comments,
         cp: this.done,
       };
@@ -441,6 +445,8 @@ export default {
       const csrftoken = getCookie("csrftoken");
       const params = {
         tm: JSON.stringify(this.tokenManager),
+        arggraph: JSON.stringify(this.argumentsGraphJSON),
+        relgraph: JSON.stringify(this.relationsGraphJSON),
         comments: this.comments,
         cp: this.done,
       };
