@@ -25,6 +25,11 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('tag_sentenze.urls')),
     path('register/', users_views.register, name='register'),
+    path('create_users/', users_views.createUsers, name='create_users'),
+    path('delete_user/<int:id>', users_views.deleteUser, name='delete_user'),
+    path('update_user/<int:id>', users_views.updateUser, name='update_user'),
+    path('create_schemas/', users_views.createSchemas, name='create_schemas'),
+    path('create_juds/', users_views.createJuds, name='create_juds'),
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
     path('editor_page/', include('users.urls'))

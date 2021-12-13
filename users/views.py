@@ -1,7 +1,7 @@
 import simpledorff
 from lxml import etree
 import pandas as pd
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from django.http import Http404, JsonResponse
 
 from django.contrib import messages
@@ -609,3 +609,112 @@ def agreement_page(request):
     }
 
     return render(request, 'users/agreement_page.html', context=context)
+
+@login_required
+def createUsers(request):
+    #user = User.objects.all()
+    user = User.objects.exclude(groups__name__in=["Admins", "Editors"])
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = UserRegisterForm()
+        if request.method == 'POST':
+            form = UserRegisterForm(request.POST)
+            if form.is_valid():
+                form.save()
+                username = form.cleaned_data.get('username')
+                # Add by default the new user to the Taggers Group
+                taggers = Group.objects.get(name='Taggers')
+                taggers.user_set.add(User.objects.get(username=username))
+                return redirect('/')
+
+        return render(request, 'users/user_form.html', context={'form': form, 'users':user})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+@login_required
+def createSchemas(request):
+    schema = Schema.objects.all()
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = UserRegisterForm()
+        if request.method == 'POST':
+            form = UserRegisterForm(request.POST)
+            if form.is_valid():
+                form.save()
+                username = form.cleaned_data.get('username')
+                # Add by default the new user to the Taggers Group
+                taggers = Group.objects.get(name='Taggers')
+                taggers.user_set.add(User.objects.get(username=username))
+                return redirect('/')
+
+        return render(request, 'users/schema_form.html', context={'form': form, 'schemas':schema})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+@login_required
+def createJuds(request):
+    juds = Judgment.objects.all()
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = UserRegisterForm()
+        if request.method == 'POST':
+            form = UserRegisterForm(request.POST)
+            if form.is_valid():
+                form.save()
+                username = form.cleaned_data.get('username')
+                # Add by default the new user to the Taggers Group
+                taggers = Group.objects.get(name='Taggers')
+                taggers.user_set.add(User.objects.get(username=username))
+                return redirect('/')
+
+        return render(request, 'users/jud_form.html', context={'form': form, 'juds':juds})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+@login_required
+def deleteUser(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            raise Http404()
+
+        user.delete()
+        messages.warning(request, ("User deleted"))
+    else:
+        messages.warning(request, ("You are not authorized"))
+
+    return redirect(reverse('create_users'))
+
+@login_required
+def updateUser(request, id):
+    user = User.objects.get(id=id)
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = UserRegisterForm(request.POST or None, instance= user)
+        if request.method == 'POST':
+            form = UserRegisterForm(request.POST, user)
+            if form.is_valid():
+                form.save(commit= False)
+                username = form.cleaned_data.get('username')
+                # Add by default the new user to the Taggers Group
+                taggers = Group.objects.get(name='Taggers')
+                taggers.user_set.add(User.objects.get(username=username))
+                return redirect('/')
+
+        return render(request, 'users/update_user.html', context={'form': form, 'users':user})
+
+    else:
+        return render(request, 'users/no_permission.html')
