@@ -31,14 +31,14 @@
         <table class="table table-sm">
             <tr>
                 <th>Schema</th>
-                <th>Update</th>
+                <!--<th>Update</th>-->
                 <th>Remove</th>
             </tr>
 
             {% for jud in juds %}
                 <tr>
                     <td>{{jud.name}}</td>
-                    <td><a class="btn btn-sm btn-info" href="">Update</a></td>
+                    <!--<td><a class="btn btn-sm btn-info" href="">Update</a></td>-->
                     <td><a class="btn btn-sm btn-danger" href="{% url 'tag_sentenze:delete-judgment' jud.id %}">Remove</a></td>
                 </tr>
             {% endfor %}

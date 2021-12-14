@@ -703,16 +703,16 @@ def updateUser(request, id):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = UserRegisterForm(request.POST or None, instance= user)
+        form = UserRegisterForm(instance= user)
         if request.method == 'POST':
-            form = UserRegisterForm(request.POST, user)
+            form = UserRegisterForm(request.POST, instance=user)
             if form.is_valid():
-                form.save(commit= False)
+                form.save()
                 username = form.cleaned_data.get('username')
                 # Add by default the new user to the Taggers Group
                 taggers = Group.objects.get(name='Taggers')
                 taggers.user_set.add(User.objects.get(username=username))
-                return redirect('/')
+                return redirect(reverse('create_users'))
 
         return render(request, 'users/update_user.html', context={'form': form, 'users':user})
 
