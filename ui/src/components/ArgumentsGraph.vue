@@ -8,6 +8,7 @@
       :snap-to-grid="false"
       :page-color="'#F9F9F9'"
       :units="'px'"
+      :auto-zoom-mode="'fitContent'"
       @request-edit-operation="onRequestEditOperation"
       @item-dbl-click="onItemDblClick"
       @item-click="onItemClick"
