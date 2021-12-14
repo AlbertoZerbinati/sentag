@@ -9,7 +9,7 @@ from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from .models import Judgment, Schema
 from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, ParseXMLForm
-from users.models import Tagging, Profile
+from users.models import Tagging, Profile, Collection
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django import forms
@@ -578,3 +578,18 @@ def generate_xml_from_tm(token_manager):
 
     return xml_string
 
+@login_required
+def list_collections(request):
+    current_user = request.user
+    collections = Collection.objects.all()
+
+    # admins and editors have access to all taggings
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        context = {
+            'collections': collections
+        }
+        return render(request, 'tag_sentenze/list_collections.html', context=context)
+    # taggers don't
+    else:
+      # print('Tagger access')
+        return redirect('/download')
