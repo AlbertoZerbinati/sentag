@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 
 
 class Schema(models.Model):
@@ -59,3 +60,20 @@ class Judgment(models.Model):
     def __str__(self):
         """String for representing the Judgments object (in Admin site)."""
         return "Judgment " + self.name
+
+class Collection(models.Model):
+    name = models.CharField(max_length=40, blank=True, unique=True)
+    xsd = models.ForeignKey(
+        Schema, on_delete=models.CASCADE, blank=True, null=True,
+        verbose_name="The related xsd Schema", related_name="attached_collections"
+    )
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=False, null=False,
+        verbose_name="The user that created the task", related_name="owner"
+    )
+    users = models.ManyToManyField(to=User, blank=True)
+    judgments = models.ManyToManyField(to=Judgment, blank=True)
+
+    def __str__(self):
+        """String for representing the Judgments object (in Admin site)."""
+        return "Collection " + self.name

@@ -29,9 +29,14 @@ urlpatterns = [
     path('delete_user/<int:id>', users_views.deleteUser, name='delete_user'),
     path('update_user/<int:id>', users_views.updateUser, name='update_user'),
     path('create_schemas/', users_views.createSchemas, name='create_schemas'),
+    path('create_collections/', users_views.createCollections, name='create_collections'),
+    path('delete_collection/<int:id>', users_views.deleteCollection, name='delete_collection'),
+    path('update_collection/<int:id>', users_views.updateCollection, name='update_collection'),
+    path('new_collection/', users_views.newCollection, name='new_collection'),
     path('create_juds/', users_views.createJuds, name='create_juds'),
     path('login/', auth_views.LoginView.as_view(template_name='users/login.html'), name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
+    path("select2/", include("django_select2.urls")),
     path('editor_page/', include('users.urls'))
 ]
 

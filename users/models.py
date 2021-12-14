@@ -1,5 +1,5 @@
 from django.db import models
-from tag_sentenze.models import Judgment
+from tag_sentenze.models import Judgment, Collection
 
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -29,6 +29,20 @@ class Tagging(models.Model):
     def __str__(self):
         return str(self.profile) + " tagging " + str(self.judgment)
 
+#class UserTasksSynonyms(models.Model):
+#    user_task = models.ManyToManyField(User, through='UserTasks')
+
+#table implementing the M2M relationship between User and Collection
+'''class UserTasks(models.Model):
+    #user_task = models.ForeignKey(UserTasksSynonyms, on_delete=models.CASCADE)
+    collection = models.OneToOneField(Collection, on_delete=models.CASCADE , primary_key=True)
+    user = models.ManyToManyField(to=User, blank=True)
+
+    #class Meta:
+    #    unique_together = [['collection', 'user']]
+
+    def __str__(self):
+        return str(self.user) + " perform " + str(self.collection)'''
 
 @receiver(post_save, sender=User)
 def update_user_profile(sender, instance, created, **kwargs):

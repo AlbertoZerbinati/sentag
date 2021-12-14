@@ -6,9 +6,9 @@ from django.http import Http404, JsonResponse
 
 from django.contrib import messages
 
-from .forms import UserRegisterForm
+from .forms import UserRegisterForm, CollectionModelForm
 from .models import Tagging, Profile
-from tag_sentenze.models import Judgment, Schema
+from tag_sentenze.models import Judgment, Schema, Collection
 
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
@@ -681,6 +681,29 @@ def createJuds(request):
         return render(request, 'users/no_permission.html')
 
 @login_required
+def createCollections(request):
+    collections = Collection.objects.all()
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = CollectionModelForm()
+        if request.method == 'POST':
+            form = CollectionModelForm(request.POST)
+            if form.is_valid():
+                form.save()
+                username = form.cleaned_data.get('username')
+                # Add by default the new user to the Taggers Group
+                taggers = Group.objects.get(name='Taggers')
+                taggers.user_set.add(User.objects.get(username=username))
+                return redirect('/')
+
+        return render(request, 'users/collection_form.html', context={'form': form, 'collections':collections})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+@login_required
 def deleteUser(request, id):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
@@ -695,6 +718,22 @@ def deleteUser(request, id):
         messages.warning(request, ("You are not authorized"))
 
     return redirect(reverse('create_users'))
+
+@login_required
+def deleteCollection(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            collection = Collection.objects.get(id=id)
+        except Collection.DoesNotExist:
+            raise Http404()
+
+        collection.delete()
+        messages.warning(request, ("Collection deleted"))
+    else:
+        messages.warning(request, ("You are not authorized"))
+
+    return redirect(reverse('create_collections'))
 
 @login_required
 def updateUser(request, id):
@@ -715,6 +754,46 @@ def updateUser(request, id):
                 return redirect(reverse('create_users'))
 
         return render(request, 'users/update_user.html', context={'form': form, 'users':user})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+@login_required
+def updateCollection(request, id):
+    collection = Collection.objects.get(id=id)
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = CollectionModelForm(instance= collection)
+        if request.method == 'POST':
+            form = CollectionModelForm(request.POST, instance=collection)
+            if form.is_valid():
+                form.save()
+                return redirect(reverse('create_collections'))
+
+        return render(request, 'users/update_user.html', context={'form': form, 'collections':collection})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+@login_required
+def newCollection(request):
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = CollectionModelForm(initial={'owner': current_user})
+        if request.method == 'POST':
+            form = CollectionModelForm(request.POST)
+            if form.is_valid(): 
+                form.save()
+                #username = form.cleaned_data.get('username')
+                # Add by default the new user to the Taggers Group
+                #taggers = Group.objects.get(name='Taggers')
+                #taggers.user_set.add(User.objects.get(username=username))
+                return redirect(reverse('create_collections'))
+
+        return render(request, 'users/create_collection.html', context={'form': form})
 
     else:
         return render(request, 'users/no_permission.html')
