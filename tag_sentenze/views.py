@@ -231,7 +231,7 @@ def delete_judgment(request, id):
     else:
         messages.warning(request, ("You are not authorized"))
 
-    return redirect(reverse('users:delete-files'))
+    return redirect(reverse('create_juds'))
 
 
 @login_required
@@ -248,7 +248,7 @@ def delete_schema(request, id):
     else:
         messages.warning(request, ("You are not authorized"))
 
-    return redirect(reverse('users:delete-files'))
+    return redirect(reverse('create_schemas'))
 
 
 # automatic assignment of a new uploaded judgment to all editors and admins
@@ -589,3 +589,4 @@ def generate_xml_from_tm(token_manager):
     xml_string = """<sentag>\n""" + xml_string + """\n</sentag>"""
 
     return xml_string
+
