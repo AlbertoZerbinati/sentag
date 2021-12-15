@@ -29,20 +29,21 @@ class Tagging(models.Model):
     def __str__(self):
         return str(self.profile) + " tagging " + str(self.judgment)
 
-'''#table implementing the M2M relationship between Judgment and Profile
+#table implementing the M2M relationship between Judgment and Profile
 class TaggingCollection(models.Model):
-    collection_jud = models.ForeignKey(CollectionJud, on_delete=models.CASCADE)
-    collection_user = models.ForeignKey(CollectionUser, on_delete=models.CASCADE)
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    judgment = models.ForeignKey(Judgment, on_delete=models.CASCADE)
     token_manager = models.TextField(blank=True)
     comments = models.TextField(blank=True, null=True)
     xml_text = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = [['collection', 'judgment']]
+        unique_together = [['collection', 'user', 'judgment']]
 
     def __str__(self):
-        return str(self.profile) + " tagging " + str(self.judgment)'''
+        return str(self.user) + " tagging " + str(self.judgment)+ " from collection " + str(self.collection)
 
 #class UserTasksSynonyms(models.Model):
 #    user_task = models.ManyToManyField(User, through='UserTasks')

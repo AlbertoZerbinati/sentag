@@ -307,7 +307,7 @@ def download(request, id):
 
 
 @login_required
-def list_taggings(request):
+def taggings(request):
     current_user = request.user
     taggings = Tagging.objects.all()
 
@@ -592,6 +592,27 @@ def list_collections(request):
         }
         print(context)
         return render(request, 'tag_sentenze/list_collections.html', context=context)
+    # taggers don't
+    else:
+      # print('Tagger access')
+        return redirect('/download')
+
+@login_required
+def list_taggings(request, id):
+    current_user = request.user
+    #collections = Collection.objects.all()
+    collection = Collection.objects.get(id=id)
+    judgments = collection.judgments.all()
+    users = collection.users.all()
+
+    # admins and editors have access to all taggings
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        context = {
+            'judgments': judgments,
+            'users':users
+        }
+        print(context)
+        return render(request, 'tag_sentenze/list_tag_user_collection.html', context=context)
     # taggers don't
     else:
       # print('Tagger access')
