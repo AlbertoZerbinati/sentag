@@ -772,7 +772,7 @@ def updateCollection(request, id):
                 form.save()
                 return redirect(reverse('create_collections'))
 
-        return render(request, 'users/update_user.html', context={'form': form, 'collections':collection})
+        return render(request, 'users/update_collection.html', context={'form': form, 'collections':collection})
 
     else:
         return render(request, 'users/no_permission.html')

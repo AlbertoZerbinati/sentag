@@ -19,7 +19,7 @@ List of Collections
         {% for collection in collections %}
         <tr>
             <td>{{collection.name}}</td>
-            <td>{{collection.memberships}}</td>
+            <td>{{collection.n_docs}}</td>
             <td>{{collection.n_users}}</td>
             <td><a class="btn btn-sm btn-info" href="{% url 'tag_sentenze:list_taggings' collection.id %}"> Download </a></td>
         </tr>

@@ -582,8 +582,9 @@ def generate_xml_from_tm(token_manager):
 @login_required
 def list_collections(request):
     current_user = request.user
-    #collections = Collection.objects.all()
-    collections = Collection.objects.annotate(memberships=Count('judgments'), n_users=Count('users')).values()
+    #collections_all = Collection.judgments
+    collections = Collection.objects.annotate(n_docs=Count('judgments'), n_users=Count('users')).values()
+    
 
     # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
@@ -591,6 +592,7 @@ def list_collections(request):
             'collections': collections
         }
         print(context)
+        #print(f"collections_all: {collections_all}")
         return render(request, 'tag_sentenze/list_collections.html', context=context)
     # taggers don't
     else:
