@@ -78,49 +78,7 @@ class TokenManager {
           text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
-          // use the attributes from parameter if available
-          if (attrs && Object.keys(attrs).includes(key.name)) {
-            if (key.name === 'ID')
-              this.getNextIdPerClass(_class.name) // advance the counter and throw away
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
-              'options': key.options
-            };
-            if (key.type === "multi") {
-              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
-            }
-          }
-          // in case this is a general attribute, it has to be specialized
-          else if (attrs &&
-            Object.keys(attrs).some((a) => key.name.includes(a + "_") &&
-              attrs[key.name.charAt(0)].toLowerCase().includes(key.name.substr(2).toLowerCase()))) {
-            // console.log(key.name + " -> ")
-            // make sure this is the attribute key referring to the content of the attrs
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [attrs[key.name.charAt(0)].replace(/ +|,|\|/g, " ")],
-              'options': key.options
-            };
-            if (key.type === "multi") {
-              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
-            }
-          }
-          // otherwise initialize by hand
-          else if (key.name === 'ID') {
-            let tokenId = this.getNextIdPerClass(_class.name);
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [_class.name.charAt(0).toUpperCase() + _class.name.slice(1) + tokenId.toString()],
-              'options': []
-            };
-          } else {
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [""],
-              'options': key.options
-            };
-          }
+          this.assignAttribute(key, attrs, _class, newTokenBlock);
         }
         this.currentID += 1;
         // rimpiazzo ogni token selezionato col nuovo TOKEN-BLOCK (che li contiene)
@@ -166,49 +124,7 @@ class TokenManager {
           text: selectedTokens.map(tk => tk.text).join(' ').replace(/<br\/>/g, "")
         }
         for (const key of _class.attributes) {
-          // use the attributes from parameter if available
-          if (attrs && Object.keys(attrs).includes(key.name)) {
-            if (key.name === 'ID')
-              this.getNextIdPerClass(_class.name) // advance the counter and throw away
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
-              'options': key.options
-            };
-            if (key.type === "multi") {
-              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
-            }
-          }
-          // in case this is a general attribute, it has to be specialized
-          else if (attrs &&
-            Object.keys(attrs).some((a) => key.name.includes(a + "_") &&
-              attrs[key.name.charAt(0)].toLowerCase().includes(key.name.substr(2).toLowerCase()))) {
-            // console.log(key.name + " -> ")
-            // make sure this is the attribute key referring to the content of the attrs
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [attrs[key.name.charAt(0)].replace(/ +|,|\|/g, " ")],
-              'options': key.options
-            };
-            if (key.type === "multi") {
-              newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
-            }
-          }
-          // otherwise initialize by hand
-          else if (key.name === 'ID') {
-            let tokenId = this.getNextIdPerClass(_class.name);
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [_class.name.charAt(0).toUpperCase() + _class.name.slice(1) + tokenId.toString()],
-              'options': []
-            };
-          } else {
-            newTokenBlock.attrs[key.name] = {
-              'type': key.type,
-              'value': [""],
-              'options': key.options
-            };
-          }
+          this.assignAttribute(key, attrs, _class, newTokenBlock);
         }
         this.currentID += 1;
         _tokens.tokens.splice(first_index, selectedTokens.length, newTokenBlock);
@@ -224,6 +140,7 @@ class TokenManager {
     // 3) e' la chiamata di livello 0 (this.tokens) -> return [] ma viene ignorato
     return selectedTokens
   }
+
 
   /**
    * Removes a token block and puts back all the tokens in their original position
@@ -456,6 +373,56 @@ class TokenManager {
       }
     }
 
+  }
+
+  assignAttribute(key, attrs, _class, newTokenBlock) {
+    // use the attributes from parameter if available
+    if (attrs && Object.keys(attrs).includes(key.name)) {
+      if (key.name === 'ID')
+        this.getNextIdPerClass(_class.name) // advance the counter and throw away
+      newTokenBlock.attrs[key.name] = {
+        'type': key.type,
+        'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
+        'options': key.options,
+        'picker': key.picker
+      };
+      if (key.type === "multi") {
+        newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
+      }
+    }
+    // in case this is a general attribute, it has to be specialized
+    else if (attrs &&
+      Object.keys(attrs).some((a) => key.name.includes(a + "_") &&
+        attrs[key.name.charAt(0)].toLowerCase().includes(key.name.substr(2).toLowerCase()))) {
+      // console.log(key.name + " -> ")
+      // make sure this is the attribute key referring to the content of the attrs
+      newTokenBlock.attrs[key.name] = {
+        'type': key.type,
+        'value': [attrs[key.name.charAt(0)].replace(/ +|,|\|/g, " ")],
+        'options': key.options,
+        'picker': key.picker
+      };
+      if (key.type === "multi") {
+        newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
+      }
+    }
+    // otherwise initialize by hand
+    else if (key.name === 'ID') {
+      let tokenId = this.getNextIdPerClass(_class.name);
+      newTokenBlock.attrs[key.name] = {
+        'type': key.type,
+        'value': [_class.name.charAt(0).toUpperCase() + _class.name.slice(1) + tokenId.toString()],
+        'options': [],
+        'picker': key.picker
+      };
+    } else {
+      newTokenBlock.attrs[key.name] = {
+        'type': key.type,
+        'value': [""],
+        'options': key.options,
+        'picker': key.picker
+      };
+    }
   }
 
 }

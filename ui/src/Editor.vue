@@ -91,6 +91,27 @@ export default {
           null
         );
 
+        // get the picker elements (the ones imposing a multiselect based on their ID's)
+        let pickerElementsXPath = xmlDoc.evaluate(
+          "//xs:element[.//xs:attribute[@name='PICKER']]",
+          xmlDoc,
+          function (prefix) {
+            if (prefix === "xs") {
+              return "http://www.w3.org/2001/XMLSchema";
+            } else {
+              return null;
+            }
+          },
+          XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+          null
+        );
+        let pickerElements = [];
+        for (let i = 1; i < pickerElementsXPath.snapshotLength; i++) {
+          pickerElements.push(
+            pickerElementsXPath.snapshotItem(i).getAttribute("name")
+          );
+        }
+
         // per ogni xs:element
         for (let i = 1; i < elements.snapshotLength; i++) {
           let element = elements.snapshotItem(i);
@@ -180,14 +201,25 @@ export default {
 
             // ... then push the attribute with its options
             let attr = attribute.getAttribute("name");
-            attrs.push({ type: type, name: attr, options: options_arr });
+
+            // finally check if this attribute requires a picker
+            let picker = pickerElements.find((a) =>
+              attr.toString().toLowerCase().includes(a)
+            );
+
+            attrs.push({
+              type: type,
+              name: attr,
+              options: options_arr,
+              picker: picker,
+            });
           }
 
           // pusha la classe coi suoi attributi nello store
           this.addClass([name, attrs]);
           element.setAttribute("name", "CONSUMED");
 
-          // console.log(attrs);
+          console.log(attrs);
         }
         this.go = true; // now we can load the annotation page
       })
