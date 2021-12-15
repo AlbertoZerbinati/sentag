@@ -52,9 +52,11 @@
             </div>
             <div class="field-body" v-else-if="at !== 'PRO' && at !== 'CON'">
               <div class="field">
-                <p class="control">
+                <p
+                  class="control"
+                  v-if="currentBlock.attrs[at]['type'] === 'string'"
+                >
                   <input
-                    v-if="currentBlock.attrs[at]['type'] === 'string'"
                     @keydown="onKeyUp"
                     :value="currentBlock.attrs[at]['value'][0].split('|')[0]"
                     @change="
@@ -65,9 +67,8 @@
                     type="text"
                   />
                 </p>
-                <p>
+                <p v-else-if="currentBlock.attrs[at]['type'] === 'mutual'">
                   <VueMultiselect
-                    v-if="currentBlock.attrs[at]['type'] === 'mutual'"
                     :options="currentBlock.attrs[at]['options']"
                     :searchable="false"
                     :show-labels="false"
@@ -77,16 +78,44 @@
                     style="width: 100%"
                   />
                 </p>
-                <div
+                <p
                   class="select is-multiple"
-                  v-if="currentBlock.attrs[at]['type'] === 'multi'"
+                  v-else-if="currentBlock.attrs[at]['picker']"
                   style="display: block; max-width=100%; width=100%;"
                 >
                   <select
                     multiple
                     :size="currentBlock.attrs[at]['options'].length"
                     v-model="currentBlock.attrs[at]['value']"
-                    style="max-width=100%; width=100%; "
+                    style="max-width=100%; width=100%; overflow-y: auto;"
+                    @change="onSelectionChanged"
+                    value="[]"
+                  >
+                    <option
+                      v-for="(
+                        item, key
+                      ) in tokenManager.findAllPickablesForClass(
+                        currentBlock.attrs[at]['picker']
+                      )"
+                      :value="key"
+                      :key="key"
+                      style="display: block; max-width=100%; width=100%;"
+                    >
+                      {{ item }}
+                    </option>
+                  </select>
+                </p>
+
+                <p
+                  class="select is-multiple"
+                  v-else-if="currentBlock.attrs[at]['type'] === 'multi'"
+                  style="display: block; max-width=100%; width=100%;"
+                >
+                  <select
+                    multiple
+                    :size="currentBlock.attrs[at]['options'].length"
+                    v-model="currentBlock.attrs[at]['value']"
+                    style="max-width=100%; width=100%; overflow-y: auto;"
                     @change="onSelectionChanged"
                     value="[]"
                   >
@@ -99,7 +128,7 @@
                       {{ opt }}
                     </option>
                   </select>
-                </div>
+                </p>
               </div>
             </div>
             <div class="field-body" v-if="at === 'PRO' || at === 'CON'">
@@ -141,6 +170,9 @@ import "bulma-switch";
 
 export default {
   name: "AttributesBlock",
+  data: function () {
+    return { obj: { 15: "partA", 2: "part2" } };
+  },
   components: {
     VueMultiselect,
   },

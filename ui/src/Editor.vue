@@ -206,6 +206,7 @@ export default {
             let picker = pickerElements.find((a) =>
               attr.toString().toLowerCase().includes(a)
             );
+            if (picker) type = "multi";
 
             attrs.push({
               type: type,

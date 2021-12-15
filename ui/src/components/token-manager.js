@@ -425,6 +425,28 @@ class TokenManager {
     }
   }
 
+
+  findAllPickablesForClass(_class) {
+    // flatten tm with the stack technique
+    const stack = [...this.tokens];
+    const flattened_tm = [];
+    while (stack.length) {
+      const next = stack.pop();
+      if (next.type === "token-block" && Array.isArray(next.tokens)) {
+        stack.push(...next.tokens);
+        flattened_tm.push(next);
+      }
+    }
+
+    // get the graph's nodes
+    const nodes = flattened_tm.filter((token) => token.label == _class).reverse();
+    let ret = {}
+    for (const t of nodes) {
+      ret[t.id] = t.attrs["ID"].value[0];
+    }
+    return ret;
+  }
+
 }
 
 export default TokenManager;

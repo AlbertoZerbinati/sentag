@@ -147,7 +147,7 @@ export default {
       }
 
       // get the graph's nodes
-      const nodes = flattened_tm.filter((token) => token.relations);
+      const nodes = flattened_tm.filter((token) => token.relations).reverse();
       for (let i = 0; i < nodes.length; i++) {
         this.nodesTextLengths[nodes[i].id] = 100; // initialize length of every node to 100
       }
@@ -183,6 +183,7 @@ export default {
           ) {
             // check if there must be an edge between the two (by comparing id's)
             if (
+              node.attrs[attr_label]["type"] === "string" &&
               node.attrs[attr_label]["value"][0] &&
               nodes
                 .map((n) => n.id)
@@ -200,42 +201,38 @@ export default {
 
               // we then cycle over every toNode:
               // not multi attr
-              if (node.attrs[attr_label]["type"] === "string") {
-                for (let to_id of node.attrs[attr_label]["value"][0]
-                  .split(" | ")[1] // access id's
-                  .split(" ")) {
-                  let toNode = nodes.filter(
-                    (n) => n.id.toString() === to_id.toString()
-                  )[0];
-                  if (toNode) {
-                    // so we create the edge and push it
-                    this.edgesDataSource.push([
-                      {
-                        type: "insert",
-                        data: { to: toNode.id, from: node.id },
-                      },
-                    ]);
-                  }
+              for (let to_id of node.attrs[attr_label]["value"][0]
+                .split(" | ")[1] // access id's
+                .split(" ")) {
+                let toNode = nodes.filter(
+                  (n) => n.id.toString() === to_id.toString()
+                )[0];
+                if (toNode) {
+                  // so we create the edge and push it
+                  this.edgesDataSource.push([
+                    {
+                      type: "insert",
+                      data: { to: toNode.id, from: node.id },
+                    },
+                  ]);
                 }
               }
-              /*else {
-                // multi attr
-                for (let to_id of node.attrs[attr_label]["value"]) {
-                  let toNode = nodes.filter(
-                    (n) => n.id.toString() === to_id.toString()
-                  )[0];
-                  if (toNode) {
-                    // so we create the edge and push it
-                    this.edgesDataSource.push([
-                      {
-                        type: "insert",
-                        data: { to: toNode.id, from: node.id },
-                      },
-                    ]);
-                  }
+            } else if (node.attrs[attr_label]["type"] === "multi") {
+              // multi attr
+              for (let to_id of node.attrs[attr_label]["value"]) {
+                let toNode = nodes.filter(
+                  (n) => n.id.toString() === to_id.toString()
+                )[0];
+                if (toNode) {
+                  // so we create the edge and push it
+                  this.edgesDataSource.push([
+                    {
+                      type: "insert",
+                      data: { to: toNode.id, from: node.id },
+                    },
+                  ]);
                 }
               }
-                */
             }
           }
         }
@@ -259,9 +256,9 @@ export default {
             if (node2.attrs[trueLabel]["type"] !== "multi") {
               // not multi attr
               node2.attrs[trueLabel]["value"][0] = "";
-            } /* else {
+            } else {
               node2.attrs[trueLabel]["value"] = [];
-            } */
+            }
         }
       }
 
@@ -288,14 +285,12 @@ export default {
         }
         // modify the fromNode attribute labelled as toNode
         if (trueLabel && fromNode.attrs[trueLabel]["value"][0] !== "") {
-          // if (fromNode.attrs[trueLabel]["type"] === "multi")
-          //   fromNode.attrs[trueLabel]["value"] = fromNode.attrs[trueLabel][
-          //     "value"
-          //   ].concat([toNode.id]);
-          /* else */
-
+          if (fromNode.attrs[trueLabel]["type"] === "multi")
+            fromNode.attrs[trueLabel]["value"] = fromNode.attrs[trueLabel][
+              "value"
+            ].concat([toNode.id]);
           // if there already is relation from that toNode class append id and attrs['ID']
-          if (fromNode.attrs[trueLabel]["type"] === "string") {
+          else if (fromNode.attrs[trueLabel]["type"] === "string") {
             fromNode.attrs[trueLabel]["value"][0] =
               toNode.attrs["ID"]["value"][0] +
               " " +

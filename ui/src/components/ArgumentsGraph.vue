@@ -141,7 +141,7 @@ export default {
       }
 
       // get the graph's nodes
-      const nodes = flattened_tm.filter((token) => token.graph);
+      const nodes = flattened_tm.filter((token) => token.graph).reverse();
       for (let i = 0; i < nodes.length; i++) {
         this.nodesTextLengths[nodes[i].id] = 100; // initialize length of every node to 100
       }
