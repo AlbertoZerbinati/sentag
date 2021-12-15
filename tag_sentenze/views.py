@@ -16,6 +16,7 @@ from django import forms
 import re
 from io import StringIO
 from django.contrib import messages
+from django.db.models import Count
 
 
 @login_required
@@ -581,13 +582,15 @@ def generate_xml_from_tm(token_manager):
 @login_required
 def list_collections(request):
     current_user = request.user
-    collections = Collection.objects.all()
+    #collections = Collection.objects.all()
+    collections = Collection.objects.annotate(memberships=Count('judgments'), n_users=Count('users')).values()
 
     # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         context = {
             'collections': collections
         }
+        print(context)
         return render(request, 'tag_sentenze/list_collections.html', context=context)
     # taggers don't
     else:

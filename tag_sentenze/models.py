@@ -77,3 +77,7 @@ class Collection(models.Model):
     def __str__(self):
         """String for representing the Judgments object (in Admin site)."""
         return "Collection " + self.name
+
+#class CollectionUser(models.Model):
+#    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+#    user = models.ForeignKey(User, on_delete=models.CASCADE)

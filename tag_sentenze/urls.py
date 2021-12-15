@@ -22,5 +22,6 @@ urlpatterns = [
     path("delete_judgment/<int:id>", views.delete_judgment, name="delete-judgment"),
     path("delete_schema/<int:id>", views.delete_schema, name="delete-schema"),
     path('list_collections/', views.list_collections, name='list_collections'),
+    path('list_taggings/<int:id>', views.list_taggings, name='list_taggings'),
 
 ]

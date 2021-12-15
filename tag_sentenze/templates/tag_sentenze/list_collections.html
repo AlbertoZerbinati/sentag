@@ -10,26 +10,18 @@ List of Collections
     <thead>
         <tr>
             <th>Collection</th>
-            <th>Tagger</th>
-            <th>Download Button</th>
-            <th>State</th>
+            <th>#Docs</th>
+            <th>#Users</th>
+            <th>Download</th>
         </tr>
     </thead>
     <tbody>
         {% for collection in collections %}
         <tr>
             <td>{{collection.name}}</td>
-            <td>{{tagging.profile}}</td>
-            {%if tagging.xml_text %}
-                <td><button class="btn btn-primary btn-small" onclick="downl({{collection.id}})">DOWNLOAD xml</button> </td>
-            {% else %}
-                <td>Not yet completed</td>
-            {% endif %}
-            {% if tagging.completed %}
-                <td style="color:rgb(18, 145, 18)">Validated</td>
-            {% else %}
-                <td style="color:rgb(209, 46, 46)">Not Validated</td>
-            {% endif %}
+            <td>{{collection.memberships}}</td>
+            <td>{{collection.n_users}}</td>
+            <td><a class="btn btn-sm btn-info" href="{% url 'tag_sentenze:list_taggings' collection.id %}"> Download </a></td>
         </tr>
         {% endfor %}
     </tbody>
