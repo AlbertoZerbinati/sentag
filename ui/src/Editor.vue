@@ -220,7 +220,7 @@ export default {
           this.addClass([name, attrs]);
           element.setAttribute("name", "CONSUMED");
 
-          console.log(attrs);
+          // console.log(attrs);
         }
         this.go = true; // now we can load the annotation page
       })

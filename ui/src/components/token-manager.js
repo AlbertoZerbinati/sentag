@@ -255,17 +255,19 @@ class TokenManager {
    * @param {*} token 
    * @returns 
    */
-  findTokenBlock(token) {
-    return this.recursiveFindTokenBlock(token, this.tokens);
+  findTokenBlock(id) {
+    return this.recursiveFindTokenBlock(id, this.tokens);
   }
-  recursiveFindTokenBlock(token, _tokens) {
+  recursiveFindTokenBlock(id, _tokens) {
     if (Array.isArray(_tokens)) {
       for (let t of _tokens) {
         if (t.type == "token-block") {
-          if (t.id == token.id) {
+          if (t.id == id) {
             return t;
           } else if (Array.isArray(t.tokens)) {
-            return this.recursiveFindTokenBlock(token, t.tokens);
+            let res = this.recursiveFindTokenBlock(id, t.tokens)
+            if (res)
+              return res;
           }
         }
       }

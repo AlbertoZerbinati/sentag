@@ -64,20 +64,23 @@ export default {
       nodesDataSource: {},
       edgesDataSource: {},
       popupVisible: false,
-      selectedNode: {},
       target: "",
       nodesTextLengths: {},
     };
   },
   computed: {
-    ...mapState(["unsavedWork", "tokenManager", "argumentsGraphJSON"]),
+    ...mapState([
+      "unsavedWork",
+      "tokenManager",
+      "currentBlock",
+      "argumentsGraphJSON",
+    ]),
   },
   beforeUnmount() {
     this.save();
   },
   created() {
     // build the initial graph from token manager
-    this.tm = this.tokenManager;
     this.initializeGraph();
   },
   mounted() {
@@ -125,12 +128,16 @@ export default {
     }
   },
   methods: {
-    ...mapMutations(["setUnsavedWork", "setArgumentsGraphJSON"]),
+    ...mapMutations([
+      "setUnsavedWork",
+      "setCurrentBlock",
+      "setArgumentsGraphJSON",
+    ]),
     initializeGraph() {
       // initialize the graph with nodes and connectors
 
       // flatten tm with the stack technique
-      const stack = [...this.tm.tokens];
+      const stack = [...this.tokenManager.tokens];
       const flattened_tm = [];
       while (stack.length) {
         const next = stack.pop();
@@ -156,6 +163,10 @@ export default {
       this.edgesDataSource = new ArrayStore({
         key: "id",
         data: [],
+        onUpdated: () => {
+          console.log("update");
+          this.save();
+        },
       });
 
       // populate the edges datsource with correct type of edges, based on nodes' attributes
@@ -207,7 +218,7 @@ export default {
       }
     },
     save() {
-      console.log("saving arg graph...");
+      // console.log("saving arg graph...");
 
       // remove every old graph-related attribute
       for (var node of this.nodesDataSource._array) {
@@ -286,23 +297,24 @@ export default {
                 " not allowed!"
             );
           }
-        } else {
-          // no-type edge
-          this.showToast(
-            "Please select a relation type from " +
-              fromNode.attrs["ID"]["value"][0] +
-              " to " +
-              toNode.attrs["ID"]["value"][0] +
-              " !"
-          );
         }
+        // else {
+        //   // no-type edge
+        //   this.showToast(
+        //     "Please select a relation type from " +
+        //       fromNode.attrs["ID"]["value"][0] +
+        //       " to " +
+        //       toNode.attrs["ID"]["value"][0] +
+        //       " !"
+        //   );
+        // }
 
         // ignore edges without an assigned type (the black ones)!!!
       }
 
       // updated attributes of nested blocks
       for (let t of this.nodesDataSource._array) {
-        this.tm.updateBlockAttrs(t);
+        this.tokenManager.updateBlockAttrs(t);
       }
 
       // after saving the arcs in the TM, we need to save the graph's layout as JSON string
@@ -383,31 +395,36 @@ export default {
     // },
     onItemClick(obj) {
       // console.log({ "item click": obj.item.dataItem });
+      console.log("single");
+
       if (obj.item.itemType === "shape") {
-        this.selectedNode = obj.item;
-        // this.popupContentText = this.selectedNode.dataItem.tokens.slice(0,15).map(t => t.text).join(' ') + "..."
-      } else {
-        this.selectedNode = {};
-        // this.popupContentText = ""
+        // this.save();
+        this.setCurrentBlock(
+          this.tokenManager.findTokenBlock(obj.item.dataItem.id)
+        );
+        // console.log(this.currentBlock);
       }
+      // else {
+      //   this.setCurrentBlock(
+      //     this.tokenManager.findTokenBlock(this.currentBlock.id)
+      //   );
+      // }
     },
     onItemDblClick(obj) {
       // if a connector is double clicked, change its type
-      // not a connector -> popup
-      if (obj.item.itemType === "shape") {
-        this.popupVisible = true;
-        return;
-      }
-
+      console.log("double");
       // get connector type and set parameters to push
       let key;
       let dataObj;
-      if (obj.item.dataItem.type === "support") {
+      if (
+        obj.item.itemType == "connector" &&
+        obj.item.dataItem.type === "support"
+      ) {
         // console.log("support => attack")
         key = obj.item.key;
         dataObj = obj.item.dataItem;
         dataObj.type = "attack";
-      } else {
+      } else if (obj.item.itemType == "connector") {
         // default connector does not have any type!! -> on double click assing support type
         // console.log("null or attack => support")
         key = obj.item.key;
@@ -423,6 +440,12 @@ export default {
           key: key,
         },
       ]);
+
+      if (this.currentBlock && obj.item.itemType === "connector") {
+        this.setCurrentBlock(
+          this.tokenManager.findTokenBlock(this.currentBlock.id)
+        );
+      }
     },
     findTextLength(w, h) {
       // these coefficients were calculated through linear regression, after collecting empirical data

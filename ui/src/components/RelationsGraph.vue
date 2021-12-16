@@ -9,7 +9,6 @@
       :page-color="'#F9F9F9'"
       :units="'px'"
       @request-edit-operation="onRequestEditOperation"
-      @item-dbl-click="onItemDblClick"
       @item-click="onItemClick"
     >
       <DxNodes
@@ -65,14 +64,17 @@ export default {
       comments: "",
       nodesDataSource: {},
       edgesDataSource: {},
-      popupVisible: false,
-      selectedNode: {},
       target: "",
       nodesTextLengths: {},
     };
   },
   computed: {
-    ...mapState(["unsavedWork", "tokenManager", "relationsGraphJSON"]),
+    ...mapState([
+      "unsavedWork",
+      "tokenManager",
+      "currentBlock",
+      "relationsGraphJSON",
+    ]),
   },
   mounted() {
     // if (typeof this.relationsGraphJSON === "object") {
@@ -127,16 +129,19 @@ export default {
     this.save();
   },
   created() {
-    this.tm = this.tokenManager;
     this.initializeGraph();
   },
   methods: {
-    ...mapMutations(["setUnsavedWork", "setRelationsGraphJSON"]),
+    ...mapMutations([
+      "setUnsavedWork",
+      "setCurrentBlock",
+      "setRelationsGraphJSON",
+    ]),
     initializeGraph() {
       // initialize the graph with nodes and connectors
 
       // flatten tm with the stack technique
-      const stack = [...this.tm.tokens];
+      const stack = [...this.tokenManager.tokens];
       const flattened_tm = [];
       while (stack.length) {
         const next = stack.pop();
@@ -162,6 +167,9 @@ export default {
       this.edgesDataSource = new ArrayStore({
         key: "id",
         data: [],
+        onUpdated: () => {
+          this.save();
+        },
       });
 
       // populate the edges datasoruce, based on nodes' attributes
@@ -257,7 +265,7 @@ export default {
               // not multi attr
               node2.attrs[trueLabel]["value"][0] = "";
             } else {
-              node2.attrs[trueLabel]["value"] = [];
+              node2.attrs[trueLabel]["value"] = [""];
             }
         }
       }
@@ -300,8 +308,12 @@ export default {
           }
         } else if (trueLabel) {
           // else set the first relation
-          fromNode.attrs[trueLabel]["value"][0] =
-            toNode.attrs["ID"]["value"][0] + " | " + toNode.id.toString();
+          if (fromNode.attrs[trueLabel]["type"] === "string") {
+            fromNode.attrs[trueLabel]["value"][0] =
+              toNode.attrs["ID"]["value"][0] + " | " + toNode.id.toString();
+          } else if (fromNode.attrs[trueLabel]["type"] === "multi") {
+            fromNode.attrs[trueLabel]["value"] = [toNode.id];
+          }
         } else {
           this.showToast(
             "Relation from " +
@@ -315,7 +327,7 @@ export default {
 
       // updated attributes of nested blocks
       for (let t of this.nodesDataSource._array) {
-        this.tm.updateBlockAttrs(t);
+        this.tokenManager.updateBlockAttrs(t);
       }
 
       // after saving the arcs in the TM, we need to save the graph's layout as JSON string
@@ -435,13 +447,16 @@ export default {
         e.reason !== "checkUIElementAvailability"
       ) {
         if (!e.args.connector.fromKey || !e.args.connector.toKey) return;
-        var fromNode = this.nodesDataSource._array.filter(
+        var fromNode = this.nodesDataSource._array.find(
           (item) => item["id"] === e.args.connector.fromKey
-        )[0];
-        var toNode = this.nodesDataSource._array.filter(
+        );
+        var toNode = this.nodesDataSource._array.find(
           (item) => item["id"] === e.args.connector.toKey
-        )[0];
-
+        );
+        if (!fromNode || !toNode) {
+          e.allowed = false;
+          return;
+        }
         for (let label of Object.keys(fromNode.attrs)) {
           if (label.includes(toNode.label.toUpperCase())) {
             return;
@@ -454,17 +469,16 @@ export default {
     },
     // onSelectionChanged({ items }) {
     //   console.log({ "selected item": items[0] });
-    //   console.log(this.selectedNode)
     // },
     onItemClick(obj) {
-      // console.log({ "item click": obj});
-      if (obj.item.itemType === "shape") this.selectedNode = obj.item;
-      else this.selectedNode = {};
-      console.log(this.selectedNode);
-    },
-    onItemDblClick(obj) {
-      // not a connector -> popup
-      if (obj.item.itemType === "shape") this.popupVisible = true;
+      this.save();
+      if (obj.item.itemType === "shape") {
+        this.setCurrentBlock(
+          this.tokenManager.findTokenBlock(obj.item.dataItem.id)
+        );
+      }
+      // console.log({ "item  click": obj });
+      // console.log(this.selectedNode);
     },
     findTextLength(w, h) {
       // these coefficients were calculated through linear regression, after collecting empirical data
