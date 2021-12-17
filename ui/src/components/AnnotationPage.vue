@@ -29,7 +29,7 @@
           </div>
         </div>
 
-        <div class="panel-block text" v-if="mainTab == 'Tag'">
+        <div class="panel-block text" v-show="mainTab == 'Tag'">
           <div id="editor" style="white-space: pre-line">
             <component
               v-for="t in tokenManager.tokens"
@@ -42,7 +42,7 @@
             />
           </div>
         </div>
-        <div class="dx-viewport" v-else>
+        <div class="dx-viewport" v-show="mainTab != 'Tag'">
           <graph ref="graph" />
         </div>
 
