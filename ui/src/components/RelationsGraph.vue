@@ -390,8 +390,10 @@ export default {
             connection_label = label;
           }
         }
-      if (!connection_label.includes("I_")) {
-        return { "stroke-dasharray": 5, "stroke-width": 1 };
+      if (!(fromNode && toNode) || !connection_label.includes("I_")) {
+        return { stroke: "black", "stroke-dasharray": 5, "stroke-width": 1 };
+      } else {
+        return { stroke: "black", "stroke-width": 2 };
       }
     },
     edgeTextStyleExpr(obj) {
@@ -446,7 +448,9 @@ export default {
         e.operation === "changeConnection" &&
         e.reason !== "checkUIElementAvailability"
       ) {
-        if (!e.args.connector.fromKey || !e.args.connector.toKey) return;
+        if (!e.args.connector.fromKey || !e.args.connector.toKey) {
+          return;
+        }
         var fromNode = this.nodesDataSource._array.find(
           (item) => item["id"] === e.args.connector.fromKey
         );

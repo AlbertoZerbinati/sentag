@@ -27,6 +27,7 @@
         :data-source="edgesDataSource"
         :text-expr="edgeTextExpr"
         :style-expr="edgeStyleExpr"
+        :text-style-expr="edgeTextStyleExpr"
       />
 
       <DxToolbox :visibility="'disabled'" />
@@ -164,8 +165,19 @@ export default {
         key: "id",
         data: [],
         onUpdated: () => {
-          console.log("update");
+          // b.type = "support";
+          // console.log("update");
+          // console.log(a, b);
           this.save();
+        },
+        onPush: (a) => {
+          console.log(a);
+          if (
+            a[0].type == "insert" &&
+            a[0].data.type != "support" &&
+            a[0].data.type != "attack"
+          )
+            a[0].data.type = "support";
         },
       });
 
@@ -347,10 +359,15 @@ export default {
     },
     edgeStyleExpr(obj) {
       // set edge color based on its type
-      if (obj.type === "attack") return { stroke: "#EE5555" };
-      else if (obj.type === "support") return { stroke: "#22DD66" };
+      if (obj.type === "attack")
+        return { stroke: "#EE5555", "stroke-width": 2 };
+      else if (obj.type === "support")
+        return { stroke: "#22DD66", "stroke-width": 2 };
 
-      return { stroke: "#000000" }; // default for a newly created edge
+      return { stroke: "#000000", "stroke-width": 2 }; // default for a newly created edge
+    },
+    edgeTextStyleExpr() {
+      return { "font-size": 13 };
     },
     edgeTextExpr(obj) {
       if (obj.type === "attack") return "CON";
@@ -395,7 +412,6 @@ export default {
     // },
     onItemClick(obj) {
       // console.log({ "item click": obj.item.dataItem });
-      console.log("single");
 
       if (obj.item.itemType === "shape") {
         // this.save();
@@ -403,6 +419,40 @@ export default {
           this.tokenManager.findTokenBlock(obj.item.dataItem.id)
         );
         // console.log(this.currentBlock);
+      } else {
+        // if a connector is clicked, change its type
+        let key;
+        let dataObj;
+        if (
+          obj.item.itemType == "connector" &&
+          obj.item.dataItem.type === "support"
+        ) {
+          // console.log("support => attack")
+          key = obj.item.key;
+          dataObj = obj.item.dataItem;
+          dataObj.type = "attack";
+        } else if (obj.item.itemType == "connector") {
+          // default connector does not have any type!! -> on double click assing support type
+          // console.log("null or attack => support")
+          key = obj.item.key;
+          dataObj = obj.item.dataItem;
+          dataObj.type = "support";
+        }
+
+        // push the change
+        this.edgesDataSource.push([
+          {
+            type: "update",
+            data: dataObj,
+            key: key,
+          },
+        ]);
+
+        if (this.currentBlock && obj.item.itemType === "connector") {
+          this.setCurrentBlock(
+            this.tokenManager.findTokenBlock(this.currentBlock.id)
+          );
+        }
       }
       // else {
       //   this.setCurrentBlock(
@@ -410,43 +460,7 @@ export default {
       //   );
       // }
     },
-    onItemDblClick(obj) {
-      // if a connector is double clicked, change its type
-      console.log("double");
-      // get connector type and set parameters to push
-      let key;
-      let dataObj;
-      if (
-        obj.item.itemType == "connector" &&
-        obj.item.dataItem.type === "support"
-      ) {
-        // console.log("support => attack")
-        key = obj.item.key;
-        dataObj = obj.item.dataItem;
-        dataObj.type = "attack";
-      } else if (obj.item.itemType == "connector") {
-        // default connector does not have any type!! -> on double click assing support type
-        // console.log("null or attack => support")
-        key = obj.item.key;
-        dataObj = obj.item.dataItem;
-        dataObj.type = "support";
-      }
-
-      // push the change
-      this.edgesDataSource.push([
-        {
-          type: "update",
-          data: dataObj,
-          key: key,
-        },
-      ]);
-
-      if (this.currentBlock && obj.item.itemType === "connector") {
-        this.setCurrentBlock(
-          this.tokenManager.findTokenBlock(this.currentBlock.id)
-        );
-      }
-    },
+    onItemDblClick() {},
     findTextLength(w, h) {
       // these coefficients were calculated through linear regression, after collecting empirical data
       let val =
