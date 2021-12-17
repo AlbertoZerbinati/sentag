@@ -471,7 +471,7 @@ export default {
     //   console.log({ "selected item": items[0] });
     // },
     onItemClick(obj) {
-      this.save();
+      // this.save();
       if (obj.item.itemType === "shape") {
         this.setCurrentBlock(
           this.tokenManager.findTokenBlock(obj.item.dataItem.id)

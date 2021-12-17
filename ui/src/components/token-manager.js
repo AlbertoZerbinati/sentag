@@ -275,6 +275,26 @@ class TokenManager {
     return null;
   }
 
+  findTokenBlockByID(ID) {
+    return this.recursiveFindTokenBlockByID(ID, this.tokens);
+  }
+  recursiveFindTokenBlockByID(ID, _tokens) {
+    if (Array.isArray(_tokens)) {
+      for (let t of _tokens) {
+        if (t.type == "token-block") {
+          if (t.attrs["ID"] && t.attrs["ID"]["value"][0] == ID) {
+            return t;
+          } else if (Array.isArray(t.tokens)) {
+            let res = this.recursiveFindTokenBlockByID(ID, t.tokens)
+            if (res)
+              return res;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   /**
    * 
    * @param {Object} token to update the attributes to
@@ -358,8 +378,9 @@ class TokenManager {
       // for each attribute
       for (let attr_key of Object.keys(token.attrs)) {
         if (attr_key != "ID" && token.attrs[attr_key]["type"] == "string") {
-          // for each value of the attribute (like "Claim1", "Claim2", ...)
-          for (let value_attrs of token.attrs[attr_key]["value"][0].split(" ")) {
+          // for each value, of the attribute (like "Claim1", "Claim2", ...)
+          const copyOfAttrs = token.attrs[attr_key]["value"][0].split(" ");
+          for (let value_attrs of copyOfAttrs) {
             // find the token with that ID
             let pointed_token = allTokens.find((a) => a.id != token.id && a.attrs["ID"] && a.attrs["ID"]["value"][0] == value_attrs);
             // and add the id to the attribute with the usual convention ID ID | id id
@@ -369,6 +390,9 @@ class TokenManager {
               } else {
                 token.attrs[attr_key]["value"][0] = token.attrs[attr_key]["value"][0] + " | " + pointed_token.id.toString();
               }
+            } else {
+              // if not present, it means this is a mistake in the attribute values -> eliminate it!
+              token.attrs[attr_key]["value"][0] = token.attrs[attr_key]["value"][0].replace(value_attrs.toString(), "");
             }
           }
         }
@@ -388,6 +412,12 @@ class TokenManager {
         'options': key.options,
         'picker': key.picker
       };
+      if (key.picker) {
+        newTokenBlock.attrs[key.name]['value'] = [];
+        for (let val of attrs[key.name].split(/ +|,|\|/)) {
+          newTokenBlock.attrs[key.name]['value'] = newTokenBlock.attrs[key.name]['value'].concat(this.findTokenBlockByID(val).id);
+        }
+      }
       if (key.type === "multi") {
         newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
       }
@@ -404,8 +434,13 @@ class TokenManager {
         'options': key.options,
         'picker': key.picker
       };
-      if (key.type === "multi") {
-        newTokenBlock.attrs[key.name]['value'] = attrs[key.name].split(/ +|,|\|/); //split by spaces or comma or pipe
+      if (key.picker) {
+        newTokenBlock.attrs[key.name]['value'] = [];
+        for (let val of attrs[key.name.charAt(0)].split(/ +|,|\|/)) {
+          newTokenBlock.attrs[key.name]['value'] = newTokenBlock.attrs[key.name]['value'].concat(this.findTokenBlockByID(val).id);
+        }
+      } else if (key.type === "multi") {
+        newTokenBlock.attrs[key.name]['value'] = attrs[key.name.charAt(0)].split(/ +|,|\|/); //split by spaces or comma or pipe
       }
     }
     // otherwise initialize by hand
@@ -424,6 +459,7 @@ class TokenManager {
         'options': key.options,
         'picker': key.picker
       };
+
     }
   }
 

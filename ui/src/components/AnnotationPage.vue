@@ -42,7 +42,7 @@
             />
           </div>
         </div>
-        <div class="dx-viewport" v-show="mainTab != 'Tag'">
+        <div class="dx-viewport" v-if="mainTab != 'Tag'">
           <graph ref="graph" />
         </div>
 
