@@ -76,12 +76,10 @@ export default {
       "relationsGraphJSON",
     ]),
   },
+  created() {
+    this.initializeGraph();
+  },
   mounted() {
-    // if (typeof this.relationsGraphJSON === "object") {
-    //   console.log("i");
-    //   this.setRelationsGraphJSON = JSON.stringify(this.relationsGraphJSON);
-    // }
-    console.log(typeof this.relationsGraphJSON);
     // reload the graphical configuration of the graph
     if (this.relationsGraphJSON) {
       // memorize the edge type in order to reset after the import
@@ -127,9 +125,9 @@ export default {
   },
   beforeUnmount() {
     this.save();
-  },
-  created() {
-    this.initializeGraph();
+    // after saving the arcs in the TM, we need to save the graph's layout as JSON string
+    // so we export it and then we will reimport it in order to have the same positions and everything as we left it
+    this.setRelationsGraphJSON(this.$refs.diagram.instance.export());
   },
   methods: {
     ...mapMutations([
@@ -161,14 +159,35 @@ export default {
       this.nodesDataSource = new ArrayStore({
         key: "id",
         data: nodes,
+        onUpdated: () => {
+          this.save();
+          if (this.currentBlock) {
+            this.setCurrentBlock(
+              this.tokenManager.findTokenBlock(this.currentBlock.id)
+            );
+          }
+        },
       });
 
       // istantiate edges datasource (initially empty)
       this.edgesDataSource = new ArrayStore({
         key: "id",
         data: [],
-        onUpdated: () => {
+        onInserted: () => {
           this.save();
+          if (this.currentBlock) {
+            this.setCurrentBlock(
+              this.tokenManager.findTokenBlock(this.currentBlock.id)
+            );
+          }
+        },
+        onRemoved: () => {
+          this.save();
+          if (this.currentBlock) {
+            this.setCurrentBlock(
+              this.tokenManager.findTokenBlock(this.currentBlock.id)
+            );
+          }
         },
       });
 
@@ -212,9 +231,9 @@ export default {
               for (let to_id of node.attrs[attr_label]["value"][0]
                 .split(" | ")[1] // access id's
                 .split(" ")) {
-                let toNode = nodes.filter(
+                let toNode = nodes.find(
                   (n) => n.id.toString() === to_id.toString()
-                )[0];
+                );
                 if (toNode) {
                   // so we create the edge and push it
                   this.edgesDataSource.push([
@@ -228,9 +247,9 @@ export default {
             } else if (node.attrs[attr_label]["type"] === "multi") {
               // multi attr
               for (let to_id of node.attrs[attr_label]["value"]) {
-                let toNode = nodes.filter(
+                let toNode = nodes.find(
                   (n) => n.id.toString() === to_id.toString()
-                )[0];
+                );
                 if (toNode) {
                   // so we create the edge and push it
                   this.edgesDataSource.push([
@@ -247,38 +266,32 @@ export default {
       }
     },
     save() {
-      console.log("saving rel graph...");
+      // console.log("saving rel graph...");
 
       // remove every old relations-graph related attribute
       for (let node of this.nodesDataSource._array) {
         for (var node2 of this.nodesDataSource._array) {
-          let trueLabel = null;
           // build the true label name (containing "_")
+          let trueLabel = null;
           for (let label of Object.keys(node2.attrs)) {
             if (label.includes(node.label.toUpperCase())) {
               trueLabel = label;
               break;
             }
           }
-          if (trueLabel)
-            if (node2.attrs[trueLabel]["type"] !== "multi") {
-              // not multi attr
-              node2.attrs[trueLabel]["value"][0] = "";
-            } else {
-              node2.attrs[trueLabel]["value"] = [""];
-            }
+          if (trueLabel) node2.attrs[trueLabel]["value"] = [""];
         }
       }
 
       // add new attrs based on existing connections
       for (let connector of this.edgesDataSource._array) {
         // get the start and end nodes
-        var fromNode = this.nodesDataSource._array.filter(
+        var fromNode = this.nodesDataSource._array.find(
           (item) => item["id"] === connector.from
-        )[0];
-        var toNode = this.nodesDataSource._array.filter(
+        );
+        var toNode = this.nodesDataSource._array.find(
           (item) => item["id"] === connector.to
-        )[0];
+        );
 
         if (!toNode || !fromNode) {
           continue;
@@ -329,10 +342,6 @@ export default {
       for (let t of this.nodesDataSource._array) {
         this.tokenManager.updateBlockAttrs(t);
       }
-
-      // after saving the arcs in the TM, we need to save the graph's layout as JSON string
-      // so we export it and then we will reimport it in order to have the same positions and everything as we left it
-      this.setRelationsGraphJSON(this.$refs.diagram.instance.export());
     },
     itemTypeExpr() {
       return "rectangle";
@@ -359,12 +368,12 @@ export default {
       return style;
     },
     edgeTextExpr(obj) {
-      var fromNode = this.nodesDataSource._array.filter(
+      var fromNode = this.nodesDataSource._array.find(
         (item) => item["id"] === obj.from
-      )[0];
-      var toNode = this.nodesDataSource._array.filter(
+      );
+      var toNode = this.nodesDataSource._array.find(
         (item) => item["id"] === obj.to
-      )[0];
+      );
 
       if (fromNode && toNode)
         for (let label of Object.keys(fromNode.attrs)) {
@@ -376,12 +385,12 @@ export default {
       return "";
     },
     edgeStyleExpr(obj) {
-      var fromNode = this.nodesDataSource._array.filter(
+      var fromNode = this.nodesDataSource._array.find(
         (item) => item["id"] === obj.from
-      )[0];
-      var toNode = this.nodesDataSource._array.filter(
+      );
+      var toNode = this.nodesDataSource._array.find(
         (item) => item["id"] === obj.to
-      )[0];
+      );
 
       let connection_label = "";
       if (fromNode && toNode)
@@ -397,12 +406,12 @@ export default {
       }
     },
     edgeTextStyleExpr(obj) {
-      var fromNode = this.nodesDataSource._array.filter(
+      var fromNode = this.nodesDataSource._array.find(
         (item) => item["id"] === obj.from
-      )[0];
-      var toNode = this.nodesDataSource._array.filter(
+      );
+      var toNode = this.nodesDataSource._array.find(
         (item) => item["id"] === obj.to
-      )[0];
+      );
 
       let connection_label = "";
       if (fromNode && toNode)
@@ -481,17 +490,12 @@ export default {
           this.tokenManager.findTokenBlock(obj.item.dataItem.id)
         );
       }
-      // console.log({ "item  click": obj });
       // console.log(this.selectedNode);
     },
     findTextLength(w, h) {
       // these coefficients were calculated through linear regression, after collecting empirical data
-      let val =
-        -8.126482949847684 +
-        w * -0.13599902 +
-        h * -0.2172954 +
-        w * h * 0.00569047;
-      return val * 0.95 <= 5 ? 5 : val * 0.95;
+      let val = -8 + w * -0.01 + h * -0.02 + w * h * 0.005;
+      return val <= 5 ? 5 : val;
     },
   },
 };

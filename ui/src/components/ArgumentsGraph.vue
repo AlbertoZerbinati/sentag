@@ -77,9 +77,6 @@ export default {
       "argumentsGraphJSON",
     ]),
   },
-  beforeUnmount() {
-    this.save();
-  },
   created() {
     // build the initial graph from token manager
     this.initializeGraph();
@@ -128,6 +125,12 @@ export default {
       }
     }
   },
+  beforeUnmount() {
+    this.save();
+    // after saving the arcs in the TM, we need to save the graph's layout as JSON string
+    // so we export it and then we will reimport it in order to have the same positions and everything as we left it
+    this.setArgumentsGraphJSON(this.$refs.diagram.instance.export());
+  },
   methods: {
     ...mapMutations([
       "setUnsavedWork",
@@ -165,13 +168,9 @@ export default {
         key: "id",
         data: [],
         onUpdated: () => {
-          // b.type = "support";
-          // console.log("update");
-          // console.log(a, b);
           this.save();
         },
         onPush: (a) => {
-          console.log(a);
           if (
             a[0].type == "insert" &&
             a[0].data.type != "support" &&
@@ -190,7 +189,7 @@ export default {
               .split(" | ")[1]
               .split(" ");
             for (const sup of supported) {
-              const toNode = nodes.filter((n) => n.id.toString() === sup)[0];
+              const toNode = nodes.find((n) => n.id.toString() === sup);
               if (toNode) {
                 // push a support edge
                 this.edgesDataSource.push([
@@ -211,9 +210,7 @@ export default {
               .split(" ");
             // console.log(attacked_nodes);
             for (const attacked of attacked_nodes) {
-              const toNode = nodes.filter(
-                (n) => n.id.toString() === attacked
-              )[0];
+              const toNode = nodes.find((n) => n.id.toString() === attacked);
               // console.log(nodes.map((n) => n.id));
               if (toNode) {
                 // push an attack edge
@@ -245,12 +242,12 @@ export default {
         var connectorType = connector.type;
 
         // get the start and end nodes
-        var fromNode = this.nodesDataSource._array.filter(
+        var fromNode = this.nodesDataSource._array.find(
           (item) => item["id"] == connector.from
-        )[0];
-        var toNode = this.nodesDataSource._array.filter(
+        );
+        var toNode = this.nodesDataSource._array.find(
           (item) => item["id"] == connector.to
-        )[0];
+        );
         if (!toNode || !fromNode) {
           continue;
         }
@@ -310,28 +307,12 @@ export default {
             );
           }
         }
-        // else {
-        //   // no-type edge
-        //   this.showToast(
-        //     "Please select a relation type from " +
-        //       fromNode.attrs["ID"]["value"][0] +
-        //       " to " +
-        //       toNode.attrs["ID"]["value"][0] +
-        //       " !"
-        //   );
-        // }
-
-        // ignore edges without an assigned type (the black ones)!!!
       }
 
       // updated attributes of nested blocks
       for (let t of this.nodesDataSource._array) {
         this.tokenManager.updateBlockAttrs(t);
       }
-
-      // after saving the arcs in the TM, we need to save the graph's layout as JSON string
-      // so we export it and then we will reimport it in order to have the same positions and everything as we left it
-      this.setArgumentsGraphJSON(this.$refs.diagram.instance.export());
     },
     itemTypeExpr() {
       return "ellipse";
@@ -372,7 +353,7 @@ export default {
     edgeTextExpr(obj) {
       if (obj.type === "attack") return "CON";
       else if (obj.type === "support") return "PRO";
-      return "double click to change the relation type";
+      return "";
     },
     showToast(text) {
       // function for in-graph toast messages
@@ -463,12 +444,8 @@ export default {
     onItemDblClick() {},
     findTextLength(w, h) {
       // these coefficients were calculated through linear regression, after collecting empirical data
-      let val =
-        -8.126482949847684 +
-        w * -0.13599902 +
-        h * -0.2172954 +
-        w * h * 0.00569047;
-      return val * 0.95 <= 5 ? 5 : val * 0.95;
+      let val = -7 + w * -0.02 + h * -0.03 + w * h * 0.005;
+      return val <= 5 ? 5 : val;
     },
   },
 };

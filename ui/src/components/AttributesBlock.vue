@@ -3,6 +3,7 @@
     <div class="attribute-title stroke">
       <strong
         v-if="
+          currentBlock &&
           Object.keys(currentBlock).length &&
           Object.keys(currentBlock.attrs).length &&
           currentBlock.attrs['ID']
@@ -12,7 +13,7 @@
         {{ currentBlock.attrs["ID"]["value"][0] }}
       </strong>
       <strong
-        v-else-if="Object.keys(currentBlock).length"
+        v-else-if="currentBlock && Object.keys(currentBlock).length"
         :style="{ color: currentBlock.backgroundColor }"
       >
         {{ currentBlock.label }}
@@ -24,6 +25,7 @@
       <div class="is-multiline">
         <div
           v-if="
+            currentBlock &&
             Object.keys(currentBlock).length &&
             Object.keys(currentBlock.attrs).length
           "

@@ -30,7 +30,7 @@
       :token="t"
       :key="t.start"
       :backgroundColor="t.backgroundColor"
-      :isCurrent="t.id === currentBlock.id"
+      :isCurrent="currentBlock != null && t.id === currentBlock.id"
       @remove-block="removeBlock"
     />
     <span class="control">

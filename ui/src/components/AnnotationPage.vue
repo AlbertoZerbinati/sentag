@@ -37,7 +37,7 @@
               :token="t"
               :key="t.id"
               :backgroundColor="t.backgroundColor"
-              :isCurrent="t.id === currentBlock.id"
+              :isCurrent="currentBlock != null && t.id === currentBlock.id"
               @remove-block="onRemoveBlock"
             />
           </div>
