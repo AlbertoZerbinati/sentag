@@ -161,15 +161,20 @@ export default {
       this.nodesDataSource = new ArrayStore({
         key: "id",
         data: nodes,
+        onModified: () => {
+          this.save();
+          if (this.currentBlock) {
+            this.setCurrentBlock(
+              this.tokenManager.findTokenBlock(this.currentBlock.id)
+            );
+          }
+        },
       });
 
       // istantiate edges datasource (initially empty)
       this.edgesDataSource = new ArrayStore({
         key: "id",
         data: [],
-        onUpdated: () => {
-          this.save();
-        },
         onPush: (a) => {
           if (
             a[0].type == "insert" &&
@@ -395,7 +400,7 @@ export default {
       // console.log({ "item click": obj.item.dataItem });
 
       if (obj.item.itemType === "shape") {
-        // this.save();
+        this.save();
         this.setCurrentBlock(
           this.tokenManager.findTokenBlock(obj.item.dataItem.id)
         );
