@@ -1,12 +1,12 @@
 from django.contrib import admin
-from .models import Judgment, Schema, Collection
+from .models import Judgment, Schema, Task
 
-class CollectionAdmin(admin.ModelAdmin):
+class TaskAdmin(admin.ModelAdmin):
     filter_horizontal = ['users', 'judgments']
 
-#class CollectionUserAdmin(admin.ModelAdmin):
-#    filter_horizontal = ['user',]
+class CollectionUserAdmin(admin.ModelAdmin):
+    filter_horizontal = ['user',]
 
 admin.site.register(Judgment)
 admin.site.register(Schema)
-admin.site.register(Collection, CollectionAdmin)
+admin.site.register(Task, TaskAdmin)

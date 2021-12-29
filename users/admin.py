@@ -6,7 +6,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.text import format_lazy
 
 from tag_sentenze.models import Judgment
-from users.models import Profile, Tagging, TaggingCollection
+from users.models import Profile, Tagging, TaggingTask
 
 class PermissionInline(admin.StackedInline):
     model = Profile
@@ -87,4 +87,4 @@ admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Tagging)
-admin.site.register(TaggingCollection)
+admin.site.register(TaggingTask)

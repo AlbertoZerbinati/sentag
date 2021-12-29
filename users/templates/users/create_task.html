@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    Update Collection
+    New Task
 {% endblock %}
 
 {% block nav %}
@@ -27,14 +27,13 @@
             {% csrf_token %}
 
             <fieldset class="form-group">
-                <h2 class="title">Update Collection</h2>
+                <h2 class="title">New Task</h2>
                 {{ form|crispy }}
             </fieldset>
 
             <div class="form-group">
                 <button class="btn btn-primary" type="submit">Register</button>
-                <a href="{% url 'create_collections' %}" class="btn btn-danger">Cancel</a>
-
+                <a href="{% url 'create_tasks' %}" class="btn btn-danger">Cancel</a>
             </div>
 
         </form>

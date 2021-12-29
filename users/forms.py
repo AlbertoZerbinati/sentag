@@ -3,7 +3,7 @@ from django.forms import ModelForm
 from django.contrib.auth.models import User
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.contrib.auth.forms import UserCreationForm
-from tag_sentenze.models import Judgment, Schema, Collection
+from tag_sentenze.models import Judgment, Schema, Task
 from django_select2 import forms as s2forms
 
 class UserRegisterForm(UserCreationForm):
@@ -21,7 +21,7 @@ class UserWidget(s2forms.ModelSelect2MultipleWidget):
         "email",
     ]
 
-class CollectionModelForm(ModelForm):
+class TaskModelForm(ModelForm):
     name = forms.CharField(max_length=30)
     xsd = forms.ModelChoiceField(
         Schema.objects, help_text='Choose the schema to match the uploaded judgments', blank=False)
@@ -29,7 +29,7 @@ class CollectionModelForm(ModelForm):
         User.objects, help_text='Choose the owner', blank=False)
 
     class Meta:
-        model = Collection
+        model = Task
         fields = ['name', 'xsd', 'owner', 'users', 'judgments']
         widgets = {
             "user": UserWidget

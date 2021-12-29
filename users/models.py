@@ -1,5 +1,5 @@
 from django.db import models
-from tag_sentenze.models import Judgment, Collection
+from tag_sentenze.models import Judgment, Task
 
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -30,8 +30,8 @@ class Tagging(models.Model):
         return str(self.profile) + " tagging " + str(self.judgment)
 
 #table implementing the M2M relationship between Judgment and Profile
-class TaggingCollection(models.Model):
-    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
+class TaggingTask(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     judgment = models.ForeignKey(Judgment, on_delete=models.CASCADE)
     token_manager = models.TextField(blank=True)
@@ -40,10 +40,10 @@ class TaggingCollection(models.Model):
     completed = models.BooleanField(default=False)
 
     class Meta:
-        unique_together = [['collection', 'user', 'judgment']]
+        unique_together = [['task', 'user', 'judgment']]
 
     def __str__(self):
-        return str(self.user) + " tagging " + str(self.judgment)+ " from collection " + str(self.collection)
+        return str(self.user) + " tagging " + str(self.judgment)+ " from task " + str(self.task)
 
 #class UserTasksSynonyms(models.Model):
 #    user_task = models.ManyToManyField(User, through='UserTasks')

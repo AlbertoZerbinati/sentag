@@ -6,9 +6,9 @@ from django.http import Http404, JsonResponse
 
 from django.contrib import messages
 
-from .forms import UserRegisterForm, CollectionModelForm
+from .forms import UserRegisterForm, TaskModelForm
 from .models import Tagging, Profile
-from tag_sentenze.models import Judgment, Schema, Collection
+from tag_sentenze.models import Judgment, Schema, Task
 
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
@@ -681,15 +681,15 @@ def createJuds(request):
         return render(request, 'users/no_permission.html')
 
 @login_required
-def createCollections(request):
-    collections = Collection.objects.all()
+def createTasks(request):
+    tasks = Task.objects.all()
 
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = CollectionModelForm()
+        form = TaskModelForm()
         if request.method == 'POST':
-            form = CollectionModelForm(request.POST)
+            form = TaskModelForm(request.POST)
             if form.is_valid():
                 form.save()
                 username = form.cleaned_data.get('username')
@@ -698,7 +698,7 @@ def createCollections(request):
                 taggers.user_set.add(User.objects.get(username=username))
                 return redirect('/')
 
-        return render(request, 'users/collection_form.html', context={'form': form, 'collections':collections})
+        return render(request, 'users/task_form.html', context={'form': form, 'tasks':tasks})
 
     else:
         return render(request, 'users/no_permission.html')
@@ -720,20 +720,20 @@ def deleteUser(request, id):
     return redirect(reverse('create_users'))
 
 @login_required
-def deleteCollection(request, id):
+def deleteTask(request, id):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         try:
-            collection = Collection.objects.get(id=id)
-        except Collection.DoesNotExist:
+            task = Task.objects.get(id=id)
+        except Task.DoesNotExist:
             raise Http404()
 
-        collection.delete()
-        messages.warning(request, ("Collection deleted"))
+        task.delete()
+        messages.warning(request, ("Task deleted"))
     else:
         messages.warning(request, ("You are not authorized"))
 
-    return redirect(reverse('create_collections'))
+    return redirect(reverse('create_tasks'))
 
 @login_required
 def updateUser(request, id):
@@ -759,41 +759,41 @@ def updateUser(request, id):
         return render(request, 'users/no_permission.html')
 
 @login_required
-def updateCollection(request, id):
-    collection = Collection.objects.get(id=id)
+def updateTask(request, id):
+    task = Task.objects.get(id=id)
 
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = CollectionModelForm(instance= collection)
+        form = TaskModelForm(instance= task)
         if request.method == 'POST':
-            form = CollectionModelForm(request.POST, instance=collection)
+            form = TaskModelForm(request.POST, instance=task)
             if form.is_valid():
                 form.save()
-                return redirect(reverse('create_collections'))
+                return redirect(reverse('create_tasks'))
 
-        return render(request, 'users/update_collection.html', context={'form': form, 'collections':collection})
+        return render(request, 'users/update_task.html', context={'form': form, 'tasks':task})
 
     else:
         return render(request, 'users/no_permission.html')
 
 @login_required
-def newCollection(request):
+def newTask(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = CollectionModelForm(initial={'owner': current_user})
+        form = TaskModelForm(initial={'owner': current_user})
         if request.method == 'POST':
-            form = CollectionModelForm(request.POST)
+            form = TaskModelForm(request.POST)
             if form.is_valid(): 
                 form.save()
                 #username = form.cleaned_data.get('username')
                 # Add by default the new user to the Taggers Group
                 #taggers = Group.objects.get(name='Taggers')
                 #taggers.user_set.add(User.objects.get(username=username))
-                return redirect(reverse('create_collections'))
+                return redirect(reverse('create_tasks'))
 
-        return render(request, 'users/create_collection.html', context={'form': form})
+        return render(request, 'users/create_task.html', context={'form': form})
 
     else:
         return render(request, 'users/no_permission.html')

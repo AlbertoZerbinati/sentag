@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    Manage Collections
+    Update Task
 {% endblock %}
 
 {% block nav %}
@@ -22,28 +22,26 @@
 {% endblock %}
 
 {% block content %}
-    
-    <div class="col-md-10"></div>
-    <h5>List of Collections</h5>
-    <hr>
-    <div class="card card-body">
-        <a class="btn btn-primary btn-sm gtn-block" href="{% url 'new_collection' %}">New Collection</a>
-        <table class="table table-sm">
-            <tr>
-                <th>Schema</th>
-                <th>Update</th>
-                <th>Remove</th>
-            </tr>
+    <div class="content-section">
+        <form method="POST">
+            {% csrf_token %}
 
-            {% for collection in collections %}
-                <tr>
-                    <td>{{collection.name}}</td>
-                    <td><a class="btn btn-sm btn-info" href="{% url 'update_collection' collection.id %}">Update</a></td>
-                    <td><a class="btn btn-sm btn-danger" href="{% url 'delete_collection' collection.id %}" onClick="javascript:return confirm('Are you sure?');">Remove</a></td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
-    </div>
+            <fieldset class="form-group">
+                <h2 class="title">Update Task</h2>
+                {{ form|crispy }}
+            </fieldset>
 
+            <div class="form-group">
+                <button class="btn btn-primary" type="submit">Register</button>
+                <a href="{% url 'create_tasks' %}" class="btn btn-danger">Cancel</a>
+
+            </div>
+
+        </form>
+        <div class="border-yop pt-3">
+            <small class="text-muted">
+                Already Have An Account? <a class="ml-2" href="{% url 'login' %}">Login</a>
+            </small>
+        </div>
+    </div>
 {% endblock %}

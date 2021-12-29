@@ -9,7 +9,7 @@ from django.shortcuts import render, reverse, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
 from .models import Judgment, Schema
 from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, ParseXMLForm
-from users.models import Tagging, Profile, Collection
+from users.models import Tagging, Profile, Task
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django import forms
@@ -580,20 +580,18 @@ def generate_xml_from_tm(token_manager):
     return xml_string
 
 @login_required
-def list_collections(request):
+def list_tasks(request):
     current_user = request.user
-    #collections_all = Collection.judgments
-    collections = Collection.objects.annotate(n_docs=Count('judgments'), n_users=Count('users')).values()
+    tasks = Task.objects.annotate(n_docs=Count('judgments'), n_users=Count('users')).values()
     
 
     # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         context = {
-            'collections': collections
+            'tasks': tasks
         }
         print(context)
-        #print(f"collections_all: {collections_all}")
-        return render(request, 'tag_sentenze/list_collections.html', context=context)
+        return render(request, 'tag_sentenze/list_tasks.html', context=context)
     # taggers don't
     else:
       # print('Tagger access')
@@ -602,10 +600,9 @@ def list_collections(request):
 @login_required
 def list_taggings(request, id):
     current_user = request.user
-    #collections = Collection.objects.all()
-    collection = Collection.objects.get(id=id)
-    judgments = collection.judgments.all()
-    users = collection.users.all()
+    task = Task.objects.get(id=id)
+    judgments = task.judgments.all()
+    users = task.users.all()
 
     # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
@@ -614,7 +611,7 @@ def list_taggings(request, id):
             'users':users
         }
         print(context)
-        return render(request, 'tag_sentenze/list_tag_user_collection.html', context=context)
+        return render(request, 'tag_sentenze/list_tag_user_task.html', context=context)
     # taggers don't
     else:
       # print('Tagger access')

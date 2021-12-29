@@ -61,7 +61,7 @@ class Judgment(models.Model):
         """String for representing the Judgments object (in Admin site)."""
         return "Judgment " + self.name
 
-class Collection(models.Model):
+class Task(models.Model):
     name = models.CharField(max_length=40, blank=True, unique=True)
     xsd = models.ForeignKey(
         Schema, on_delete=models.CASCADE, blank=True, null=True,
@@ -78,6 +78,23 @@ class Collection(models.Model):
         """String for representing the Judgments object (in Admin site)."""
         return "Collection " + self.name
 
-#class CollectionUser(models.Model):
-#    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
-#    user = models.ForeignKey(User, on_delete=models.CASCADE)
+'''class CollectionTest(models.Model):
+    name = models.CharField(max_length=40, blank=True, unique=True)
+    xsd = models.ForeignKey(
+        Schema, on_delete=models.CASCADE, blank=True, null=True,
+        verbose_name="The related xsd Schema", related_name="attached_collectionsTest"
+    )
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=False, null=False,
+        verbose_name="The user that created the task", related_name="ownerTest"
+    )
+    users = models.ManyToManyField(to=User, blank=True, through='CollectionUser')
+    judgments = models.ManyToManyField(to=Judgment, blank=True)
+
+    def __str__(self):
+        """String for representing the Judgments object (in Admin site)."""
+        return "Collection " + self.name
+
+class CollectionUser(models.Model):
+    collection = models.ForeignKey(CollectionTest, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)'''
