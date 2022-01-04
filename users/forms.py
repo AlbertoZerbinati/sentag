@@ -21,6 +21,13 @@ class UserWidget(s2forms.ModelSelect2MultipleWidget):
         "email",
     ]
 
+class AddJudgmentsForm(forms.Form):
+    task = forms.ModelChoiceField(
+        Task.objects, help_text='The Task for these docs', blank=False)
+
+    class Meta:
+        fields = ['task']
+
 class TaskModelForm(ModelForm):
     name = forms.CharField(max_length=30)
     xsd = forms.ModelChoiceField(

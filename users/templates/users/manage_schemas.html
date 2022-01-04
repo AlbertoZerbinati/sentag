@@ -1,0 +1,33 @@
+{% extends "tag_sentenze/layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    Manage Schemas
+{% endblock %}
+
+{% block content %}
+    
+    <div class="col-md-10"></div>
+    <h2>List of Schemas</h2>
+    <hr>
+    <div class="card card-body">
+        <a class="btn btn-primary btn-sm gtn-block" href="{% url 'users:add-schemas' %}">New Schemas</a>
+        <table class="table table-sm">
+            <tr>
+                <th>Schema</th>
+                <!--<th>Update</th>-->
+                <th>Remove</th>
+            </tr>
+
+            {% for schema in schemas %}
+                <tr>
+                    <td>{{schema.name}}</td>
+                    <!--<td><a class="btn btn-sm btn-info" href="">Update</a></td>-->
+                    <td><a class="btn btn-sm btn-danger" href="{% url 'users:delete-schema' schema.id %}">Remove</a></td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+    </div>
+
+{% endblock %}

@@ -5,22 +5,6 @@
     Update Task
 {% endblock %}
 
-{% block nav %}
-    <nav label="Page navigation">
-        <ul class="pagination justify-content-center">
-                <li class="page-item active"><a class="page-link" href="/register/">Add User</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:new-schema' %}">Add Schema</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:multiple-schemas' %}">Add Schemas</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:new-sentenza' %}">Add Judgment</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:multiple-judgment' %}">Add Judgments</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'users:home-judgment-schema' %}">Associate Judgments - Schemas</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'users:home-permission' %}">Associate Judgments - Users</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'users:agreement-page' %}">Agreement</a></li>
-                <li class="page-item"><a class="page-link" href="{% url 'tag_sentenze:list-taggings' %}">Download</a></li>
-        </ul>
-    </nav>
-{% endblock %}
-
 {% block content %}
     <div class="content-section">
         <form method="POST">
@@ -32,16 +16,11 @@
             </fieldset>
 
             <div class="form-group">
-                <button class="btn btn-primary" type="submit">Register</button>
-                <a href="{% url 'create_tasks' %}" class="btn btn-danger">Cancel</a>
+                <button class="btn btn-primary" type="submit">Submit</button>
+                <a href="{% url 'users:manage-tasks' %}" class="btn btn-danger">Cancel</a>
 
             </div>
 
         </form>
-        <div class="border-yop pt-3">
-            <small class="text-muted">
-                Already Have An Account? <a class="ml-2" href="{% url 'login' %}">Login</a>
-            </small>
-        </div>
     </div>
 {% endblock %}

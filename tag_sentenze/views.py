@@ -38,7 +38,7 @@ def list_sentenze(request):
             'sentenze': Tagging.objects.filter(profile=profile)
         }
         return render(request, 'tag_sentenze/list_sentenze.html', context=context)
-    # taggers has access only to their set of sentenze, so they will see a list of this set
+    # annotators has access only to their set of sentenze, so they will see a list of this set
     else:
         # sentenze_user = current_user.profile.taggings.all()
         sentenze_user = Tagging.objects.filter(profile=profile)
@@ -49,36 +49,6 @@ def list_sentenze(request):
       # print('Current user: ', current_user)
       # print('Permission: ', sentenze_user)
         return render(request, 'tag_sentenze/list_sentenze.html', {'sentenze': sentenze_user})
-
-
-@login_required
-def new_sentenza(request):
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-      # print("Admin/Editor access")
-        form = AddJudgmentModelForm()
-
-        if request.method == 'POST':
-            # Create a form instance and populate it with data from the request
-            form = AddJudgmentModelForm(request.POST, request.FILES)
-            # Check if the form is valid:
-            if form.is_valid():
-                # save the form into the DB
-                form.save()
-                # assign a tagging object to all editors and admins
-                auto_assignment(form.instance.id)
-
-                # redirect home
-                return HttpResponseRedirect(reverse('tag_sentenze:index'))
-
-        context = {
-            'form': form,
-        }
-        return render(request, 'tag_sentenze/new_sentenza.html', context=context)
-    else:
-      # print('Tagger access')
-        return redirect('/sentenze/')
 
 
 @login_required
@@ -108,9 +78,9 @@ def tag_sentenza(request, id, htbp=-1):
         }
       # print("---->", context['taggings'].id)
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
-    # taggers has access only to their set of sentenze
+    # annotators has access only to their set of sentenze
     elif sentenza in user_taggings:
-      # print('Tagger access with permission')
+      # print('Annotator access with permission')
         # retrive the taging table starting using profile and judgment as unique identifiers
         context = {
             'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
@@ -118,148 +88,19 @@ def tag_sentenza(request, id, htbp=-1):
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
-      # print('Taggers access with no permission')
+      # print('Annotators access with no permission')
         return redirect('/sentenze/')
-
-@login_required
-def new_schema(request):
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = AddSchemaForm()
-      # print("Admin/Editor access")
-        if request.method == 'POST':
-            # Create a form instance for the schema and add data
-            form = AddSchemaForm(request.POST, request.FILES)
-            # Check if the form is valid:
-            if form.is_valid():
-                # save the form into the Database
-                form.save()
-                # redirect home
-                return HttpResponseRedirect(reverse('tag_sentenze:index'))
-
-        context = {
-            'form': form,
-        }
-        return render(request, 'tag_sentenze/new_schema.html', context=context)
-    else:
-      # print('Tagger access')
-        return redirect('/sentenze/')
-
-# upload multiplo
-
-
-@login_required
-def add_multiple_judgments(request):
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = AddSchemaJudgmentsForm()
-      # print("Admin/Editor access")
-        if request.method == 'POST':
-            # Get all the file uploaded
-            judgment_files = request.FILES.getlist('judgments')
-
-            form = AddSchemaJudgmentsForm(request.POST)
-
-            if form.is_valid():
-                schema = form.cleaned_data['schema']
-              # print(Schema.objects.get(id=schema.id))
-
-                for judgment in judgment_files:
-                  # print(str(judgment))
-                    new_judg = Judgment.objects.create(
-                        judgment_file=judgment,
-                        xsd=Schema.objects.get(id=schema.id),
-                    )
-                    new_judg.save()
-
-                    # auto assign the new uploaded judgments to all editor and admin users
-                    auto_assignment(new_judg.id)
-
-                # redirect home
-                return HttpResponseRedirect(reverse('tag_sentenze:index'))
-
-        # add the CoicheField with the schemas
-        context = {
-            'form': form,
-        }
-
-        return render(request, 'tag_sentenze/add_multiple_judgment.html', context=context)
-    else:
-      # print('Tagger access')
-        return redirect('/sentenze/')
-
-
-@login_required
-def add_multiple_schemas(request):
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-      # print("Admin/Editor access")
-        if request.method == 'POST':
-            # Get all the file uploaded
-            schema_files = request.FILES.getlist('schemas')
-
-            for schema in schema_files:
-              # print(schema)
-                new_schema = Schema.objects.create(
-                    schema_file=schema,
-                )
-                new_schema.save()
-
-            # redirect home
-            return HttpResponseRedirect(reverse('tag_sentenze:index'))
-
-        return render(request, 'tag_sentenze/add_multiple_schema.html')
-    else:
-      # print('Tagger access')
-        return redirect('/sentenze/')
-
-
-@login_required
-def delete_judgment(request, id):
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        try:
-            judgment = Judgment.objects.get(id=id)
-        except Judgment.DoesNotExist:
-            raise Http404()
-
-        judgment.delete()
-        messages.warning(request, ("Judgment deleted"))
-    else:
-        messages.warning(request, ("You are not authorized"))
-
-    return redirect(reverse('create_juds'))
-
-
-@login_required
-def delete_schema(request, id):
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        try:
-            schema = Schema.objects.get(id=id)
-        except Schema.DoesNotExist:
-            raise Http404()
-
-        schema.delete()
-        messages.warning(request, ("Schema deleted"))
-    else:
-        messages.warning(request, ("You are not authorized"))
-
-    return redirect(reverse('create_schemas'))
 
 
 # automatic assignment of a new uploaded judgment to all editors and admins
-def auto_assignment(judgment_id, current_user_id=-1, xml_string="", also_taggers=False):
+def auto_assignment(judgment_id, current_user_id=-1, xml_string="", also_annotators=False):
     admins = list(User.objects.filter(groups__name='Admins'))
     editors = list(User.objects.filter(groups__name='Editors'))
     both_users = admins + editors
 
-    if also_taggers:
-        taggers = list(User.objects.filter(groups__name='Taggers'))
-        both_users = both_users + taggers
+    if also_annotators:
+        annotators = list(User.objects.filter(groups__name='Annotators'))
+        both_users = both_users + annotators
 
     both_users = set(both_users)  # remove duplicates
 
@@ -294,7 +135,7 @@ def download(request, id):
 
     current_user = request.user
 
-    # taggers don't have access to this functionality
+    # annotators don't have access to this functionality
     if not current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         return redirect('/')
 
@@ -317,9 +158,9 @@ def taggings(request):
             'taggings': taggings
         }
         return render(request, 'tag_sentenze/list_taggings.html', context=context)
-    # taggers don't
+    # annotators don't
     else:
-      # print('Tagger access')
+      # print('Annotator access')
         return redirect('/sentenze')
 
 
@@ -389,7 +230,7 @@ def parse_xml(request):
 
                 # assign a tagging object to all editors and admins
                 tagging_id = auto_assignment(
-                    judgment.id, request.user.id, xml_string, also_taggers=True)  # also save the original xml text in the tagging
+                    judgment.id, request.user.id, xml_string, also_annotators=True)  # also save the original xml text in the tagging
 
                 # and then load the tagging interface
                 return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
@@ -579,11 +420,12 @@ def generate_xml_from_tm(token_manager):
 
     return xml_string
 
+
 @login_required
 def list_tasks(request):
     current_user = request.user
-    tasks = Task.objects.annotate(n_docs=Count('judgments'), n_users=Count('users')).values()
-    
+    tasks = Task.objects.annotate(n_docs=Count(
+        'judgments'), n_users=Count('users')).values()
 
     # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
@@ -592,10 +434,11 @@ def list_tasks(request):
         }
         print(context)
         return render(request, 'tag_sentenze/list_tasks.html', context=context)
-    # taggers don't
+    # annotators don't
     else:
-      # print('Tagger access')
+      # print('Annotator access')
         return redirect('/download')
+
 
 @login_required
 def list_taggings(request, id):
@@ -608,11 +451,11 @@ def list_taggings(request, id):
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         context = {
             'judgments': judgments,
-            'users':users
+            'users': users
         }
         print(context)
         return render(request, 'tag_sentenze/list_tag_user_task.html', context=context)
-    # taggers don't
+    # annotators don't
     else:
-      # print('Tagger access')
+      # print('Annotator access')
         return redirect('/download')

@@ -6,7 +6,6 @@
 <html lang="en">
 
 <head>
-
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.6.1/font/bootstrap-icons.css">
@@ -33,7 +32,6 @@
 
             {% if user.is_authenticated %}
             {% if user.is_staff or request.user|is_editor%}
-            <!--<a class="nav-link link " style="margin-right: auto;" href="{% url 'users:editor_page' %}">Editor Page</a>-->
             <div class="dropdown show">
                 <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -41,44 +39,27 @@
                 </a>
 
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
-                    <a class="dropdown-item" href="/create_users/"> <i class="bi-person"
+                    <a class="dropdown-item" href="{% url 'users:manage-users' %}"> <i class="bi-person"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Users</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/create_schemas/"> <i class="bi-card-checklist"
-                        style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Schemas</a>
-                    <!--<a class="dropdown-item" href="{% url 'tag_sentenze:new-schema' %}"> <i class="bi-card-checklist"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Add Schema</a>
-                    <a class="dropdown-item" href="{% url 'tag_sentenze:multiple-schemas' %}"> <i
-                            class="bi-card-checklist" style="font-size: 1.2rem; margin-right: 10px;"></i> Add
-                        Schemas</a>-->
+                    <a class="dropdown-item" href="{% url 'users:manage-schemas' %}"> <i class="bi-card-checklist"
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Schemas</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'create_tasks' %}"> <i class="bi-card-checklist"
-                        style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Tasks</a>
-                    
+                    <a class="dropdown-item" href="{% url 'users:manage-juds' %}"> <i class="bi-justify-left"
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Docs</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="/create_juds/"> <i class="bi-card-checklist"
-                        style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Docs</a>
-                    <!--<a class="dropdown-item" href="{% url 'tag_sentenze:new-sentenza' %}"> <i class="bi-card-text"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Add Judgment</a>
-                    <a class="dropdown-item" href="{% url 'tag_sentenze:multiple-judgment' %}"> <i class="bi-card-text"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Add Judgments</a>-->
+                    <a class="dropdown-item" href="{% url 'users:manage-tasks' %}"> <i class="bi-folder"
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Tasks</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{% url 'tag_sentenze:parse-xml' %}"> <i class="bi-bar-chart-steps"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Parse XML</a>
                     <div class="dropdown-divider"></div>
-                    <!--<a class="dropdown-item" href="{% url 'users:home-judgment-schema' %}"> <i class="bi-bezier2"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Associate Judgments - Schemas</a>
-                    <a class="dropdown-item" href="{% url 'users:home-permission' %}"> <i class="bi-bezier"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Associate Judgments - Users</a>
-                    <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'users:delete-files' %}"> <i class="bi-trash"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Delete files </a>-->
                     <a class="dropdown-item" href="{% url 'users:agreement-page' %}"> <i class="bi-check-all"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Agreement Page</a>
                     <a class="dropdown-item" href="{% url 'tag_sentenze:list-taggings' %}"> <i class="bi-download"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Download Page</a>
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Download Page (old)</a>
                     <a class="dropdown-item" href="{% url 'tag_sentenze:list_tasks' %}"> <i class="bi-download"
-                        style="font-size: 1.2rem; margin-right: 10px;"></i> Download Page</a> 
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Download Page</a>
                 </div>
             </div>
             {% endif %}

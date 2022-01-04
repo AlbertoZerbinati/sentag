@@ -22,7 +22,7 @@ class AddJudgmentModelForm(ModelForm):
 
     class Meta:
         model = Judgment
-        fields = ['name', 'judgment_file', 'xsd']
+        fields = ['name', 'judgment_file']
 
 
 class AddSchemaForm(ModelForm):
@@ -52,7 +52,6 @@ class AddSchemaJudgmentsForm(forms.Form):
 
     class Meta:
         fields = ['schema']
-
 
 class ParseXMLForm(forms.Form):
     xml_file = forms.FileField()

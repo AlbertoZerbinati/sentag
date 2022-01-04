@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group, Permission, User
 
 
 class Command(BaseCommand):
-    help = 'Creates the defaul t Admins, Editors and Taggers groups, assigning the specified superuser to all of these groups'
+    help = 'Creates the defaul t Admins, Editors and Annotators groups, assigning the specified superuser to all of these groups'
 
     def add_arguments(self, parser):
         parser.add_argument('superuser', type=str)
@@ -18,7 +18,7 @@ class Command(BaseCommand):
                 'Superuser "%s" does not exist' % superuser_name)
 
         # create the 3 groups with appropriate permissions
-        taggers = Group.objects.get_or_create(name='Taggers')[0]
+        annotators = Group.objects.get_or_create(name='Annotators')[0]
 
         editors = Group.objects.get_or_create(name='Editors')[0]
         editors.permissions.add(Permission.objects.get(codename="add_logentry"), Permission.objects.get(codename="change_logentry"), Permission.objects.get(codename="delete_logentry"),
@@ -45,7 +45,7 @@ class Command(BaseCommand):
             Permission.objects.get(codename="view_profile"), Permission.objects.get(codename="add_tagging"), Permission.objects.get(codename="change_tagging"), Permission.objects.get(codename="delete_tagging"), Permission.objects.get(codename="view_tagging"))
 
         # add the superuser to the 3 groups
-        taggers.user_set.add(user)
+        annotators.user_set.add(user)
         editors.user_set.add(user)
         admins.user_set.add(user)
 

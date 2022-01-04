@@ -35,10 +35,6 @@ class Judgment(models.Model):
     name = models.CharField(max_length=40, blank=True,
                             unique=True, help_text='Optional')
     initial_text = models.TextField(blank=True)
-    xsd = models.ForeignKey(
-        Schema, on_delete=models.CASCADE, blank=True, null=True,
-        verbose_name="The related xsd Schema", related_name="attached_judgments"
-    )
     score = models.DecimalField(
         max_digits=4, decimal_places=2, blank=True, null=True, editable=False)
 

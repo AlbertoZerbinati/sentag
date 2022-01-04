@@ -6,12 +6,15 @@ from django.http import Http404, JsonResponse
 
 from django.contrib import messages
 
-from .forms import UserRegisterForm, TaskModelForm
+from .forms import UserRegisterForm, TaskModelForm, AddJudgmentsForm
+from tag_sentenze.forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, ParseXMLForm
 from .models import Tagging, Profile
 from tag_sentenze.models import Judgment, Schema, Task
 
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
+
+from tag_sentenze.views import auto_assignment
 
 import json
 
@@ -29,9 +32,9 @@ def register(request):
             if form.is_valid():
                 form.save()
                 username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggers Group
-                taggers = Group.objects.get(name='Taggers')
-                taggers.user_set.add(User.objects.get(username=username))
+                # Add by default the new user to the Annotators Group
+                annotators = Group.objects.get(name='Annotators')
+                annotators.user_set.add(User.objects.get(username=username))
                 return redirect('/')
 
         return render(request, 'users/register.html', context={'form': form})
@@ -41,36 +44,16 @@ def register(request):
 
 
 @login_required
-def editor_page(request):
-
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        # get all users from Taggers group
-        taggers = User.objects.filter(groups__name='Taggers').all()
-      # print(taggers)
-
-        context = {
-            'lista_users': taggers,
-            'sentenze': Judgment.objects.all()
-        }
-
-        return render(request, 'users/editor_page.html', context=context)
-    else:
-        return render(request, 'users/no_permission.html')
-
-
-@login_required
 def home_permission(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        # get all users from Taggers group
-        taggers = User.objects.filter(groups__name='Taggers').all()
-      # print(taggers)
+        # get all users from Annotators group
+        annotators = User.objects.filter(groups__name='Annotators').all()
+      # print(annotators)
 
         context = {
-            'lista_users': taggers,
+            'lista_users': annotators,
             'sentenze': Judgment.objects.all()
         }
 
@@ -98,7 +81,7 @@ def user_permission(request, id):
     context = {
         'permission': permission_list,
         'selected_user': user,
-        'lista_users': User.objects.filter(groups__name='Taggers').all(),
+        'lista_users': User.objects.filter(groups__name='Annotators').all(),
         'sentenze': all_sentenze
     }
 
@@ -237,7 +220,7 @@ def home_judgment_schema(request):
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        # get all users from Taggers group
+        # get all users from Annotators group
         schemas = Schema.objects.all()
       # print(schemas)
 
@@ -366,18 +349,7 @@ def remove_sentenza_schema_list(request, schema):
     return JsonResponse({'response': data}, status=200)
 
 
-@login_required
-def delete_files(request):
-    schemas = Schema.objects.all()
-    judgments = Judgment.objects.all()
-
-    context = {'schemas': schemas, 'judgments': judgments}
-
-    return render(request, 'users/delete_files.html', context=context)
-
 # Agreement code
-
-
 def calc_agreement(judgment_id):
 
     #print('------------------ CALCOLO AGREEMENT -------------------')
@@ -394,7 +366,6 @@ def calc_agreement(judgment_id):
     # assign a integer value to every judgment's token
     for i in range(len(judgment_tokens)):
         tokens_value[judgment_tokens[i]] = i+1
-    # print(tokens_value)
 
     # Get the schema associated to the Judgment and create dictionary with all the tags
     schema = judgment.xsd.schema_file
@@ -402,7 +373,6 @@ def calc_agreement(judgment_id):
     tree = etree.ElementTree(file=schema)
     tags = tree.xpath("//xsd:element/@name",
                       namespaces={"xsd": "http://www.w3.org/2001/XMLSchema"})
-    # print(tags)
 
     tags_value = {}
 
@@ -414,20 +384,14 @@ def calc_agreement(judgment_id):
             'annotator_id': [],
             'annotation': []}
 
-    # list of all token managers for the selected judgments
-    #tm_list = []
-
     # flag to see if at least two or more users has a token manager not empty
     flag = 0
 
     # For every token manager get the list of word-label pair as [[WORD: LABEL], [WORD2: LABEL]]
     for elem in Tagging.objects.all():
-        # print(elem)
         if(elem.judgment.id == judgment_id):
-            #print('Trovato profile {} con judgment id {}'.format(elem.profile, elem.judgment.id))
             tm = elem.token_manager
             user = elem.profile
-            # print(user)
 
             if tm != ' ' and tm != '':
                 # increment flag
@@ -454,8 +418,6 @@ def calc_agreement(judgment_id):
                         label = t['label']
 
                         for child in t['tokens']:
-                            #words.append({child['text']: label})
-
                             # if child is token block, insert again in tokens
                             if child['type'] == 'token-block':
                                 tokens.insert(0, child)
@@ -466,13 +428,6 @@ def calc_agreement(judgment_id):
                             # insert directly the corrispondent value for every label/tag and token
                             words.append(
                                 tuple([single_token, tags_value[label]]))
-                            # if label != None:
-                            #    words.append(tuple([single_token, tags_value[label]]))
-                            # else:
-                            #  # print('Label None')
-                            #    words.append(tuple([single_token, None]))
-
-                #print('Words: ', words)
 
                 # Insert data into the structure for agreement
                 for pair in words:
@@ -480,40 +435,6 @@ def calc_agreement(judgment_id):
                     data['unit_id'].append(pair[0])
                     data['annotator_id'].append(str(user))
                     data['annotation'].append(pair[1])
-
-    #print('Secondo token Manager: ', tm_list[1])
-    #print('Type: ', type(tm_list[1]))
-    #sample_tk = json.loads(tm_list[1])
-    # print(sample_tk)
-    #print('Type: ', type(sample_tk))
-
-    #sample_tk = json.loads(sample_tk)
-    # print(sample_tk)
-    #print('Type: ', type(sample_tk))
-
-    #tokens = sample_tk['tokens']
-    #print('Tokens: ', tokens)
-    # print(type(tokens))
-
-    # list of word-label pair as [{WORD: LABEL}, {WORD2: LABEL}]
-    #words = []
-    # while tokens:
-    #    t = tokens.pop(0)
-    #  # print(t)
-
-    #    if isinstance(t, str):
-    #        words.append({t: None})
-    #    elif 'text' in t:
-    #        words.append({t['text']: None})
-    #    else:
-    #        label = t['label']
-    #
-    #        for child in t['tokens']:
-    #            words.append({child['text']: label})
-
-    # print(words)
-
-    #print('Data: ', data)
 
     # return None if flag is < 2
     if flag < 2:
@@ -524,11 +445,6 @@ def calc_agreement(judgment_id):
     agreement = simpledorff.calculate_krippendorffs_alpha_for_df(Data, experiment_col='unit_id',
                                                                  annotator_col='annotator_id',
                                                                  class_col='annotation')
-
-    #print('Agreement Judgment {}: {}'.format(judgment_id, agreement))
-
-    # print(Data.iloc[:100])
-
     return agreement
 
 # Receive the POST request to calculate the agreement score on a specific judgment
@@ -566,7 +482,7 @@ def agreement_post(request, id):
 def agreement_page(request):
 
     # Create table in template with judgments as rows and users as columns
-    users = User.objects.filter(groups__name='Taggers').all()
+    users = User.objects.filter(groups__name='Annotators').all()
     judgments = Judgment.objects.all()
 
     rows = []
@@ -610,8 +526,9 @@ def agreement_page(request):
 
     return render(request, 'users/agreement_page.html', context=context)
 
+
 @login_required
-def createUsers(request):
+def manage_users(request):
     #user = User.objects.all()
     user = User.objects.exclude(groups__name__in=["Admins", "Editors"])
 
@@ -624,87 +541,43 @@ def createUsers(request):
             if form.is_valid():
                 form.save()
                 username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggers Group
-                taggers = Group.objects.get(name='Taggers')
-                taggers.user_set.add(User.objects.get(username=username))
+                # Add by default the new user to the Annotators Group
+                annotators = Group.objects.get(name='Annotators')
+                annotators.user_set.add(User.objects.get(username=username))
                 return redirect('/')
 
-        return render(request, 'users/user_form.html', context={'form': form, 'users':user})
+        return render(request, 'users/manage_users.html', context={'form': form, 'users': user})
 
     else:
         return render(request, 'users/no_permission.html')
 
+
 @login_required
-def createSchemas(request):
-    schema = Schema.objects.all()
+def update_user(request, id):
+    user = User.objects.get(id=id)
 
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = UserRegisterForm()
+        form = UserRegisterForm(instance=user)
         if request.method == 'POST':
-            form = UserRegisterForm(request.POST)
+            form = UserRegisterForm(request.POST, instance=user)
             if form.is_valid():
                 form.save()
                 username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggers Group
-                taggers = Group.objects.get(name='Taggers')
-                taggers.user_set.add(User.objects.get(username=username))
-                return redirect('/')
+                # Add by default the new user to the Annotators Group
+                annotators = Group.objects.get(name='Annotators')
+                annotators.user_set.add(User.objects.get(username=username))
+                return redirect(reverse('users:manage-users'))
 
-        return render(request, 'users/schema_form.html', context={'form': form, 'schemas':schema})
+        return render(request, 'users/update_user.html', context={'form': form, 'users': user})
 
     else:
         return render(request, 'users/no_permission.html')
 
-@login_required
-def createJuds(request):
-    juds = Judgment.objects.all()
-
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = UserRegisterForm()
-        if request.method == 'POST':
-            form = UserRegisterForm(request.POST)
-            if form.is_valid():
-                form.save()
-                username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggers Group
-                taggers = Group.objects.get(name='Taggers')
-                taggers.user_set.add(User.objects.get(username=username))
-                return redirect('/')
-
-        return render(request, 'users/jud_form.html', context={'form': form, 'juds':juds})
-
-    else:
-        return render(request, 'users/no_permission.html')
 
 @login_required
-def createTasks(request):
-    tasks = Task.objects.all()
-
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = TaskModelForm()
-        if request.method == 'POST':
-            form = TaskModelForm(request.POST)
-            if form.is_valid():
-                form.save()
-                username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggers Group
-                taggers = Group.objects.get(name='Taggers')
-                taggers.user_set.add(User.objects.get(username=username))
-                return redirect('/')
-
-        return render(request, 'users/task_form.html', context={'form': form, 'tasks':tasks})
-
-    else:
-        return render(request, 'users/no_permission.html')
-
-@login_required
-def deleteUser(request, id):
+def delete_user(request, id):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         try:
@@ -717,10 +590,195 @@ def deleteUser(request, id):
     else:
         messages.warning(request, ("You are not authorized"))
 
-    return redirect(reverse('create_users'))
+    return redirect(reverse('users:manage-users'))
+
 
 @login_required
-def deleteTask(request, id):
+def manage_schemas(request):
+    schemas = Schema.objects.all()
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        return render(request, 'users/manage_schemas.html', context={'schemas': schemas})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+
+@login_required
+def add_schemas(request):
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+      # print("Admin/Editor access")
+        if request.method == 'POST':
+            # Get all the file uploaded
+            schema_files = request.FILES.getlist('schemas')
+
+            for schema in schema_files:
+              # print(schema)
+                new_schema = Schema.objects.create(
+                    schema_file=schema,
+                )
+                new_schema.save()
+
+            # redirect home
+            return redirect(reverse('users:manage-schemas'))
+
+        return render(request, 'users/add_schemas.html')
+    else:
+      # print('Annotator access')
+        return redirect('/sentenze/')
+
+
+@login_required
+def delete_schema(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            schema = Schema.objects.get(id=id)
+        except Schema.DoesNotExist:
+            raise Http404()
+
+        schema.delete()
+        messages.warning(request, ("Schema deleted"))
+    else:
+        messages.warning(request, ("You are not authorized"))
+
+    return redirect(reverse('users:manage-schemas'))
+
+
+@login_required
+def manage_juds(request):
+    juds = Judgment.objects.all()
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        return render(request, 'users/manage_juds.html', context={'juds': juds})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+
+@login_required
+def add_judgments(request):
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = AddJudgmentsForm()
+      # print("Admin/Editor access")
+        if request.method == 'POST':
+
+            form = AddJudgmentsForm(request.POST)
+
+            if form.is_valid():
+                # Get all the file uploaded
+                judgment_files = request.FILES.getlist('judgments')
+
+                task = form.cleaned_data['task']
+
+                for judgment in judgment_files:
+                  # print(str(judgment))
+                    new_judg = Judgment.objects.create(
+                        judgment_file=judgment,
+                    )
+                    new_judg.save()
+                    
+                    
+                    # auto assign the new uploaded judgments to all editor and admin users
+                    # auto_assignment(new_judg.id)
+
+                # redirect home
+                return redirect(reverse('users:manage-juds'))
+
+        # add the CoicheField with the schemas
+        context = {
+            'form': form,
+        }
+
+        return render(request, 'users/add_judgments.html', context=context)
+    else:
+      # print('Annotator access')
+        return redirect('/sentenze/')
+
+
+@login_required
+def delete_judgment(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            judgment = Judgment.objects.get(id=id)
+        except Judgment.DoesNotExist:
+            raise Http404()
+
+        judgment.delete()
+        messages.warning(request, ("Judgment deleted"))
+    else:
+        messages.warning(request, ("You are not authorized"))
+
+    return redirect(reverse('users:manage-juds'))
+
+
+@login_required
+def manage_tasks(request):
+    tasks = Task.objects.all()
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        return render(request, 'users/manage_tasks.html', context={'tasks': tasks})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+
+@login_required
+def new_task(request):
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = TaskModelForm(initial={'owner': current_user})
+        if request.method == 'POST':
+            form = TaskModelForm(request.POST)
+            if form.is_valid():
+                form.save()
+                #username = form.cleaned_data.get('username')
+                # Add by default the new user to the Annotators Group
+                #annotators = Group.objects.get(name='Annotators')
+                # annotators.user_set.add(User.objects.get(username=username))
+                return redirect(reverse('users:manage-tasks'))
+
+        return render(request, 'users/create_task.html', context={'form': form})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+
+@login_required
+def update_task(request, id):
+    task = Task.objects.get(id=id)
+
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        form = TaskModelForm(instance=task)
+        if request.method == 'POST':
+            form = TaskModelForm(request.POST, instance=task)
+            if form.is_valid():
+                form.save()
+                return redirect(reverse('users:manage-tasks'))
+
+        return render(request, 'users/update_task.html', context={'form': form, 'tasks': task})
+
+    else:
+        return render(request, 'users/no_permission.html')
+
+
+@login_required
+def delete_task(request, id):
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         try:
@@ -733,67 +791,4 @@ def deleteTask(request, id):
     else:
         messages.warning(request, ("You are not authorized"))
 
-    return redirect(reverse('create_tasks'))
-
-@login_required
-def updateUser(request, id):
-    user = User.objects.get(id=id)
-
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = UserRegisterForm(instance= user)
-        if request.method == 'POST':
-            form = UserRegisterForm(request.POST, instance=user)
-            if form.is_valid():
-                form.save()
-                username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggers Group
-                taggers = Group.objects.get(name='Taggers')
-                taggers.user_set.add(User.objects.get(username=username))
-                return redirect(reverse('create_users'))
-
-        return render(request, 'users/update_user.html', context={'form': form, 'users':user})
-
-    else:
-        return render(request, 'users/no_permission.html')
-
-@login_required
-def updateTask(request, id):
-    task = Task.objects.get(id=id)
-
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = TaskModelForm(instance= task)
-        if request.method == 'POST':
-            form = TaskModelForm(request.POST, instance=task)
-            if form.is_valid():
-                form.save()
-                return redirect(reverse('create_tasks'))
-
-        return render(request, 'users/update_task.html', context={'form': form, 'tasks':task})
-
-    else:
-        return render(request, 'users/no_permission.html')
-
-@login_required
-def newTask(request):
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = TaskModelForm(initial={'owner': current_user})
-        if request.method == 'POST':
-            form = TaskModelForm(request.POST)
-            if form.is_valid(): 
-                form.save()
-                #username = form.cleaned_data.get('username')
-                # Add by default the new user to the Taggers Group
-                #taggers = Group.objects.get(name='Taggers')
-                #taggers.user_set.add(User.objects.get(username=username))
-                return redirect(reverse('create_tasks'))
-
-        return render(request, 'users/create_task.html', context={'form': form})
-
-    else:
-        return render(request, 'users/no_permission.html')
+    return redirect(reverse('users:manage-tasks'))
