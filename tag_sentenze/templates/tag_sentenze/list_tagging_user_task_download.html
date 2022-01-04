@@ -11,9 +11,9 @@ List of Collections
         <tr>
             <th>Doc</th>
             {% for user in users %}
-            <td>{{user.username}}</td>
+            <th>{{user.username}}</th>
             {% endfor %}
-            <th>All Users</th>
+            <th><strong>All Users</strong></th>
         </tr>
     </thead>
     <tbody>
@@ -28,13 +28,13 @@ List of Collections
         {% endfor %}
 
         <tr>
-            <td>All Docs </td>
+            <td><strong>All Docs</strong></td>
             {% for user in users %}
             <td> <a class="btn btn-sm btn-info" href="">Download</a></td>
             {% endfor %}
             <td> <a class="btn btn-sm btn-info" href="">Download</a></td>
         </tr>
-        
+
     </tbody>
 </table>
 {% endblock %}

@@ -1,20 +1,20 @@
-from django.core.exceptions import ValidationError
 import xmlschema
+import json
+import re
+
 from .serializers import TaggingSerializer
+from .forms import ParseXMLForm
+from .models import Judgment, Schema
+from users.models import Tagging, Profile, Task, TaggingTask
+
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
-import json
+
 from django.shortcuts import render, reverse, redirect
-from django.http import HttpResponse, HttpResponseRedirect, Http404, JsonResponse
-from .models import Judgment, Schema
-from .forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, ParseXMLForm
-from users.models import Tagging, Profile, Task
+from django.http import HttpResponse, Http404, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django import forms
-import re
-from io import StringIO
 from django.contrib import messages
 from django.db.models import Count
 
@@ -22,33 +22,38 @@ from django.db.models import Count
 @login_required
 def index(request):
     # the home page shows the list of assigned judgments
-    return redirect('/sentenze/')
+    return redirect('tag_sentenze:my-tasks')
 
 
+# list all current user's tasks, allowing him to TAG them
 @login_required
-def list_sentenze(request):
+def my_tasks(request):
     current_user = request.user
-    profile = Profile.objects.get(user=current_user)
-    sentenze = Judgment.objects.all()
 
-    # admins and editors has access to all the sentenze
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        context = {
-            # 'sentenze': current_user.profile.taggings.all()
-            'sentenze': Tagging.objects.filter(profile=profile)
-        }
-        return render(request, 'tag_sentenze/list_sentenze.html', context=context)
-    # annotators has access only to their set of sentenze, so they will see a list of this set
-    else:
-        # sentenze_user = current_user.profile.taggings.all()
-        sentenze_user = Tagging.objects.filter(profile=profile)
+    # query for all Tasks of current User
+    tasks = Task.objects.filter(users__username__contains=current_user).annotate(
+        n_docs=Count('judgments')).values()
+    context = {
+        'tasks': tasks
+    }
+    return render(request, 'tag_sentenze/list_tasks_tag.html', context=context)
 
-        # for elem in sentenze_user:
-        # print('{} con id: '.format(elem, elem.id))
+# list all taggings inside a Task for the current user, allowing him to TAG them
+@login_required
+def my_taggings(request, id):
+    current_user = request.user
 
-      # print('Current user: ', current_user)
-      # print('Permission: ', sentenze_user)
-        return render(request, 'tag_sentenze/list_sentenze.html', {'sentenze': sentenze_user})
+    task_name = Task.objects.get(id=id).name
+
+    # query all TaggingTask for the ones having the correct (task(id), user(current))
+    # -> get the docs
+    taggings = TaggingTask.objects.filter(task=id,user__username__contains=current_user)
+
+    context = {
+        'task_name': task_name,
+        'taggings': taggings
+    }
+    return render(request, 'tag_sentenze/list_taggings_tag.html', context=context)
 
 
 @login_required
@@ -89,39 +94,25 @@ def tag_sentenza(request, id, htbp=-1):
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
       # print('Annotators access with no permission')
-        return redirect('/sentenze/')
+        return redirect('tag_sentenze:my-tasks')
 
 
-# automatic assignment of a new uploaded judgment to all editors and admins
-def auto_assignment(judgment_id, current_user_id=-1, xml_string="", also_annotators=False):
-    admins = list(User.objects.filter(groups__name='Admins'))
-    editors = list(User.objects.filter(groups__name='Editors'))
-    both_users = admins + editors
+# creates a new TaggingTask for the triple (task, doc, user)
+def assign_doc_to_user(task_id, judgment_id, user_id, xml_string=""):
+    # get the triple (task, doc, user)
+    task = Task.objects.get(id=task_id)
+    judgment = task.judgments.get(id=judgment_id)
+    user = task.users.get(id=user_id)
 
-    if also_annotators:
-        annotators = list(User.objects.filter(groups__name='Annotators'))
-        both_users = both_users + annotators
-
-    both_users = set(both_users)  # remove duplicates
-
-    # list with all id of editors and admins users
-    id_list = [user.id for user in both_users]
-
+    # build a TaggingTask with that triple
     ret = -1
-    # create the new tagging
-    for user_id in id_list:
-        # if user_id == current_user_id:
-        new_tagging = Tagging.objects.create(
-            profile=Profile.objects.get(pk=user_id),
-            judgment=Judgment.objects.get(id=judgment_id),
-            xml_text=xml_string,
-        )
-        ret = new_tagging.id
-        # else:
-        #     new_tagging = Tagging.objects.create(
-        #         profile=Profile.objects.get(pk=user_id),
-        #         judgment=Judgment.objects.get(id=judgment_id),
-        #     )
+    new_tagging = TaggingTask.objects.create(
+        task=task,
+        judgment=judgment,
+        user=user,
+        xml_text=xml_string,
+    )
+    ret = new_tagging.id
 
     return ret
 
@@ -148,7 +139,7 @@ def download(request, id):
 
 
 @login_required
-def taggings(request):
+def taggings_download(request):
     current_user = request.user
     taggings = Tagging.objects.all()
 
@@ -157,11 +148,11 @@ def taggings(request):
         context = {
             'taggings': taggings
         }
-        return render(request, 'tag_sentenze/list_taggings.html', context=context)
+        return render(request, 'tag_sentenze/list_taggings_download.html', context=context)
     # annotators don't
     else:
       # print('Annotator access')
-        return redirect('/sentenze')
+        return redirect('tag_sentenze:my-tasks')
 
 
 @login_required
@@ -228,12 +219,12 @@ def parse_xml(request):
                 judgment = Judgment.objects.create(
                     judgment_file=request.FILES["xml_file"], initial_text=notags, xsd=schema)
 
-                # assign a tagging object to all editors and admins
-                tagging_id = auto_assignment(
-                    judgment.id, request.user.id, xml_string, also_annotators=True)  # also save the original xml text in the tagging
+                # TODO create tagging objects for the new doc-task (for each user in the task)
+                # tagging_id = assign_doc_to_user(
+                #     judgment.id, request.user.id, xml_string, also_annotators=True)  # also save the original xml text in the tagging
 
-                # and then load the tagging interface
-                return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
+                # TODO and then load the tagging interface
+                # return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
 
         # either schema not valid or GET request -> re-display form
         context = {
@@ -241,7 +232,7 @@ def parse_xml(request):
         }
         return render(request, 'tag_sentenze/parse_xml.html', context=context)
     else:  # no permission
-        return redirect('/sentenze/')
+        return redirect('tag_sentenze:my-tasks')
 
 
 # APIs
@@ -422,7 +413,7 @@ def generate_xml_from_tm(token_manager):
 
 
 @login_required
-def list_tasks(request):
+def list_tasks_download(request):
     current_user = request.user
     tasks = Task.objects.annotate(n_docs=Count(
         'judgments'), n_users=Count('users')).values()
@@ -433,15 +424,15 @@ def list_tasks(request):
             'tasks': tasks
         }
         print(context)
-        return render(request, 'tag_sentenze/list_tasks.html', context=context)
+        return render(request, 'tag_sentenze/list_tasks_download.html', context=context)
     # annotators don't
     else:
       # print('Annotator access')
-        return redirect('/download')
+        return redirect('tag_sentenze:my-tasks')
 
 
 @login_required
-def list_taggings(request, id):
+def list_taggings_download(request, id):
     current_user = request.user
     task = Task.objects.get(id=id)
     judgments = task.judgments.all()
@@ -454,8 +445,8 @@ def list_taggings(request, id):
             'users': users
         }
         print(context)
-        return render(request, 'tag_sentenze/list_tag_user_task.html', context=context)
+        return render(request, 'tag_sentenze/list_tagging_user_task_download.html', context=context)
     # annotators don't
     else:
       # print('Annotator access')
-        return redirect('/download')
+        return redirect('tag_sentenze:my-tasks')

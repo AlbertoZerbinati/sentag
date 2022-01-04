@@ -21,7 +21,7 @@ List of Tasks
             <td>{{task.name}}</td>
             <td>{{task.n_docs}}</td>
             <td>{{task.n_users}}</td>
-            <td><a class="btn btn-sm btn-info" href="{% url 'tag_sentenze:list_taggings' task.id %}"> Download </a></td>
+            <td><a class="btn btn-sm btn-info" href="{% url 'tag_sentenze:list-taggings-download' task.id %}"> Download </a></td>
         </tr>
         {% endfor %}
     </tbody>

@@ -7,14 +7,14 @@ from django.http import Http404, JsonResponse
 from django.contrib import messages
 
 from .forms import UserRegisterForm, TaskModelForm, AddJudgmentsForm
-from tag_sentenze.forms import AddJudgmentModelForm, AddSchemaForm, AddSchemaJudgmentsForm, ParseXMLForm
+# from tag_sentenze.forms import ParseXMLForm
 from .models import Tagging, Profile
 from tag_sentenze.models import Judgment, Schema, Task
 
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
 
-from tag_sentenze.views import auto_assignment
+from tag_sentenze.views import assign_doc_to_user
 
 import json
 
@@ -59,7 +59,7 @@ def home_permission(request):
 
         return render(request, 'users/home_permission.html', context=context)
     else:
-        return redirect('/sentenze/')
+        return redirect('tag_sentenze:my-tasks')
 
 
 @login_required
@@ -231,7 +231,7 @@ def home_judgment_schema(request):
 
         return render(request, 'users/home_sentenza_schema.html', context=context)
     else:
-        return redirect('/sentenze/')
+        return redirect('tag_sentenze:my-tasks')
 
 
 @login_required
@@ -629,7 +629,7 @@ def add_schemas(request):
         return render(request, 'users/add_schemas.html')
     else:
       # print('Annotator access')
-        return redirect('/sentenze/')
+        return redirect('tag_sentenze:my-tasks')
 
 
 @login_required
@@ -686,10 +686,12 @@ def add_judgments(request):
                         judgment_file=judgment,
                     )
                     new_judg.save()
-                    
-                    
-                    # auto assign the new uploaded judgments to all editor and admin users
-                    # auto_assignment(new_judg.id)
+
+                    task.judgments.add(new_judg)
+
+                    # TODO auto assign the new uploaded judgments to all Users of this Task
+                    for user in task.users.all():
+                        assign_doc_to_user(task.id, new_judg.id, user.id)
 
                 # redirect home
                 return redirect(reverse('users:manage-juds'))
@@ -702,7 +704,7 @@ def add_judgments(request):
         return render(request, 'users/add_judgments.html', context=context)
     else:
       # print('Annotator access')
-        return redirect('/sentenze/')
+        return redirect('tag_sentenze:my-tasks')
 
 
 @login_required
@@ -744,11 +746,13 @@ def new_task(request):
         if request.method == 'POST':
             form = TaskModelForm(request.POST)
             if form.is_valid():
-                form.save()
-                #username = form.cleaned_data.get('username')
-                # Add by default the new user to the Annotators Group
-                #annotators = Group.objects.get(name='Annotators')
-                # annotators.user_set.add(User.objects.get(username=username))
+                task = form.save()
+
+                # assign every Doc in the Task to every User in it
+                for user in form.cleaned_data['users']:
+                    for judgment in form.cleaned_data['judgments']:
+                        assign_doc_to_user(task.id, judgment.id, user.id)
+
                 return redirect(reverse('users:manage-tasks'))
 
         return render(request, 'users/create_task.html', context={'form': form})
@@ -769,6 +773,7 @@ def update_task(request, id):
             form = TaskModelForm(request.POST, instance=task)
             if form.is_valid():
                 form.save()
+                # TODO assignment (task, doc, user)
                 return redirect(reverse('users:manage-tasks'))
 
         return render(request, 'users/update_task.html', context={'form': form, 'tasks': task})

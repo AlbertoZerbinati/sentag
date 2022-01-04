@@ -26,7 +26,7 @@ class Schema(models.Model):
         super(Schema, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "Schema " + self.name
+        return "Schema \"" + self.name + "\""
 
 
 class Judgment(models.Model):
@@ -55,7 +55,8 @@ class Judgment(models.Model):
 
     def __str__(self):
         """String for representing the Judgments object (in Admin site)."""
-        return "Judgment " + self.name
+        return "Judgment \"" + self.name + "\""
+
 
 class Task(models.Model):
     name = models.CharField(max_length=40, blank=True, unique=True)
@@ -72,7 +73,8 @@ class Task(models.Model):
 
     def __str__(self):
         """String for representing the Judgments object (in Admin site)."""
-        return "Collection " + self.name
+        return "Task \"" + self.name + "\""
+
 
 '''class CollectionTest(models.Model):
     name = models.CharField(max_length=40, blank=True, unique=True)

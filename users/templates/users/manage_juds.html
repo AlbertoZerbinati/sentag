@@ -9,12 +9,13 @@
     
     <div class="col-md-10"></div>
     <h2>List of Docs</h2>
-    <hr>
+    <hr/>
     <div class="card card-body">
         <a class="btn btn-primary btn-sm gtn-block" href="{% url 'users:add-judgments' %}">New Docs</a>
         <table class="table table-sm">
             <tr>
-                <th>Schema</th>
+                <th>Doc</th>
+                <th>Belonging Tasks</th>
                 <!--<th>Update</th>-->
                 <th>Remove</th>
             </tr>
@@ -22,6 +23,11 @@
             {% for jud in juds %}
                 <tr>
                     <td>{{jud.name}}</td>
+                    <td>
+                        {% for task in jud.task_set.all %}
+                            <p>{{task.name}}</p>
+                        {% endfor %}
+                    </td>
                     <!--<td><a class="btn btn-sm btn-info" href="">Update</a></td>-->
                     <td><a class="btn btn-sm btn-danger" href="{% url 'users:delete-judgment' jud.id %}">Remove</a></td>
                 </tr>

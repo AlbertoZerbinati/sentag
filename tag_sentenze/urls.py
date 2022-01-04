@@ -6,7 +6,8 @@ app_name = 'tag_sentenze'
 
 urlpatterns = [
     path("", views.index, name="index"),
-    path("sentenze/", views.list_sentenze, name="list-sentenze"),
+    path("my_tasks/", views.my_tasks, name="my-tasks"),
+    path("my_taggings/<int:id>", views.my_taggings, name="my-taggings"),
 
     path("sentenza/<int:id>/<int:htbp>", views.tag_sentenza, name="tag-sentenza"),
     path("sentenza/<int:id>", views.tag_sentenza, name="tag-sentenza"),
@@ -16,10 +17,10 @@ urlpatterns = [
     path("api/completed/<int:id>", views.completed_tagging, name="api-compeleted"),
 
     path("download/<int:id>", views.download, name="download"),
-    path("taggings/", views.taggings, name="list-taggings"),
+    path("taggings_download/", views.taggings_download, name="list-taggings-download"),
     path("parse_xml", views.parse_xml, name="parse-xml"),
 
-    path('list_tasks/', views.list_tasks, name='list_tasks'),
-    path('list_taggings/<int:id>', views.list_taggings, name='list_taggings'),
+    path('list_tasks_download/', views.list_tasks_download, name='list-tasks-download'),
+    path('list_taggings_download/<int:id>', views.list_taggings_download, name='list-taggings-download'),
 
 ]

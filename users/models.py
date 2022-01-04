@@ -38,12 +38,14 @@ class TaggingTask(models.Model):
     comments = models.TextField(blank=True, null=True)
     xml_text = models.TextField(blank=True)
     completed = models.BooleanField(default=False)
+    # arg_graph
+    # rel_graph    
 
     class Meta:
         unique_together = [['task', 'user', 'judgment']]
 
     def __str__(self):
-        return str(self.user) + " tagging " + str(self.judgment)+ " from task " + str(self.task)
+        return str(self.user) + " tagging " + str(self.judgment)+ " from " + str(self.task)
 
 #class UserTasksSynonyms(models.Model):
 #    user_task = models.ManyToManyField(User, through='UserTasks')

@@ -1,0 +1,29 @@
+
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+My Tasks
+{% endblock %}
+
+{% block content %}
+<h2 class="title">My Tasks</h2>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>#Docs</th>
+            <th>Tag</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr>
+            <td>{{task.name}}</td>
+            <td>{{task.n_docs}}</td>
+            <td><a class="btn btn-sm btn-primary" href="{% url 'tag_sentenze:my-taggings' task.id %}"> Tag </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
