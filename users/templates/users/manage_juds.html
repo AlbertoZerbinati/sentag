@@ -24,8 +24,9 @@
                 <tr>
                     <td>{{jud.name}}</td>
                     <td>
-                        {% for task in jud.task_set.all %}
-                            <p>{{task.name}}</p>
+                        {% for task in jud.belonging_tasks.all %}
+                            {{task.name}}
+                            <br/>   
                         {% endfor %}
                     </td>
                     <!--<td><a class="btn btn-sm btn-info" href="">Update</a></td>-->

@@ -62,14 +62,14 @@ class Task(models.Model):
     name = models.CharField(max_length=40, blank=True, unique=True)
     xsd = models.ForeignKey(
         Schema, on_delete=models.CASCADE, blank=True, null=True,
-        verbose_name="The related xsd Schema", related_name="attached_collections"
+        verbose_name="The related xsd Schema", related_name="related_tasks"
     )
     owner = models.ForeignKey(
         User, on_delete=models.CASCADE, blank=False, null=False,
         verbose_name="The user that created the task", related_name="owner"
     )
     users = models.ManyToManyField(to=User, blank=True)
-    judgments = models.ManyToManyField(to=Judgment, blank=True)
+    judgments = models.ManyToManyField(to=Judgment, blank=True, related_name="belonging_tasks")
 
     def __str__(self):
         """String for representing the Judgments object (in Admin site)."""

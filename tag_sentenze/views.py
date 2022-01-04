@@ -101,8 +101,8 @@ def tag_sentenza(request, id, htbp=-1):
 def assign_doc_to_user(task_id, judgment_id, user_id, xml_string=""):
     # get the triple (task, doc, user)
     task = Task.objects.get(id=task_id)
-    judgment = task.judgments.get(id=judgment_id)
-    user = task.users.get(id=user_id)
+    judgment = Judgment.objects.get(id=judgment_id)
+    user = User.objects.get(id=user_id)
 
     # build a TaggingTask with that triple
     ret = -1
@@ -116,6 +116,21 @@ def assign_doc_to_user(task_id, judgment_id, user_id, xml_string=""):
 
     return ret
 
+# deletes the TaggingTask for the triple (task, doc, user)
+def remove_doc_from_user(task_id, judgment_id, user_id):
+    # get the triple (task, doc, user)
+    task = Task.objects.get(id=task_id)
+    judgment = Judgment.objects.get(id=judgment_id)
+    user = User.objects.get(id=user_id)
+
+    # delete a TaggingTask with that triple
+    tagging = TaggingTask.objects.get(
+        task=task,
+        judgment=judgment,
+        user=user,
+    )
+
+    tagging.delete()
 
 @login_required
 def download(request, id):

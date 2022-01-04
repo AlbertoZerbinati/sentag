@@ -15,6 +15,7 @@
         <table class="table table-sm">
             <tr>
                 <th>Schema</th>
+                <th>Related Tasks</th>
                 <!--<th>Update</th>-->
                 <th>Remove</th>
             </tr>
@@ -22,6 +23,12 @@
             {% for schema in schemas %}
                 <tr>
                     <td>{{schema.name}}</td>
+                    <td>
+                        {% for task in schema.related_tasks.all %}
+                            {{task.name}}
+                            <br/>   
+                        {% endfor %}
+                    </td>
                     <!--<td><a class="btn btn-sm btn-info" href="">Update</a></td>-->
                     <td><a class="btn btn-sm btn-danger" href="{% url 'users:delete-schema' schema.id %}">Remove</a></td>
                 </tr>

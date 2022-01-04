@@ -1,24 +1,19 @@
-import simpledorff
-from lxml import etree
 import pandas as pd
+import simpledorff
+import json
+
+from lxml import etree
+
 from django.shortcuts import render, redirect, reverse
 from django.http import Http404, JsonResponse
-
 from django.contrib import messages
-
-from .forms import UserRegisterForm, TaskModelForm, AddJudgmentsForm
-# from tag_sentenze.forms import ParseXMLForm
-from .models import Tagging, Profile
-from tag_sentenze.models import Judgment, Schema, Task
-
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
 
-from tag_sentenze.views import assign_doc_to_user
-
-import json
-
-# Create your views here.
+from tag_sentenze.views import assign_doc_to_user, remove_doc_from_user
+from .forms import UserRegisterForm, TaskModelForm, AddJudgmentsForm
+from .models import Tagging, Profile
+from tag_sentenze.models import Judgment, Schema, Task
 
 
 @login_required
@@ -689,7 +684,7 @@ def add_judgments(request):
 
                     task.judgments.add(new_judg)
 
-                    # TODO auto assign the new uploaded judgments to all Users of this Task
+                    # auto assign the new uploaded judgments to all Users of this Task
                     for user in task.users.all():
                         assign_doc_to_user(task.id, new_judg.id, user.id)
 
@@ -763,20 +758,44 @@ def new_task(request):
 
 @login_required
 def update_task(request, id):
-    task = Task.objects.get(id=id)
+    old_task = Task.objects.get(id=id)
 
     # check if current user belongs to Editor or Admin Group
     current_user = request.user
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-        form = TaskModelForm(instance=task)
+        form = TaskModelForm(instance=old_task)
         if request.method == 'POST':
-            form = TaskModelForm(request.POST, instance=task)
+            form = TaskModelForm(request.POST, instance=old_task)
             if form.is_valid():
+                # assignments obtained by analizing old and new pairs (user-doc)
+
+                old_users = list(old_task.users.all())
+                old_docs = list(old_task.judgments.all())
+                old_pairs = [(user, doc)
+                             for user in old_users for doc in old_docs]
+                # print("old pairs:::   ", old_pairs)
+
+                new_users = list(form.cleaned_data['users'])
+                new_docs = list(form.cleaned_data['judgments'])
+                new_pairs = [(user, doc)
+                             for user in new_users for doc in new_docs]
+                # print("new pairs:::   ", new_pairs)
+
+                pairs_to_remove = [p for p in old_pairs if p not in new_pairs]
+                # print("pairs to remove :::   ", pairs_to_remove)
+                for (user, doc) in pairs_to_remove:
+                    remove_doc_from_user(old_task.id, doc.id, user.id)
+
+                pairs_to_add = [p for p in new_pairs if p not in old_pairs]
+                # print("pairs to add :::   ", pairs_to_add)
+                for (user, doc) in pairs_to_add:
+                    assign_doc_to_user(old_task.id, doc.id, user.id)
+
                 form.save()
-                # TODO assignment (task, doc, user)
+
                 return redirect(reverse('users:manage-tasks'))
 
-        return render(request, 'users/update_task.html', context={'form': form, 'tasks': task})
+        return render(request, 'users/update_task.html', context={'form': form, 'tasks': old_task})
 
     else:
         return render(request, 'users/no_permission.html')
