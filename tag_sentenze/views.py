@@ -1,9 +1,7 @@
 import xmlschema
 import json
-import re
 
-from .serializers import TaggingSerializer
-from .forms import ParseXMLForm
+from .serializers import TaggingSerializer, TaggingTaskSerializer
 from .models import Judgment, Schema
 from users.models import Tagging, Profile, Task, TaggingTask
 
@@ -39,6 +37,8 @@ def my_tasks(request):
     return render(request, 'tag_sentenze/list_tasks_tag.html', context=context)
 
 # list all taggings inside a Task for the current user, allowing him to TAG them
+
+
 @login_required
 def my_taggings(request, id):
     current_user = request.user
@@ -47,7 +47,8 @@ def my_taggings(request, id):
 
     # query all TaggingTask for the ones having the correct (task(id), user(current))
     # -> get the docs
-    taggings = TaggingTask.objects.filter(task=id,user__username__contains=current_user)
+    taggings = TaggingTask.objects.filter(
+        task=id, user__username__contains=current_user)
 
     context = {
         'task_name': task_name,
@@ -60,40 +61,25 @@ def my_taggings(request, id):
 def tag_sentenza(request, id, htbp=-1):
     try:
         # sentenza = Judgment.objects.get(pk=id)
-        tagging = Tagging.objects.get(id=id)
-        sentenza = tagging.judgment
-    except Tagging.DoesNotExist:
+        tagging = TaggingTask.objects.get(id=id)
+    except TaggingTask.DoesNotExist:
         raise Http404()
 
     current_user = request.user
-    profile = Profile.objects.get(user=request.user)
-    user_taggings = current_user.profile.taggings.all()
 
     # check if this tagging has to be parsed
     if tagging.xml_text.startswith("<sentag>") and tagging.token_manager == "":
         htbp = 1
 
-    # admins and editors have access to all the sentenze
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-      # print("Admin/Editor access")
-        # retrive the taging table starting using profile and judgment as unique identifiers
+    # check that the request tagging belongs to the user
+    if current_user == tagging.user:
         context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
-            'must_parse': htbp > -1
-        }
-      # print("---->", context['taggings'].id)
-        return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
-    # annotators has access only to their set of sentenze
-    elif sentenza in user_taggings:
-      # print('Annotator access with permission')
-        # retrive the taging table starting using profile and judgment as unique identifiers
-        context = {
-            'taggings': Tagging.objects.filter(profile=profile, judgment=sentenza)[0],
+            'tagging': tagging,
             'must_parse': htbp > -1
         }
         return render(request, 'tag_sentenze/tag_sentenza.html', context=context)
     else:
-      # print('Annotators access with no permission')
+        # no permission')
         return redirect('tag_sentenze:my-tasks')
 
 
@@ -117,6 +103,8 @@ def assign_doc_to_user(task_id, judgment_id, user_id, xml_string=""):
     return ret
 
 # deletes the TaggingTask for the triple (task, doc, user)
+
+
 def remove_doc_from_user(task_id, judgment_id, user_id):
     # get the triple (task, doc, user)
     task = Task.objects.get(id=task_id)
@@ -132,11 +120,12 @@ def remove_doc_from_user(task_id, judgment_id, user_id):
 
     tagging.delete()
 
+
 @login_required
 def download(request, id):
     try:
-        tagging = Tagging.objects.get(pk=id)
-    except Tagging.DoesNotExist:
+        tagging = TaggingTask.objects.get(pk=id)
+    except TaggingTask.DoesNotExist:
         raise Http404()
 
     current_user = request.user
@@ -156,7 +145,7 @@ def download(request, id):
 @login_required
 def taggings_download(request):
     current_user = request.user
-    taggings = Tagging.objects.all()
+    taggings = TaggingTask.objects.all()
 
     # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
@@ -170,86 +159,6 @@ def taggings_download(request):
         return redirect('tag_sentenze:my-tasks')
 
 
-@login_required
-def parse_xml(request):
-    # check if current user belongs to Editor or Admin Group
-    current_user = request.user
-    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
-
-        form = ParseXMLForm()
-
-        if request.method == 'POST':
-            # Create a form instance and populate it with data from the request
-            form = ParseXMLForm(request.POST, request.FILES)
-            # Check if the form input is valid:
-            if form.is_valid():
-                new_schema = False
-
-                # # we have an xml file and either an xsd file or a Schema
-                # build xml string from file
-                xml_string = b""
-                f = request.FILES["xml_file"]
-                for chunk in f.chunks():
-                    xml_string += chunk
-
-                # case 1: xml file + xsd file
-                if "xsd_file" in request.FILES.keys():
-                    new_schema = True
-                # case 2: xml file + Schema
-                else:
-                    # print("schema")
-                    id_xsd_schema = form.data['schema']
-                    schema = Schema.objects.get(id=id_xsd_schema)
-
-                # DO NOT validate xml-xsd... ACCEPT ALSO INVALID ONES
-
-                # we need to save them somehow in the database
-                # if there is a new schema to upload
-                if new_schema:
-                    # we create it
-                    schema = Schema(schema_file=request.FILES["xsd_file"])
-                    schema.save()
-
-                # also we need to save the judgment (with original text)
-                # add initial tag
-                xml_string = xml_string.decode("utf-8").strip()
-                if not xml_string.startswith("<sentag>"):
-                    xml_string = "<sentag>" + xml_string + "</sentag>"
-
-                # transformations to get the original text
-                # remove the tags
-                notags = re.sub('<.*?>', '', xml_string)
-                # replace the \r\n with <br/>
-                notags = " <br/> ".join(notags.splitlines())
-                # remove multi space
-                notags = " ".join(notags.split())
-                # remove excessive \n
-                notags = re.sub(r'(<br/> *){3,}', "<br/> <br/> ", notags)
-                # remove leading <br/>
-                if notags[:6] == "<br/> ":
-                    notags = notags[6:]
-                # print(notags)
-
-                # save judgment without original text
-                judgment = Judgment.objects.create(
-                    judgment_file=request.FILES["xml_file"], initial_text=notags, xsd=schema)
-
-                # TODO create tagging objects for the new doc-task (for each user in the task)
-                # tagging_id = assign_doc_to_user(
-                #     judgment.id, request.user.id, xml_string, also_annotators=True)  # also save the original xml text in the tagging
-
-                # TODO and then load the tagging interface
-                # return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
-
-        # either schema not valid or GET request -> re-display form
-        context = {
-            'form': form,
-        }
-        return render(request, 'tag_sentenze/parse_xml.html', context=context)
-    else:  # no permission
-        return redirect('tag_sentenze:my-tasks')
-
-
 # APIs
 
 
@@ -257,16 +166,16 @@ def parse_xml(request):
 @api_view(['GET'])
 def tagging_detail(request, id):
     try:
-        tagging = Tagging.objects.get(pk=id)
-    except Tagging.DoesNotExist:
+        tagging = TaggingTask.objects.get(pk=id)
+    except TaggingTask.DoesNotExist:
         raise Http404()
 
     # check permission
-    user_tagging = Tagging.objects.filter(profile=request.user.profile)
+    user_tagging = TaggingTask.objects.filter(user=request.user)
     if tagging not in user_tagging:
         return Response({"detail": "Not found"})
 
-    serializer = TaggingSerializer(tagging, many=False)
+    serializer = TaggingTaskSerializer(tagging, many=False)
     return Response(serializer.data)
 
 
@@ -274,8 +183,8 @@ def tagging_detail(request, id):
 @api_view(['PUT'])
 def update_tagging(request, id):
     try:
-        tagging = Tagging.objects.get(pk=id)
-    except Tagging.DoesNotExist:
+        tagging = TaggingTask.objects.get(pk=id)
+    except TaggingTask.DoesNotExist:
         raise Http404()
 
     # check permission
@@ -295,19 +204,25 @@ def update_tagging(request, id):
 
     # TODO: add check for missing attributes
 
-    serializer = TaggingSerializer(instance=tagging, data={
-                                   'token_manager': json.dumps(request.data['tm']), 'comments': comments, 'xml_text': xml_string, 'completed': completed}, partial=True, many=False)
+    serializer = TaggingTaskSerializer(instance=tagging, data={
+        'token_manager': json.dumps(request.data['tm']), 'comments': comments, 'xml_text': xml_string, 'completed': completed},
+        partial=True, many=False)
+
     if serializer.is_valid():
         serializer.save()
-    return HttpResponse("Updated")
+        print("valid")
+    else:
+        return HttpResponse("Server error", status="500")
+
+    return HttpResponse("OK", status="200")
 
 
 @permission_classes([IsAuthenticated])
 @api_view(['PUT'])
 def completed_tagging(request, id):
     try:
-        tagging = Tagging.objects.get(pk=id)
-    except Tagging.DoesNotExist:
+        tagging = TaggingTask.objects.get(pk=id)
+    except TaggingTask.DoesNotExist:
         raise Http404()
 
     # check permission
@@ -326,7 +241,7 @@ def completed_tagging(request, id):
         xml_string = generate_xml_from_tm(token_manager)
 
         # validate xml
-        schema_string = tagging.judgment.xsd.tags
+        schema_string = tagging.task.xsd.tags
         schema = xmlschema.XMLSchema11(schema_string.encode('utf-8'))
         try:
             xmlschema.validate(xml_string, schema, cls=xmlschema.XMLSchema11)
@@ -336,21 +251,21 @@ def completed_tagging(request, id):
             return Response(data={"Validation error:\n\n" + str(error)[:str(error).find("Schema")-2]}, status=500)
 
         # else if valid then save in db WITH XML TEXT and return success
-        serializer = TaggingSerializer(instance=tagging, data={'token_manager': json.dumps(
+        serializer = TaggingTaskSerializer(instance=tagging, data={'token_manager': json.dumps(
             request.data['tm']), 'comments': comments, 'completed': completed, 'xml_text': xml_string}, partial=True, many=False)
 
         if serializer.is_valid():
             serializer.save()
 
-        return Response("Updated")
+        return HttpResponse("OK", status="200")
 
     # if set uncompleted then save in db and return success
-    serializer = TaggingSerializer(instance=tagging, data={'token_manager': json.dumps(
+    serializer = TaggingTaskSerializer(instance=tagging, data={'token_manager': json.dumps(
         request.data['tm']), 'completed': completed, }, partial=True, many=False)
     if serializer.is_valid():
         serializer.save()
 
-    return Response("Updated")
+    return HttpResponse("OK", status="200")
 
 
 def generate_xml_from_tm(token_manager):

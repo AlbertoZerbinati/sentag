@@ -17,8 +17,7 @@ urlpatterns = [
     path("api/completed/<int:id>", views.completed_tagging, name="api-compeleted"),
 
     path("download/<int:id>", views.download, name="download"),
-    path("taggings_download/", views.taggings_download, name="list-taggings-download"),
-    path("parse_xml", views.parse_xml, name="parse-xml"),
+    path("taggings_download/", views.taggings_download, name="taggings-download"),
 
     path('list_tasks_download/', views.list_tasks_download, name='list-tasks-download'),
     path('list_taggings_download/<int:id>', views.list_taggings_download, name='list-taggings-download'),
