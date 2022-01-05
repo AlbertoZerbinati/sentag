@@ -1,6 +1,7 @@
 import pandas as pd
 import simpledorff
 import json
+import re
 
 from lxml import etree
 
@@ -11,8 +12,8 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.decorators import login_required
 
 from tag_sentenze.views import assign_doc_to_user, remove_doc_from_user
-from .forms import UserRegisterForm, TaskModelForm, AddJudgmentsForm
-from .models import Tagging, Profile
+from .forms import UserRegisterForm, TaskModelForm, AddJudgmentsForm, ParseXMLForm
+from .models import Tagging, TaggingTask, Profile
 from tag_sentenze.models import Judgment, Schema, Task
 
 
@@ -383,7 +384,7 @@ def calc_agreement(judgment_id):
     flag = 0
 
     # For every token manager get the list of word-label pair as [[WORD: LABEL], [WORD2: LABEL]]
-    for elem in Tagging.objects.all():
+    for elem in TaggingTask.objects.all():
         if(elem.judgment.id == judgment_id):
             tm = elem.token_manager
             user = elem.profile
@@ -503,7 +504,7 @@ def agreement_page(request):
             user_judgments = user.profile.taggings.all()
             #print('Sentenze utente: ', user_judgments)
             if judgment in user_judgments:
-                if Tagging.objects.get(profile=Profile.objects.get(user=user), judgment=judgment).completed:
+                if TaggingTask.objects.get(user=user, judgment=judgment).completed:
                     single_row.append(2)
                 else:
                     single_row.append(1)
@@ -816,3 +817,79 @@ def delete_task(request, id):
         messages.warning(request, ("You are not authorized"))
 
     return redirect(reverse('users:manage-tasks'))
+
+
+@login_required
+def parse_xml(request):
+    # check if current user belongs to Editor or Admin Group
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+
+        form = ParseXMLForm()
+
+        if request.method == 'POST':
+            # Create a form instance and populate it with data from the request
+            form = ParseXMLForm(request.POST, request.FILES)
+            # Check if the form input is valid:
+            if form.is_valid():
+
+                # build xml string from file
+                xml_string = b""
+                f = request.FILES["xml_file"]
+                for chunk in f.chunks():
+                    xml_string += chunk
+
+                # get the schema from the task
+                task_id = form.data['task']
+                task = Task.objects.get(id=task_id)
+                print(task)
+                schema = task.xsd
+
+                # DO NOT validate xml-xsd... ACCEPT ALSO INVALID ONES
+
+                # also we need to save the judgment (with original text)
+                # add initial tag
+                xml_string = xml_string.decode("utf-8").strip()
+                if not xml_string.startswith("<sentag>"):
+                    xml_string = "<sentag>" + xml_string + "</sentag>"
+
+                # transformations to get the original text
+                # remove the tags
+                notags = re.sub('<.*?>', '', xml_string)
+                # replace the \r\n with <br/>
+                notags = " <br/> ".join(notags.splitlines())
+                # remove multi space
+                notags = " ".join(notags.split())
+                # remove excessive \n
+                notags = re.sub(r'(<br/> *){3,}', "<br/> <br/> ", notags)
+                # remove leading <br/>
+                if notags[:6] == "<br/> ":
+                    notags = notags[6:]
+                # print(notags)
+
+                # save judgment without original text
+                judgment = Judgment.objects.create(
+                    judgment_file=request.FILES["xml_file"], initial_text=notags)
+
+                # create tagging objects for the new doc-task (for each user in the task)
+                for user in task.users.all():
+                    assign_doc_to_user(
+                        task.id, judgment.id, user.id, xml_string)  # also save the original xml text in the tagging
+
+                # add the docs to the Task
+                task.judgments.add(judgment)
+                task.save()
+                
+                # TODO and then load the tagging interface
+                # return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
+
+                messages.success(request, ("Annotated document added to the Task"))
+                return redirect(reverse("users:parse-xml"))
+
+        # either schema not valid or GET request -> re-display form
+        context = {
+            'form': form,
+        }
+        return render(request, 'tag_sentenze/parse_xml.html', context=context)
+    else:  # no permission
+        return redirect('tag_sentenze:my-tasks')

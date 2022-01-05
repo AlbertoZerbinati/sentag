@@ -7,6 +7,11 @@ from tag_sentenze.models import Judgment, Schema, Task
 from django_select2 import forms as s2forms
 
 
+class MyTaskModelChoiceField(forms.ModelChoiceField):
+    def label_from_instance(self, obj):
+        return f"{obj}   (using {obj.xsd})"
+
+
 class UserRegisterForm(UserCreationForm):
     email = forms.EmailField()
     first_name = forms.CharField(max_length=30)
@@ -25,8 +30,8 @@ class UserWidget(s2forms.ModelSelect2MultipleWidget):
     ]
 
 
-class AddJudgmentsForm(forms.Form):    
-    task = forms.ModelChoiceField(
+class AddJudgmentsForm(forms.Form):
+    task = MyTaskModelChoiceField(
         Task.objects, help_text='The Task for these docs', blank=False)
 
     class Meta:
@@ -67,3 +72,37 @@ class TaskModelForm(ModelForm):
         #     "user": UserWidget
         # }
         # widgets = {'owner': forms.HiddenInput()}
+
+
+class ParseXMLForm(forms.Form):
+    xml_file = forms.FileField()
+    task = MyTaskModelChoiceField(
+        Task.objects, help_text='The Task for the new doc', blank=False)
+
+    # xsd_file = forms.FileField(help_text='Upload a schema', required=False)
+
+    # schema = forms.ModelChoiceField(
+    #     Schema.objects, help_text='Alternatively choose a Schema from the database', required=False)
+    def clean(self):
+        cleaned_data = super(ParseXMLForm, self).clean()
+        xml_file = cleaned_data.get("xml_file")
+        if xml_file:
+            if Judgment.objects.filter(name=xml_file.name).exists():
+                raise forms.ValidationError(
+                    "This judgment's name has already been used and it must be unique")
+
+        # xsd_file = cleaned_data.get("xsd_file")
+        # schema = cleaned_data.get("schema")
+
+        # if xsd_file and schema:  # both were entered
+        #     raise forms.ValidationError(
+        #         "Either upload a new XSD file or select an existing schema, not both!")
+        # elif not xsd_file and not schema:  # neither were entered
+        #     raise forms.ValidationError(
+        #         "You must either upload a new XSD file or select an existing schema")
+        # if xsd_file:
+        #     if Schema.objects.filter(name=xsd_file.name).exists():
+        #         raise forms.ValidationError(
+        #             "This schema's name has already been used and it must be unique")
+
+        return cleaned_data

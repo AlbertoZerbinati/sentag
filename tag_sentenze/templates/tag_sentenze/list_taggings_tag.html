@@ -11,7 +11,7 @@ My Taggings
         <tr>
             <th>Doc</th>
             <th>Tag</th>
-            <th>Completed</th>
+            <th style="display:flex; flex-direction: column; align-items: center;">Completed</th>
         </tr>
     </thead>
     <tbody>
@@ -21,10 +21,11 @@ My Taggings
             <td><a class="btn btn-sm btn-primary" href="{% url 'tag_sentenze:tag-sentenza' tagging.id %}"> TAG </a>
             </td>
             {% if tagging.completed %}
-            <td style="color:rgb(27, 201, 56)">{{tagging.completed}}</td>
+            <td style="display:flex; flex-direction: column; align-items: center;"><i class="bi-check-square"
+                    style="color:rgb(38, 177, 73); font-size: 1.2rem;"></td>
             {% else %}
-            <td style="color:rgb(212, 65, 28)">{{tagging.completed}}</td>
-
+            <td style="display:flex; flex-direction: column; align-items: center;"><i class="bi-x-square"
+                    style="color:rgb(255, 83, 60); font-size: 1.2rem;"></td>
             {%endif%}
         </tr>
         {% endfor %}

@@ -51,12 +51,12 @@
                     <a class="dropdown-item" href="{% url 'users:manage-tasks' %}"> <i class="bi-folder"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Manage Tasks</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item" href="{% url 'tag_sentenze:parse-xml' %}"> <i class="bi-bar-chart-steps"
-                            style="font-size: 1.2rem; margin-right: 10px;"></i> Parse XML (to be fixed)</a>
+                    <a class="dropdown-item" href="{% url 'users:parse-xml' %}"> <i class="bi-bar-chart-steps"
+                            style="font-size: 1.2rem; margin-right: 10px;"></i> Parse XML</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item" href="{% url 'users:agreement-page' %}"> <i class="bi-check-all"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Agreement Page</a>
-                    <a class="dropdown-item" href="{% url 'tag_sentenze:list-taggings-download' %}"> <i class="bi-download"
+                    <a class="dropdown-item" href="{% url 'tag_sentenze:taggings-download' %}"> <i class="bi-download"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Download Page (old)</a>
                     <a class="dropdown-item" href="{% url 'tag_sentenze:list-tasks-download' %}"> <i class="bi-download"
                             style="font-size: 1.2rem; margin-right: 10px;"></i> Download Page</a>
