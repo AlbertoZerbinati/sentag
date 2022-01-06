@@ -29,7 +29,7 @@
     python manage.py createsuperuser
     ```
 
-    - Create default Groups (namely Admins, Editors, Taggers) and assign the superuser to them
+    - Create default Groups (namely Admins, Editors, Annotators) and assign the superuser to them
     ```
     python manage.py createdefaultgroups <superuser_name>
     ```

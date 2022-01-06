@@ -56,7 +56,7 @@ export default {
         // 3) il vecchio token manager
         if (!this.tokenManager) {
           this.oldtm = res.data["token_manager"];
-          if (this.oldtm.length) {
+          if (this.oldtm != null && this.oldtm.length) {
             this.oldtm = JSON.parse(JSON.parse(this.oldtm));
           }
           this.setTokenManager(this.oldtm);

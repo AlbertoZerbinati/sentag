@@ -1,0 +1,19 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+    New Schemas
+{% endblock %}
+
+{% block content %}
+    <h2 class="title">New Schemas</h2>
+    <form method="POST" action="" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="form-group m-3">
+            <label>Upload schemas</label>
+            <input required name="schemas" type="file" multiple class="form-control-file">
+        </div>
+        
+        <button type="submit" class="btn btn-primary">Submit</button>
+        
+    </form>
+{% endblock %}

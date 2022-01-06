@@ -2,7 +2,7 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    Update User
+    Update Task
 {% endblock %}
 
 {% block content %}
@@ -11,13 +11,13 @@
             {% csrf_token %}
 
             <fieldset class="form-group">
-                <h2 class="title">Update User</h2>
+                <h2 class="title">Update Task</h2>
                 {{ form|crispy }}
             </fieldset>
 
             <div class="form-group">
-                <button class="btn btn-primary" type="submit">Update</button>
-                <a href="{% url 'users:manage-users' %}" class="btn btn-danger">Cancel</a>
+                <button class="btn btn-primary" type="submit">Submit</button>
+                <a href="{% url 'users:manage-tasks' %}" class="btn btn-danger">Cancel</a>
 
             </div>
 

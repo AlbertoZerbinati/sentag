@@ -1,0 +1,34 @@
+{% extends "tag_sentenze/layout.html" %}
+
+{% block title %}
+My Taggings
+{% endblock %}
+
+{% block content %}
+<h2 class="title">Task {{task_name}}</h2>
+<table class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Doc</th>
+            <th>Tag</th>
+            <th style="display:flex; flex-direction: column; align-items: center;">Completed</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tagging in taggings %}
+        <tr>
+            <td>{{tagging.judgment.name}}</td>
+            <td><a class="btn btn-sm btn-primary" href="{% url 'tag_sentenze:tag-sentenza' tagging.id %}"> TAG </a>
+            </td>
+            {% if tagging.completed %}
+            <td style="display:flex; flex-direction: column; align-items: center;"><i class="bi-check-square"
+                    style="color:rgb(38, 177, 73); font-size: 1.2rem;"></td>
+            {% else %}
+            <td style="display:flex; flex-direction: column; align-items: center;"><i class="bi-x-square"
+                    style="color:rgb(255, 83, 60); font-size: 1.2rem;"></td>
+            {%endif%}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

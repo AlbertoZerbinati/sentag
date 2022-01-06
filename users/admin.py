@@ -6,7 +6,7 @@ from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.text import format_lazy
 
 from tag_sentenze.models import Judgment
-from users.models import Profile, Tagging
+from users.models import Profile, Tagging, TaggingTask
 
 class PermissionInline(admin.StackedInline):
     model = Profile
@@ -59,8 +59,32 @@ class ProfileAdmin(admin.ModelAdmin):
         )
         return form_field
 
+class UserTasksSynonymsAdmin(admin.ModelAdmin):
+    filter_horizontal = ['user']
+    '''#display a nice horizontal filter in admin UserTasksSynonyms page
+    def formfield_for_manytomany(self, db_field, request, **kwargs):
+        db = kwargs.get('using')
+
+        if db_field.name == 'user':
+            kwargs['widget'] = FilteredSelectMultiple(db_field.verbose_name, is_stacked=False)
+        else:
+            return super().formfield_for_manytomany(db_field, request, **kwargs)
+
+        if 'queryset' not in kwargs:
+            queryset = User.objects.all()
+            if queryset is not None:
+                kwargs['queryset'] = queryset
+        form_field = db_field.formfield(**kwargs)
+        msg = 'User this Profile can TAG. Hold down “Control”, or “Command” on a Mac, to select more than one.'
+        help_text = form_field.help_text
+        form_field.help_text = (
+            format_lazy('{} {}', help_text, msg) if help_text else msg
+        )
+        return form_field'''
+
 #register models with nice widgets
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
-admin.site.register(Profile, ProfileAdmin)
-admin.site.register(Tagging)
+# admin.site.register(Profile, ProfileAdmin)
+# admin.site.register(Tagging)
+admin.site.register(TaggingTask)

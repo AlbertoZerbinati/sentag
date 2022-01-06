@@ -7,7 +7,7 @@
 
 {% block content %}
     <h2 class="title">Parse XML</h2>
-    <form enctype="multipart/form-data" action="{% url 'tag_sentenze:parse-xml' %}" method="POST">
+    <form enctype="multipart/form-data" action="{% url 'users:parse-xml' %}" method="POST">
         {% csrf_token %}
         {{ form|crispy}} 
         <p class="mt-3">

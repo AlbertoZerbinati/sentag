@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.contrib.auth.models import User
 
 
 class Schema(models.Model):
@@ -25,7 +26,7 @@ class Schema(models.Model):
         super(Schema, self).save(*args, **kwargs)
 
     def __str__(self):
-        return "Schema " + self.name
+        return "Schema \"" + self.name + "\""
 
 
 class Judgment(models.Model):
@@ -34,10 +35,6 @@ class Judgment(models.Model):
     name = models.CharField(max_length=40, blank=True,
                             unique=True, help_text='Optional')
     initial_text = models.TextField(blank=True)
-    xsd = models.ForeignKey(
-        Schema, on_delete=models.CASCADE, blank=True, null=True,
-        verbose_name="The related xsd Schema", related_name="attached_judgments"
-    )
     score = models.DecimalField(
         max_digits=4, decimal_places=2, blank=True, null=True, editable=False)
 
@@ -58,4 +55,44 @@ class Judgment(models.Model):
 
     def __str__(self):
         """String for representing the Judgments object (in Admin site)."""
-        return "Judgment " + self.name
+        return "Judgment \"" + self.name + "\""
+
+
+class Task(models.Model):
+    name = models.CharField(max_length=40, blank=True, unique=True)
+    xsd = models.ForeignKey(
+        Schema, on_delete=models.CASCADE, blank=True, null=True,
+        verbose_name="The related xsd Schema", related_name="related_tasks"
+    )
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=False, null=False,
+        verbose_name="The user that created the task", related_name="owner"
+    )
+    users = models.ManyToManyField(to=User, blank=True)
+    judgments = models.ManyToManyField(to=Judgment, blank=True, related_name="belonging_tasks")
+
+    def __str__(self):
+        """String for representing the Judgments object (in Admin site)."""
+        return "Task \"" + self.name + "\""
+
+
+'''class CollectionTest(models.Model):
+    name = models.CharField(max_length=40, blank=True, unique=True)
+    xsd = models.ForeignKey(
+        Schema, on_delete=models.CASCADE, blank=True, null=True,
+        verbose_name="The related xsd Schema", related_name="attached_collectionsTest"
+    )
+    owner = models.ForeignKey(
+        User, on_delete=models.CASCADE, blank=False, null=False,
+        verbose_name="The user that created the task", related_name="ownerTest"
+    )
+    users = models.ManyToManyField(to=User, blank=True, through='CollectionUser')
+    judgments = models.ManyToManyField(to=Judgment, blank=True)
+
+    def __str__(self):
+        """String for representing the Judgments object (in Admin site)."""
+        return "Collection " + self.name
+
+class CollectionUser(models.Model):
+    collection = models.ForeignKey(CollectionTest, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)'''
