@@ -22,7 +22,7 @@
 
             {% for schema in schemas %}
                 <tr>
-                    <td>{{schema.name}}</td>
+                    <td><a href="{% url 'users:view-schema' schema.id %}" target="_blank" rel="noopener noreferrer">{{schema.name}}</a></td>
                     <td>
                         {% for task in schema.related_tasks.all %}
                             {{task.name}}

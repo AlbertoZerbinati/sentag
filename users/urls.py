@@ -31,10 +31,13 @@ urlpatterns = [
     path('manage_schemas', views.manage_schemas, name='manage-schemas'),
     path("add_schemas", views.add_schemas, name="add-schemas"),
     path("delete_schema/<int:id>", views.delete_schema, name="delete-schema"),
+    path("view_schema/<int:id>", views.view_schema, name="view-schema"),
 
     path('manage_juds/', views.manage_juds, name='manage-juds'),
     path("add_judgments", views.add_judgments, name="add-judgments"),
     path("delete_judgment/<int:id>", views.delete_judgment, name="delete-judgment"),
+    path("view_judgment/<int:id>", views.view_judgment, name="view-judgment"),
+
 
     path('manage_tasks/', views.manage_tasks, name='manage-tasks'),
     path('new_task/', views.new_task, name='new-task'),

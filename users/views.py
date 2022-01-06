@@ -646,6 +646,20 @@ def delete_schema(request, id):
 
 
 @login_required
+def view_schema(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            schema = Schema.objects.get(id=id)
+        except Schema.DoesNotExist:
+            raise Http404()
+        context = {'schema_text': schema.tags}
+        return render(request, 'users/view_schema.html', context=context)
+    else:
+        return redirect(reverse('tag_sentenze:my-tasks'))
+
+
+@login_required
 def manage_juds(request):
     juds = Judgment.objects.all()
 
@@ -719,6 +733,18 @@ def delete_judgment(request, id):
 
     return redirect(reverse('users:manage-juds'))
 
+@login_required
+def view_judgment(request, id):
+    current_user = request.user
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        try:
+            jud = Judgment.objects.get(id=id)
+        except Schema.DoesNotExist:
+            raise Http404()
+        context = {'jud_text': jud.initial_text.replace("<br/>", "\n" )}
+        return render(request, 'users/view_judgment.html', context=context)
+    else:
+        return redirect(reverse('tag_sentenze:my-tasks'))
 
 @login_required
 def manage_tasks(request):
@@ -879,11 +905,12 @@ def parse_xml(request):
                 # add the docs to the Task
                 task.judgments.add(judgment)
                 task.save()
-                
+
                 # TODO and then load the tagging interface
                 # return redirect(reverse("tag_sentenze:tag-sentenza", kwargs={"id": tagging_id, "htbp": 1}))
 
-                messages.success(request, ("Annotated document added to the Task"))
+                messages.success(
+                    request, ("Annotated document added to the Task"))
                 return redirect(reverse("users:parse-xml"))
 
         # either schema not valid or GET request -> re-display form

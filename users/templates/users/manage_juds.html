@@ -22,7 +22,7 @@
 
             {% for jud in juds %}
                 <tr>
-                    <td>{{jud.name}}</td>
+                    <td><a href="{% url 'users:view-judgment' jud.id %}" target="_blank" rel="noopener noreferrer">{{jud.name}}</a></td>
                     <td>
                         {% for task in jud.belonging_tasks.all %}
                             {{task.name}}
