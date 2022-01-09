@@ -37,7 +37,12 @@
           >
             <div class="field-label is-normal">
               <label class="label tag"
-                ><strong class="tag">{{ at }}</strong></label
+                ><strong class="tag"
+                  >{{ at }}
+                  <span class="star" v-if="currentBlock.attrs[at].required">
+                    *
+                  </span>
+                </strong></label
               >
             </div>
             <div class="field-body" v-if="at === 'ID'">
@@ -243,5 +248,8 @@ export default {
 }
 #labelForSwitchRoundedDanger {
   margin-right: 10px;
+}
+.star {
+  color: red;
 }
 </style>

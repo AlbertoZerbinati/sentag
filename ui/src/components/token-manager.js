@@ -410,7 +410,8 @@ class TokenManager {
         'type': key.type,
         'value': [attrs[key.name].replace(/ +|,|\|/g, " ")],
         'options': key.options,
-        'picker': key.picker
+        'picker': key.picker,
+        'required': key.required,
       };
       if (key.picker) {
         newTokenBlock.attrs[key.name]['value'] = [];
@@ -432,7 +433,8 @@ class TokenManager {
         'type': key.type,
         'value': [attrs[key.name.charAt(0)].replace(/ +|,|\|/g, " ")],
         'options': key.options,
-        'picker': key.picker
+        'picker': key.picker,
+        'required': key.required,
       };
       if (key.picker) {
         newTokenBlock.attrs[key.name]['value'] = [];
@@ -450,14 +452,16 @@ class TokenManager {
         'type': key.type,
         'value': [_class.name.charAt(0).toUpperCase() + _class.name.slice(1) + tokenId.toString()],
         'options': [],
-        'picker': key.picker
+        'picker': key.picker,
+        'required': key.required,
       };
     } else {
       newTokenBlock.attrs[key.name] = {
         'type': key.type,
         'value': [""],
         'options': key.options,
-        'picker': key.picker
+        'picker': key.picker,
+        'required': key.required,
       };
 
     }

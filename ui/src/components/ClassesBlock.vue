@@ -20,16 +20,13 @@
               <strong>{{ cl.name }}</strong>
             </a>
             <br />
-            <span
-              v-for="at in cl.attributes"
-              :key="at.id"
-              :style="{ margin: '3px' }"
-            >
-              <span class="tag tiny"
+            <span v-for="at in cl.attributes" :key="at.id">
+              <span class="tag tiny" style="position:relative; margin-right: 3px; top: -4px;"
                 ><i
-                  ><strong :style="{ color: '#0c66a1' }">{{
-                    at.name
-                  }}</strong></i
+                  ><strong :style="{ color: '#0c66a1' }"
+                    >{{ at.name }}
+                    <span class="star" v-if="at.required">*</span>
+                  </strong></i
                 ></span
               >
             </span>
@@ -105,5 +102,8 @@ export default {
   font-size: 130%;
   text-shadow: 0.6px 0.6px 0.8px #0c66a1;
   color: #0c66a1;
+}
+.star {
+  color: red;
 }
 </style>

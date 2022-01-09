@@ -202,6 +202,9 @@ export default {
             // ... then push the attribute with its options
             let attr = attribute.getAttribute("name");
 
+            // then check wether it is a required or optional attribute
+            let required = attribute.getAttribute("use") == "required";
+
             // finally check if this attribute requires a picker
             let picker = pickerElements.find((a) =>
               attr.toString().toLowerCase().includes(a)
@@ -213,6 +216,7 @@ export default {
               name: attr,
               options: options_arr,
               picker: picker,
+              required: required,
             });
           }
 
