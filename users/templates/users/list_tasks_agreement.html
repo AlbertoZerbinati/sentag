@@ -1,40 +1,29 @@
 {% extends "tag_sentenze/layout.html" %}
 
 {% block title %}
-Download judgments
+List of Tasks for Agreement
 {% endblock %}
 
 {% block content %}
-<h2 class="title">Download completed judgments</h2>
+<h2 class="title">Tasks Agreement</h2>
 <table class="table table-striped table-hover">
     <thead>
         <tr>
-            <th>Doc</th>
-            {% for user in users %}
-            <th>{{user.username}}</th>
-            {% endfor %}
-            <th><strong>All Users</strong></th>
+            <th>Task</th>
+            <th>#Docs</th>
+            <th>#Users</th>
+            <th>Agreement</th>
         </tr>
     </thead>
     <tbody>
-        {% for judgment in judgments %}
+        {% for task in tasks %}
         <tr>
-            <td>{{judgment.name}}</td>
-            {% for user in users %}
-            <td> <a class="btn btn-sm btn-info" href="">Download</a></td>
-            {% endfor %}
-            <td> <a class="btn btn-sm btn-info" href="">Download</a></td>
+            <td>{{task.name}}</td>
+            <td>{{task.n_docs}}</td>
+            <td>{{task.n_users}}</td>
+            <td><a class="btn btn-sm btn-info" href="{% url 'users:list-taggings-agreement' task.id %}"> Compute </a></td>
         </tr>
         {% endfor %}
-
-        <tr>
-            <td><strong>All Docs</strong></td>
-            {% for user in users %}
-            <td> <a class="btn btn-sm btn-info" href="">Download</a></td>
-            {% endfor %}
-            <td> <a class="btn btn-sm btn-info" href="">Download</a></td>
-        </tr>
-
     </tbody>
 </table>
 {% endblock %}

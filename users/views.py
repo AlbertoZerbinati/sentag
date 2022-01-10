@@ -15,6 +15,7 @@ from tag_sentenze.views import assign_doc_to_user, remove_doc_from_user
 from .forms import UserRegisterForm, TaskModelForm, AddJudgmentsForm, ParseXMLForm
 from .models import Tagging, TaggingTask, Profile
 from tag_sentenze.models import Judgment, Schema, Task
+from django.db.models import Count
 
 
 @login_required
@@ -346,7 +347,7 @@ def remove_sentenza_schema_list(request, schema):
 
 
 # Agreement code
-def calc_agreement(judgment_id):
+def calc_agreement(task_id, judgment_id):
 
     #print('------------------ CALCOLO AGREEMENT -------------------')
 
@@ -354,7 +355,6 @@ def calc_agreement(judgment_id):
     judgment = Judgment.objects.get(id=judgment_id)
     judgment_text = judgment.initial_text
     judgment_tokens = judgment_text.split(' ')
-    # print(judgment_tokens)
 
     # dictionary with token-value pairs
     tokens_value = {}
@@ -364,7 +364,8 @@ def calc_agreement(judgment_id):
         tokens_value[judgment_tokens[i]] = i+1
 
     # Get the schema associated to the Judgment and create dictionary with all the tags
-    schema = judgment.xsd.schema_file
+    print(task_id)
+    schema = Task.objects.get(id=task_id).xsd.schema_file
 
     tree = etree.ElementTree(file=schema)
     tags = tree.xpath("//xsd:element/@name",
@@ -382,20 +383,19 @@ def calc_agreement(judgment_id):
 
     # flag to see if at least two or more users has a token manager not empty
     flag = 0
-
+    
     # For every token manager get the list of word-label pair as [[WORD: LABEL], [WORD2: LABEL]]
     for elem in TaggingTask.objects.all():
-        if(elem.judgment.id == judgment_id):
+        if elem.judgment.id == judgment_id and elem.task.id == task_id:
             tm = elem.token_manager
-            user = elem.profile
+            user = elem.user
 
             if tm != ' ' and tm != '':
                 # increment flag
                 flag = flag + 1
 
                 # Double convertion to dict
-                tm = json.loads(tm)
-                tm = json.loads(tm)
+                tm = json.loads(json.loads(tm))
 
                 # Get only tokens
                 tokens = tm['tokens']
@@ -404,11 +404,10 @@ def calc_agreement(judgment_id):
                 words = []
                 while tokens:
                     t = tokens.pop(0)
-                    # print(t)
 
                     if isinstance(t, str):
                         words.append(tuple([t, None]))
-                    elif 'text' in t:
+                    elif t['type'] == "token":
                         words.append(tuple([t['text'], None]))
                     else:
                         label = t['label']
@@ -431,42 +430,41 @@ def calc_agreement(judgment_id):
                     data['unit_id'].append(pair[0])
                     data['annotator_id'].append(str(user))
                     data['annotation'].append(pair[1])
-
+            
     # return None if flag is < 2
     if flag < 2:
         return None
 
     # Calculate agreement with simpledorff package and pandas
     Data = pd.DataFrame(data)
-    agreement = simpledorff.calculate_krippendorffs_alpha_for_df(Data, experiment_col='unit_id',
+    try:
+        agreement = simpledorff.calculate_krippendorffs_alpha_for_df(Data, experiment_col='unit_id',
                                                                  annotator_col='annotator_id',
                                                                  class_col='annotation')
+    except ZeroDivisionError:
+        agreement = 1
+
     return agreement
 
 # Receive the POST request to calculate the agreement score on a specific judgment
 
 
 @login_required
-def agreement_post(request, id):
+def agreement_post(request, task_id, jud_id):
+    current_user = request.user
+    if not current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        return redirect('tag_sentenze:my-tasks')
 
     if request.method == 'POST' and request.is_ajax:
-        judgment_id = request.POST.get('selected_judgment')
-        #print('Judgment ID', judgment_id)
-
-        #print('ID: ', id)
-
-        # Get the judgment object
-        judgment = Judgment.objects.get(id=id)
-
         # Agreement value
-        score = calc_agreement(id)
-      # print('Score: ', score)
+        score = calc_agreement(task_id, jud_id,)
+        print('Score: ', score)
 
         # Save score on the Database if it isn't None
         if score != None:
             score = round(score, 2)
-            judgment.score = score
-            judgment.save()
+            # judgment.score = score
+            # judgment.save()
         else:
             score = '-'
       # print(score)
@@ -475,11 +473,37 @@ def agreement_post(request, id):
 
 
 @login_required
-def agreement_page(request):
+def list_tasks_agreement(request):
+    current_user = request.user
+    tasks = Task.objects.annotate(n_docs=Count(
+        'judgments', distinct=True), n_users=Count('users', distinct=True)).values()
 
+    # admins and editors have access to all taggings
+    if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        context = {
+            'tasks': tasks
+        }
+        print(context)
+        return render(request, 'users/list_tasks_agreement.html', context=context)
+    # annotators don't
+    else:
+      # print('Annotator access')
+        return redirect('tag_sentenze:my-tasks')
+    """
     # Create table in template with judgments as rows and users as columns
-    users = User.objects.filter(groups__name='Annotators').all()
-    judgments = Judgment.objects.all()
+
+    """
+
+
+@login_required
+def list_taggings_agreement(request, id):
+    current_user = request.user
+    if not current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
+        return redirect('tag_sentenze:my-tasks')
+
+    task = Task.objects.get(id=id)
+    judgments = task.judgments.all()
+    users = task.users.all()
 
     rows = []
 
@@ -492,24 +516,19 @@ def agreement_page(request):
         single_row.append(judgment.name)
 
         # Add agreement score from database
-        agreement = judgment.score
-      # print("Agreement judgment {}: {}".format(judgment.id, agreement))
+    #     agreement = judgment.score
+    #   # print("Agreement judgment {}: {}".format(judgment.id, agreement))
 
-        if agreement == None:
-            single_row.append('-')
-        else:
-            single_row.append(agreement)
+    #     if agreement == None:
+        single_row.append('-')
+        # else:
+        #     single_row.append(agreement)
 
         for user in users:
-            user_judgments = user.profile.taggings.all()
-            #print('Sentenze utente: ', user_judgments)
-            if judgment in user_judgments:
-                if TaggingTask.objects.get(user=user, judgment=judgment).completed:
-                    single_row.append(2)
-                else:
-                    single_row.append(1)
+            if TaggingTask.objects.get(user=user, judgment=judgment, task=task).completed:
+                single_row.append(2)
             else:
-                single_row.append(0)
+                single_row.append(1)
 
         rows.append(single_row)
   # print(rows)
@@ -517,10 +536,11 @@ def agreement_page(request):
     context = {
         'users': users,
         'judgments': judgments,
-        'rows': rows
+        'rows': rows,
+        'task_id': id,
     }
 
-    return render(request, 'users/agreement_page.html', context=context)
+    return render(request, 'users/list_taggings_agreement.html', context=context)
 
 
 @login_required
@@ -733,6 +753,7 @@ def delete_judgment(request, id):
 
     return redirect(reverse('users:manage-juds'))
 
+
 @login_required
 def view_judgment(request, id):
     current_user = request.user
@@ -741,10 +762,11 @@ def view_judgment(request, id):
             jud = Judgment.objects.get(id=id)
         except Schema.DoesNotExist:
             raise Http404()
-        context = {'jud_text': jud.initial_text.replace("<br/>", "\n" )}
+        context = {'jud_text': jud.initial_text.replace("<br/>", "\n")}
         return render(request, 'users/view_judgment.html', context=context)
     else:
         return redirect(reverse('tag_sentenze:my-tasks'))
+
 
 @login_required
 def manage_tasks(request):

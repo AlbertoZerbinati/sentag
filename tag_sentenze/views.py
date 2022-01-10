@@ -30,7 +30,7 @@ def my_tasks(request):
 
     # query for all Tasks of current User
     tasks = Task.objects.filter(users__username__contains=current_user).annotate(
-        n_docs=Count('judgments')).values()
+        n_docs=Count('judgments', distinct=True)).values()
     context = {
         'tasks': tasks
     }
@@ -207,11 +207,11 @@ def update_tagging(request, id):
     # TODO: add check for missing attributes
 
     serializer = TaggingTaskSerializer(instance=tagging, data={
-                                   'token_manager': json.dumps(request.data['tm']),
-                                   'arguments_graph': arggraph,
-                                   'relations_graph': relgraph,
-                                   'comments': comments, 'xml_text': xml_string,
-                                   'completed': completed}, partial=True, many=False)
+        'token_manager': json.dumps(request.data['tm']),
+        'arguments_graph': arggraph,
+        'relations_graph': relgraph,
+        'comments': comments, 'xml_text': xml_string,
+        'completed': completed}, partial=True, many=False)
 
     if serializer.is_valid():
         serializer.save()
@@ -259,10 +259,10 @@ def completed_tagging(request, id):
 
         # else if valid then save in db WITH XML TEXT and return success
         serializer = TaggingTaskSerializer(instance=tagging, data={'token_manager': json.dumps(request.data['tm']),
-                                                           'arguments_graph': arggraph,
-                                                           'relations_graph': relgraph,
-                                                           'comments': comments,
-                                                           'completed': completed, }, partial=True, many=False)
+                                                                   'arguments_graph': arggraph,
+                                                                   'relations_graph': relgraph,
+                                                                   'comments': comments,
+                                                                   'completed': completed, }, partial=True, many=False)
 
         if serializer.is_valid():
             serializer.save()
@@ -271,10 +271,10 @@ def completed_tagging(request, id):
 
     # if set uncompleted then save in db and return success
     serializer = TaggingTaskSerializer(instance=tagging, data={'token_manager': json.dumps(request.data['tm']),
-                                                           'arguments_graph': arggraph,
-                                                           'relations_graph': relgraph,
-                                                           'comments': comments,
-                                                           'completed': completed, }, partial=True, many=False)
+                                                               'arguments_graph': arggraph,
+                                                               'relations_graph': relgraph,
+                                                               'comments': comments,
+                                                               'completed': completed, }, partial=True, many=False)
     if serializer.is_valid():
         serializer.save()
 
@@ -359,7 +359,7 @@ def generate_xml_from_tm(token_manager):
 def list_tasks_download(request):
     current_user = request.user
     tasks = Task.objects.annotate(n_docs=Count(
-        'judgments'), n_users=Count('users')).values()
+        'judgments', distinct=True), n_users=Count('users', distinct=True)).values()
 
     # admins and editors have access to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():

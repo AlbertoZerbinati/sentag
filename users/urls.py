@@ -21,8 +21,9 @@ urlpatterns = [
     
     path("parse_xml", views.parse_xml, name="parse-xml"),
 
-    path("agreement", views.agreement_page, name="agreement-page"),
-    path("calc_agreement/<int:id>", views.agreement_post, name="calculate-agreement"),
+    path('list_tasks_agreement/', views.list_tasks_agreement, name='list-tasks-agreement'),
+    path('list_taggings_agreement/<int:id>', views.list_taggings_agreement, name='list-taggings-agreement'),
+    path("calc_agreement/<int:task_id>/<int:jud_id>/", views.agreement_post, name="calculate-agreement"),
 
     path('manage_users', views.manage_users, name='manage-users'),
     path('delete_user/<int:id>', views.delete_user, name='delete-user'),
@@ -38,12 +39,9 @@ urlpatterns = [
     path("delete_judgment/<int:id>", views.delete_judgment, name="delete-judgment"),
     path("view_judgment/<int:id>", views.view_judgment, name="view-judgment"),
 
-
     path('manage_tasks/', views.manage_tasks, name='manage-tasks'),
     path('new_task/', views.new_task, name='new-task'),
     path('update_task/<int:id>', views.update_task, name='update-task'),
     path('delete_task/<int:id>', views.delete_task, name='delete-task'),
-
-
 
 ]
