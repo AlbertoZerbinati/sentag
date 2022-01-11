@@ -19,6 +19,18 @@
     <meta name="title-tagging" content="{{ tagging.judgment.name }}">
     <meta name="must-parse" content="{{ must_parse }}">
 
+    <style>
+        #container {
+            width: 98%;
+            max-width: 98%;
+        }
+
+        @media (min-width: 1000px) {
+            .section.one {
+                max-width: 25%;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -89,20 +101,14 @@
 
         </div>
     </nav>
-    <div class="container-fluid">
-        <div class="row gx-2 top-buffer">
-            <div class="col col-sm-3 sticky-top">
-                <div class="no-border sticky-top">
-                    <!--install here the classes-and-attributes-block-->
-                    <div id="sidebar"></div>
-                </div>
-            </div>
-            <div class="col col-sm-9">
-                <div class="no-border">
-                    <!--install here the annotation-page-->
-                    <div id="editor"></div>
-                </div>
-            </div>
+    <div class="container" id="container">
+        <div class="section one">
+            <!--install here the classes-and-attributes-block-->
+            <div id="sidebar"></div>
+        </div>
+        <div class="section two">
+            <!--install here the annotation-page-->
+            <div id="editor"></div>
         </div>
     </div>
 

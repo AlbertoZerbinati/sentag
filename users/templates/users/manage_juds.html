@@ -2,39 +2,38 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    Manage Docs
+Manage Docs
 {% endblock %}
 
 {% block content %}
-    
-    <div class="col-md-10"></div>
-    <h2>List of Docs</h2>
-    <hr/>
-    <div class="card card-body">
-        <a class="btn btn-primary btn-sm gtn-block" href="{% url 'users:add-judgments' %}">New Docs</a>
-        <table class="table table-sm">
-            <tr>
-                <th>Doc</th>
-                <th>Belonging Tasks</th>
-                <!--<th>Update</th>-->
-                <th>Remove</th>
-            </tr>
 
-            {% for jud in juds %}
-                <tr>
-                    <td><a href="{% url 'users:view-judgment' jud.id %}" target="_blank" rel="noopener noreferrer">{{jud.name}}</a></td>
-                    <td>
-                        {% for task in jud.belonging_tasks.all %}
-                            {{task.name}}
-                            <br/>   
-                        {% endfor %}
-                    </td>
-                    <!--<td><a class="btn btn-sm btn-info" href="">Update</a></td>-->
-                    <td><a class="btn btn-sm btn-danger" href="{% url 'users:delete-judgment' jud.id %}">Remove</a></td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
-    </div>
+<h2>List of Docs</h2>
+<hr />
+<div class="card card-body">
+    <a class="btn btn-primary btn-sm gtn-block" href="{% url 'users:add-judgments' %}">New Docs</a>
+    <table class="table table-sm">
+        <tr>
+            <th>Doc</th>
+            <th>Belonging Tasks</th>
+            <!--<th>Update</th>-->
+            <th>Remove</th>
+        </tr>
+
+        {% for jud in juds %}
+        <tr>
+            <td><a href="{% url 'users:view-judgment' jud.id %}" target="_blank"
+                    rel="noopener noreferrer">{{jud.name}}</a></td>
+            <td>
+                {% for task in jud.belonging_tasks.all %}
+                {{task.name}}
+                <br />
+                {% endfor %}
+            </td>
+            <!--<td><a class="btn btn-sm btn-info" href="">Update</a></td>-->
+            <td><a class="btn btn-sm btn-danger" href="{% url 'users:delete-judgment' jud.id %}">Remove</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 
 {% endblock %}

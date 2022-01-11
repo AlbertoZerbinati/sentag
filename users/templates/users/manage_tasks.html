@@ -2,32 +2,31 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    Manage Tasks
+Manage Tasks
 {% endblock %}
 
 {% block content %}
-    
-    <div class="col-md-10"></div>
-    <h2>List of Tasks</h2>
-    <hr>
-    <div class="card card-body">
-        <a class="btn btn-primary btn-sm gtn-block" href="{% url 'users:new-task' %}">New Task</a>
-        <table class="table table-sm">
-            <tr>
-                <th>Task</th>
-                <th>Update</th>
-                <th>Remove</th>
-            </tr>
 
-            {% for task in tasks %}
-                <tr>
-                    <td>{{task.name}}</td>
-                    <td><a class="btn btn-sm btn-info" href="{% url 'users:update-task' task.id %}">Update</a></td>
-                    <td><a class="btn btn-sm btn-danger" href="{% url 'users:delete-task' task.id %}" onClick="javascript:return confirm('Are you sure?');">Remove</a></td>
-                </tr>
-            {% endfor %}
-        </table>
-    </div>
-    </div>
+<h2>List of Tasks</h2>
+<hr>
+<div class="card card-body">
+    <a class="btn btn-primary btn-sm gtn-block" href="{% url 'users:new-task' %}">New Task</a>
+    <table class="table table-sm">
+        <tr>
+            <th>Task</th>
+            <th>Update</th>
+            <th>Remove</th>
+        </tr>
+
+        {% for task in tasks %}
+        <tr>
+            <td>{{task.name}}</td>
+            <td><a class="btn btn-sm btn-info" href="{% url 'users:update-task' task.id %}">Update</a></td>
+            <td><a class="btn btn-sm btn-danger" href="{% url 'users:delete-task' task.id %}"
+                    onClick="javascript:return confirm('Are you sure?');">Remove</a></td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
 
 {% endblock %}

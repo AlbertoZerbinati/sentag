@@ -16,10 +16,6 @@
     user-select: none;
 }
 
-.sticky-top {
-    top: 6px;
-}
-
 .link {
     color: rgb(184, 184, 184);
     /* width:130px; */
@@ -120,11 +116,13 @@
 html {
     width: 100%;
     height: 100%;
+    overflow-y: hidden;
 }
 
 body {
     font-size: 15px;
     width: 100%;
+    height: 100%;
     min-height: 100%;
     display: flex;
     flex-direction: column;
@@ -139,4 +137,35 @@ footer {
 
 .col {
     padding: 8px;
+}
+
+.container {
+    display: flex;
+    width: 100%;
+    max-width: 100%;
+    padding: 10px;
+    gap: 10px;
+    margin: 0;
+}
+
+.section.one {
+    flex: 1 1.2 100%;
+    padding: 6px;
+}
+
+.section.two {
+    flex: 4 0.8 100%;
+    padding: 6px;
+}
+
+.section.three {
+    flex: 1 1.2 100%;
+    padding: 6px;
+}
+
+@media (max-width: 1000px) {
+    /*breakpoint*/
+    .container {
+        flex-direction: column;
+    }
 }
