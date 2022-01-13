@@ -12,8 +12,7 @@
 }
 
 .navbar {
-    height: 65px;
-    user-select: none;
+    min-height: 50px;
 }
 
 .link {
@@ -141,31 +140,14 @@ footer {
 
 .container {
     display: flex;
-    width: 100%;
-    max-width: 100%;
     padding: 10px;
-    gap: 10px;
-    margin: 0;
+    justify-content: center;
 }
 
-.section.one {
-    flex: 1 1.2 100%;
+.section {
+    flex: 1 1 auto;
     padding: 6px;
-}
-
-.section.two {
-    flex: 4 0.8 100%;
-    padding: 6px;
-}
-
-.section.three {
-    flex: 1 1.2 100%;
-    padding: 6px;
-}
-
-@media (max-width: 1000px) {
-    /*breakpoint*/
-    .container {
-        flex-direction: column;
-    }
+    min-width: 0;
+    max-width: 90%;
+    overflow-x: auto;
 }
