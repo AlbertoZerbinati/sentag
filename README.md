@@ -1,14 +1,18 @@
 # SenTag
 
-- Django backend
+![image](https://img.shields.io/badge/Django-092E20?style=for-the-badge&logo=django&logoColor=green) 
+![image](https://img.shields.io/badge/Vue.js-35495E?style=for-the-badge&logo=vuedotjs&logoColor=4FC08D) 
 
-- Vue.js frontend, inspired by [NER-annotator for Spacy](https://github.com/tecoholic/ner-annotator) (MIT Licence)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-- Graph featuring [DevExtreme by DevExpress](https://github.com/DevExpress/devextreme-vue) (MIT License)
 
-- Python Package for agreement: [Simpledorff](https://github.com/LightTag/simpledorff) (MIT License)
+SenTag is a light-weight web-based platform for **text annotation**.
 
-## Usage (for development)
+The platform allows **multiple users** to cooperate in the annotation of a corpus of documents. 
+
+The output of the annotation process is an **XML** file that can be validated against a schema for **quality** guaratees.
+
+## Usage (for local deployment)
 
 1. Install the dependencies, create the Database and the Admin User, start the Python Backend server
     * Install the dependencies in a new python virtual environment
@@ -49,6 +53,13 @@
     ```
 
 Now visit [http://127.0.0.1:8000](http://127.0.0.1:8000) and log in with your credentials for complete access to all functionalities!
+
+## Major Dependencies
+- Annotation interface: [NER-annotator for Spacy](https://github.com/tecoholic/ner-annotator) (MIT Licence)
+
+- Graph: [DevExtreme by DevExpress](https://github.com/DevExpress/devextreme-vue) (MIT License)
+
+- Agreement: [Simpledorff](https://github.com/LightTag/simpledorff) (MIT License)
 
 ## Paper
 **SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
