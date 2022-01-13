@@ -458,7 +458,6 @@ def agreement_post(request, task_id, jud_id):
     if request.method == 'POST' and request.is_ajax:
         # Agreement value
         score = calc_agreement(task_id, jud_id,)
-        print('Score: ', score)
 
         # Save score on the Database if it isn't None
         if score != None:
@@ -466,7 +465,7 @@ def agreement_post(request, task_id, jud_id):
             # judgment.score = score
             # judgment.save()
         else:
-            score = '-'
+            score = 'x'
       # print(score)
 
     return JsonResponse({'response': score}, status=200)

@@ -421,7 +421,7 @@ def list_taggings_download(request, id):
             'users': users,
             'task': task,
         }
-        return render(request, 'tag_sentenze/list_tagging_user_task_download.html', context=context)
+        return render(request, 'tag_sentenze/list_taggings_download.html', context=context)
     # annotators don't
     else:
       # print('Annotator access')

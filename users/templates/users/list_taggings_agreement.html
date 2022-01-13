@@ -79,7 +79,7 @@ Agreement
                 </div>
 
                 {% else %}
-                    {{ elem }}
+                {{ elem }}
                 {% endif %}
                 {% endif %}
             </td>
@@ -90,7 +90,8 @@ Agreement
             <td><strong>All Docs</strong></td>
             <td>
                 <div>
-                    <button id="Judg_-" class="btn btn-info btn-sm" onclick="calcAgreement(this)">Compute all</button>
+                    <button id="Judg_-" class="btn btn-info btn-sm" onclick="calcAgreement(this)" disabled>
+                        Compute all</button>
                 </div>
             </td>
             <td></td>

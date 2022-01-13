@@ -1,63 +1,150 @@
 {% extends "tag_sentenze/layout.html" %}
+{% load static %}
 
 {% block title %}
-Taggings
+Download judgments
+
+
 {% endblock %}
 
 {% block content %}
-<h3 class="title">Download Annotated Docs</h3>
+<h3 class="title">Download docs from Task {{task.name}}</h3>
 <table class="table table-hover">
     <thead>
         <tr>
             <th>Doc</th>
-            <th>Annotator</th>
-            <th>Download Button</th>
-            <th>State</th>
+            {% for user in users %}
+            <th>{{user.username}}</th>
+            {% endfor %}
+            <th class="table-active"><strong>All Users</strong></th>
         </tr>
     </thead>
     <tbody>
-        {% for tagging in taggings %}
+        {% for judgment in judgments %}
         <tr>
-            <td>{{tagging.judgment}}</td>
-            <td>{{tagging.user}}</td>
-            {%if tagging.xml_text %}
-                <td><button class="btn btn-primary btn-small" onclick="downl({tagging.id})">DOWNLOAD xml</button> </td>
-            {% else %}
-                <td>Not yet completed</td>
-            {% endif %}
-            {% if tagging.completed %}
-                <td style="color:rgb(18, 145, 18)">Validated</td>
-            {% else %}
-                <td style="color:rgb(209, 46, 46)">Not Validated</td>
-            {% endif %}
+            <td>{{judgment.name}}</td>
+            {% for user in users %}
+            <td> <button class="btn btn-sm btn-info"
+                    onclick="downl('{{task.id}}', '{{judgment.id}}', '{{user.id}}','{{judgment.basename}}'+'__'+'{{user.username}}'+'.xml')">
+                    Download
+                </button>
+            </td>
+            {% endfor %}
+            <td class="table-active">
+                <button class="btn btn-sm btn-info"
+                    onclick="downl('{{task.id}}', '{{judgment.id}}', -1, '{{judgment.basename}}')">
+                    Download
+                </button>
+            </td>
         </tr>
         {% endfor %}
+
+        <tr class="table-active">
+            <td class="table-active"><strong>All Docs</strong></td>
+            {% for user in users %}
+            <td> <button class="btn btn-sm btn-info"
+                    onclick="downl('{{task.id}}', -1, '{{user.id}}', '{{user.username}}')">
+                    Download
+                </button></td>
+            {% endfor %}
+            <td> <button class="btn btn-sm btn-info" onclick="downl('{{task.id}}', -1, -1, 'all_docs__all_users.zip')">
+                    Download
+                </button></td>
+        </tr>
+
     </tbody>
 </table>
+
+<!-- zip file library -->
+<script src="{% static 'node_modules/jszip/dist/jszip.min.js' %}"></script>
+<script src="{% static 'node_modules/file-saver/dist/FileSaver.min.js' %}"></script>
+
 {% endblock %}
 
 {% block script %}
 <script>
-    function downl(id) {
-        $.get("/download/" + id, function (data) {
-            // console.log(typeof data); // string
-            // console.log(data); // HTML content of the jQuery.ajax page
+    function downl(task_id, jud_id, user_id, filename) {
+        console.log(filename);
+        if (task_id >= 0 && jud_id >= 0 && user_id >= 0) {
+            // download single file
+            $.get("/download/" + task_id + "/" + jud_id + "/" + user_id, function (data) {
+                // console.log(typeof data); // string
+                // console.log(data); // HTML content of the jQuery.ajax page
+                let xml = data['xml_text']
+                dowload_file(xml, filename)
+            });
+        }
+        else if (user_id < 0 && jud_id > 0) {
+            // download a doc from all users
+            console.log("all users");
+            $.get("/download/" + task_id + "/" + jud_id + "/" + user_id, function (data) {
+                console.log(data);
 
-            let filename = data['name'] + ".xml"
-            let outputString = data['xml']
+                var zip = new JSZip();
 
-            let element = document.createElement("a");
-            element.setAttribute(
-                "href",
-                "data:text/plain;charset=utf-8," + encodeURIComponent(outputString)
-            );
-            element.setAttribute("download", filename);
+                for (let user in data) {
+                    // create a file
+                    zip.file(filename.toString() + "__" + user.toString() + ".xml", data[user]);
+                }
 
-            element.style.display = "none";
-            document.body.appendChild(element);
-            element.click();
-            document.body.removeChild(element);
-        });
+                // download zip
+                zip.generateAsync({ type: "blob" })
+                    .then(function (blob) {
+                        saveAs(blob, '{{task.name}}' + "__" + filename.toString() + "__all_users" + ".zip");
+                    });
+
+            });
+
+        }
+        else if (jud_id < 0 && user_id > 0) {
+            // download all docs from a user
+            console.log("all docs");
+            $.get("/download/" + task_id + "/" + jud_id + "/" + user_id, function (data) {
+                console.log(data);
+                var zip = new JSZip();
+
+                for (let doc in data) {
+                    // create a file
+                    zip.file(doc.toString() + "__" + filename.toString() + ".xml", data[doc]);
+                }
+                zip.generateAsync({ type: "blob" })
+                    .then(function (blob) {
+                        saveAs(blob, '{{task.name}}' + "__" + 'all_docs' + '__' + filename.toString() + '.zip');
+                    });
+            });
+        }
+        else {
+            // download all docs from all users
+            console.log("all all");
+            $.get("/download/" + task_id + "/" + jud_id + "/" + user_id, function (data) {
+                console.log(data);
+                var zip = new JSZip();
+
+                for (let doc in data) {
+                    for (let user in data[doc]) {
+                        // create a file
+                        console.log(doc + " " + user)
+                        zip.file(doc + "/" + doc.toString() + "__" + user.toString() + ".xml", data[doc][user]);
+                    }
+                }
+                zip.generateAsync({ type: "blob" })
+                    .then(function (blob) {
+                        saveAs(blob, '{{task.name}}' + '.zip');
+                    });
+            });
+        }
+    }
+    function dowload_file(outputString, filename) {
+        let element = document.createElement("a");
+        element.setAttribute(
+            "href",
+            "data:text/plain;charset=utf-8," + encodeURIComponent(outputString)
+        );
+        element.setAttribute("download", filename);
+        element.style.display = "none";
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
     }
 </script>
 {% endblock %}
