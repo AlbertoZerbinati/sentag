@@ -10,7 +10,7 @@ SenTag is a light-weight web-based platform for **text annotation**.
 
 The platform allows **multiple users** to cooperate in the annotation of a corpus of documents. 
 
-The output of the annotation process is an **XML** file that can be validated against a schema for **quality** guaratees.
+The output of the annotation process is an **XML** file that can be validated against a schema for **quality** guarantees.
 
 ## Usage (for local deployment)
 
