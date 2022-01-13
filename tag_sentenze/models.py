@@ -52,7 +52,14 @@ class Judgment(models.Model):
     def delete(self, *args, **kwargs):
         self.judgment_file.delete()
         super(Judgment, self).delete(*args, **kwargs)
-
+    
+    @property
+    def basename(self):
+        end = self.name.rfind(".")
+        if end == -1:
+            end = len(self.name)
+        return self.name[:end]
+        
     def __str__(self):
         """String for representing the Judgments object (in Admin site)."""
         return "Judgment \"" + self.name + "\""

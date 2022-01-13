@@ -141,7 +141,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = 'var/static_root/'
-STATICFILES_DIRS = ['static']
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static'),
+                    ('node_modules', os.path.join(BASE_DIR, 'node_modules/')),
+                    ]
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # where uploaded files are saved
 MEDIA_URL = '/media/'

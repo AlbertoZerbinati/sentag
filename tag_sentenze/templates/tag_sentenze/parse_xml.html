@@ -6,7 +6,7 @@
 {% endblock %}
 
 {% block content %}
-    <h2 class="title">Parse XML</h2>
+    <h3 class="title">Parse XML</h3>
     <form enctype="multipart/form-data" action="{% url 'users:parse-xml' %}" method="POST">
         {% csrf_token %}
         {{ form|crispy}} 

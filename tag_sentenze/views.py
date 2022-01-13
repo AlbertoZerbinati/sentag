@@ -122,24 +122,58 @@ def remove_doc_from_user(task_id, judgment_id, user_id):
 
 
 @login_required
-def download(request, id):
-    try:
-        tagging = TaggingTask.objects.get(pk=id)
-    except TaggingTask.DoesNotExist:
-        raise Http404()
+def download(request, task_id, jud_id, user_id):
+    jud_id = int(jud_id)
+    user_id = int(user_id)
 
     current_user = request.user
-
     # annotators don't have access to this functionality
     if not current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         return redirect('/')
 
-    # load tagging xml text
-    response = {
-        'name': tagging.judgment.name[:tagging.judgment.name.rfind(".")],
-        'xml': tagging.xml_text
-    }
-    return JsonResponse(response)
+    if task_id >= 0 and jud_id >= 0 and user_id >= 0:
+        # download single file
+        try:
+            tagging = TaggingTask.objects.get(
+                task=task_id, judgment=jud_id, user=user_id)
+        except TaggingTask.DoesNotExist:
+            raise Http404()
+
+        return JsonResponse({'xml_text': tagging.xml_text})
+    elif user_id < 0 and jud_id >= 0:
+        # download a doc from all users
+        task = Task.objects.get(id=task_id)
+
+        documents = dict()
+        for user in task.users.all():
+            tagging = TaggingTask.objects.get(
+                task=task_id, judgment=jud_id, user=user.id)
+            documents[user.username] = tagging.xml_text
+
+        return JsonResponse(documents)
+    elif jud_id < 0 and user_id >= 0:
+        # download all docs from a user
+        task = Task.objects.get(id=task_id)
+
+        documents = dict()
+        for jud in task.judgments.all():
+            tagging = TaggingTask.objects.get(
+                task=task_id, judgment=jud.id, user=user_id)
+            documents[jud.basename] = tagging.xml_text
+
+        return JsonResponse(documents)
+    else:
+        task = Task.objects.get(id=task_id)
+
+        documents = dict()
+        for jud in task.judgments.all():
+            documents[jud.basename] = dict()
+            for user in task.users.all():
+                tagging = TaggingTask.objects.get(
+                    task=task_id, judgment=jud.id, user=user.id)
+                documents[jud.basename][user.username] = tagging.xml_text
+
+        return JsonResponse(documents)
 
 
 @login_required
@@ -147,7 +181,7 @@ def taggings_download(request):
     current_user = request.user
     taggings = TaggingTask.objects.all()
 
-    # admins and editors have access to all taggings
+    # admins and editors have a to all taggings
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         context = {
             'taggings': taggings
@@ -366,7 +400,6 @@ def list_tasks_download(request):
         context = {
             'tasks': tasks
         }
-        print(context)
         return render(request, 'tag_sentenze/list_tasks_download.html', context=context)
     # annotators don't
     else:
@@ -385,9 +418,9 @@ def list_taggings_download(request, id):
     if current_user.groups.filter(name__in=['Editors', 'Admins']).exists():
         context = {
             'judgments': judgments,
-            'users': users
+            'users': users,
+            'task': task,
         }
-        print(context)
         return render(request, 'tag_sentenze/list_tagging_user_task_download.html', context=context)
     # annotators don't
     else:

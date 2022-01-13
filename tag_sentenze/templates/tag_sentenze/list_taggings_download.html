@@ -5,8 +5,8 @@ Taggings
 {% endblock %}
 
 {% block content %}
-<h2 class="title">Download Annotated Docs</h2>
-<table class="table table-striped table-hover">
+<h3 class="title">Download Annotated Docs</h3>
+<table class="table table-hover">
     <thead>
         <tr>
             <th>Doc</th>
@@ -21,7 +21,7 @@ Taggings
             <td>{{tagging.judgment}}</td>
             <td>{{tagging.user}}</td>
             {%if tagging.xml_text %}
-                <td><button class="btn btn-primary btn-small" onclick="downl({{tagging.id}})">DOWNLOAD xml</button> </td>
+                <td><button class="btn btn-primary btn-small" onclick="downl({tagging.id})">DOWNLOAD xml</button> </td>
             {% else %}
                 <td>Not yet completed</td>
             {% endif %}

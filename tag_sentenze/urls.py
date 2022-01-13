@@ -16,7 +16,7 @@ urlpatterns = [
     path("api/update/<int:id>", views.update_tagging, name="api-update"),
     path("api/completed/<int:id>", views.completed_tagging, name="api-compeleted"),
 
-    path("download/<int:id>", views.download, name="download"),
+    path("download/<int:task_id>/<str:jud_id>/<str:user_id>", views.download, name="download"),
     path("taggings_download/", views.taggings_download, name="taggings-download"),
 
     path('list_tasks_download/', views.list_tasks_download, name='list-tasks-download'),
