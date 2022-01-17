@@ -21,18 +21,25 @@
 
     <style>
         #container {
+            display: flex;
             width: 98%;
             max-width: 98%;
         }
 
-        @media (min-width: 1000px) {
-            .sect.one {
-                max-width: 25%;
+        @media (max-width: 850px) {
+            #container {
+                flex-direction: column;
+                gap: 0.5em;
             }
         }
 
-        .sect {
-            min-width: 0;
+
+        .sect.one {
+            min-width: 25%;
+        }
+
+        .sect.two {
+            min-width: 75%;
         }
 
         #body {
@@ -40,7 +47,7 @@
         }
 
         #html {
-            overflow: auto;
+            overflow-y: auto;
         }
     </style>
 </head>
