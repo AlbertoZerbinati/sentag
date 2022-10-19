@@ -64,11 +64,13 @@ Now visit [http://127.0.0.1:8000](http://127.0.0.1:8000) and log in with your cr
 ## Video Presentation
 * [Video Demonstrations of the Program Functionalities](https://www.loreggia.eu/download/sentag.mp4) 
 
+## Demo
+* A demo of SenTag is available [here](http://3.121.162.129:8000/)
+* Use the following credential login: username test and password: T3st0n3!
+
 ## Paper
 **SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
 * A. Loreggia, S. Mosco, and A. Zerbinati. *"SenTag: a Web-based Tool for Semantic Annotation of Textual Documents"* - To appear in Proceedings of the 36th AAAI Conference on Artificial Intelligence 2022 - Demonstrations Program Track 
-
-* Video about the demo presented at AAAI 2022 - Demonstrations Program Track 
 
 ### How to cite
 ```
