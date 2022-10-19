@@ -62,7 +62,7 @@ Now visit [http://127.0.0.1:8000](http://127.0.0.1:8000) and log in with your cr
 - Agreement: [Simpledorff](https://github.com/LightTag/simpledorff) (MIT License)
 
 ## Video Presentation
-* [Video about the demo presented at AAAI 2022 - Demonstrations Program Track](https://www.loreggia.eu/download/sentag.mp4) (MIT License)
+* [Video Demonstrations of the Program Functionalities](https://www.loreggia.eu/download/sentag.mp4) 
 
 ## Paper
 **SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
