@@ -12,6 +12,13 @@ The platform allows **multiple users** to cooperate in the annotation of a corpu
 
 The output of the annotation process is an **XML** file that can be validated against a schema for **quality** guarantees.
 
+## Video Presentation
+* [Video Demonstrations of the Program Functionalities](https://www.loreggia.eu/download/sentag.mp4) 
+
+## Demo
+* A demo of SenTag is available [here](http://3.121.162.129:8000/)
+* Use the following credential login: username test and password: T3st0n3!
+
 ## Usage (for local deployment)
 
 1. Install the dependencies, create the Database and the Admin User, start the Python Backend server
@@ -61,12 +68,6 @@ Now visit [http://127.0.0.1:8000](http://127.0.0.1:8000) and log in with your cr
 
 - Agreement: [Simpledorff](https://github.com/LightTag/simpledorff) (MIT License)
 
-## Video Presentation
-* [Video Demonstrations of the Program Functionalities](https://www.loreggia.eu/download/sentag.mp4) 
-
-## Demo
-* A demo of SenTag is available [here](http://3.121.162.129:8000/)
-* Use the following credential login: username test and password: T3st0n3!
 
 ## Paper
 **SenTag: a Web-based Tool for Semantic Annotation of Textual Documents**
